@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Model Summary - CS175</title>
+    <link rel="stylesheet" href="assets/site.css" />
+    <script defer src="assets/site.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div>
+          <p class="eyebrow">CS175 Research Site</p>
+          <h1>Model summary</h1>
+          <p class="lede">
+            The formal setup for a confidence-aware learning-augmented online
+            scheduler.
+          </p>
+        </div>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="index.html">Overview</a>
+          <a href="model-summary.html" aria-current="page">Model</a>
+          <a href="milestones.html">Milestones</a>
+          <a href="reproducibility.html">Reproducibility</a>
+          <a href="results.html">Results</a>
+        </nav>
+      </header>
+
+      <main class="page stack">
+        <section class="panel">
+          <h2>Core entities</h2>
+          <dl class="definition-list">
+            <div>
+              <dt>Job</dt>
+              <dd>Arrival time, true processing time, predicted duration, confidence, deadline, penalty.</dd>
+            </div>
+            <div>
+              <dt>MachineState</dt>
+              <dd>Current machine availability and queued assignments for identical parallel machines.</dd>
+            </div>
+            <div>
+              <dt>ExpertPolicy</dt>
+              <dd>One scheduling rule, such as EDF, SPT, or a hybrid confidence-gated rule.</dd>
+            </div>
+            <div>
+              <dt>MetaScheduler</dt>
+              <dd>Weights or switches among experts based on observed outcomes and confidence.</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <h2>Default assumptions</h2>
+          <ul class="checklist">
+            <li>Online arrivals over time</li>
+            <li>Non-preemptive execution</li>
+            <li>No migration between machines</li>
+            <li>Soft deadline penalties rather than hard feasibility</li>
+            <li>Predicted durations plus a scalar confidence score</li>
+          </ul>
+        </section>
+
+        <section class="panel">
+          <h2>Contribution shape</h2>
+          <p>
+            The intended novelty is a confidence-aware meta-policy that uses a
+            prediction-aware expert while retaining a worst-case fallback against
+            classical scheduling rules.
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
+

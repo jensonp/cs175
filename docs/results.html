@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Results - CS175</title>
+    <link rel="stylesheet" href="assets/site.css" />
+    <script defer src="assets/site.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div>
+          <p class="eyebrow">CS175 Research Site</p>
+          <h1>Experiments and results</h1>
+          <p class="lede">
+            A static page that can embed JSON summaries or full HTML reports
+            produced by later Python scripts.
+          </p>
+        </div>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="index.html">Overview</a>
+          <a href="model-summary.html">Model</a>
+          <a href="milestones.html">Milestones</a>
+          <a href="reproducibility.html">Reproducibility</a>
+          <a href="results.html" aria-current="page">Results</a>
+        </nav>
+      </header>
+
+      <main class="page stack">
+        <section class="panel">
+          <h2>Live embeds</h2>
+          <p>
+            Generate artifacts under `artifacts/site/latest/`, then rebuild the
+            site so the latest run is copied into the static output.
+          </p>
+
+          <div class="embed-grid">
+            <section class="embed-panel" data-json-src="generated/latest/metrics.json">
+              <h3>Metrics JSON</h3>
+              <p class="embed-note">Expected output: summary metrics, seeds, workload metadata.</p>
+              <div class="embed-target" aria-live="polite"></div>
+            </section>
+
+            <section class="embed-panel" data-html-src="generated/latest/report.html">
+              <h3>HTML report</h3>
+              <p class="embed-note">Expected output: a rendered experiment report or dashboard export.</p>
+              <div class="embed-target embed-frame-wrap" aria-live="polite"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Planned views</h2>
+          <ul class="checklist">
+            <li>Baseline comparison tables</li>
+            <li>Deadline miss and penalty curves</li>
+            <li>Corruption and confidence sensitivity plots</li>
+            <li>Per-machine timeline visualizations</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

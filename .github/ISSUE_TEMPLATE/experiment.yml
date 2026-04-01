@@ -1,0 +1,30 @@
+name: Experiment request
+description: Propose a new run, ablation, benchmark, or analysis pass.
+body:
+  - type: markdown
+    attributes:
+      value: Use this for controlled experiments, ablations, or new workload variants.
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: What are we trying to learn?
+      placeholder: State the hypothesis or comparison.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Proposed setup
+      description: Include workload, baseline, metrics, and seed count.
+      placeholder: Describe the run configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output
+      description: What artifacts should this produce?
+      placeholder: Plots, tables, logs, or a report section.
+    validations:
+      required: true

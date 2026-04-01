@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cs175-scheduler"
+version = "0.1.0"
+description = "Research scaffold for a confidence-aware scheduling project in CS175."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "CS175 Team" }
+]
+dependencies = []
+
+[project.scripts]
+scheduler = "scheduler.cli:main"
+scheduler-sim = "scheduler.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0",
+  "ruff>=0.6.9",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scheduler"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 130
+src = ["src", "tests", "experiments", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.ruff.format]
+quote-style = "double"

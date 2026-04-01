@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reproducibility - CS175</title>
+    <link rel="stylesheet" href="assets/site.css" />
+    <script defer src="assets/site.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div>
+          <p class="eyebrow">CS175 Research Site</p>
+          <h1>Reproducibility</h1>
+          <p class="lede">
+            Lightweight conventions for running experiments and publishing
+            artifacts from the simulator.
+          </p>
+        </div>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="index.html">Overview</a>
+          <a href="model-summary.html">Model</a>
+          <a href="milestones.html">Milestones</a>
+          <a href="reproducibility.html" aria-current="page">Reproducibility</a>
+          <a href="results.html">Results</a>
+        </nav>
+      </header>
+
+      <main class="page stack">
+        <section class="panel">
+          <h2>Local preview</h2>
+          <pre class="code-block"><code>PYTHONPATH=src python3 -m scheduler.docs build --output site
+python3 -m http.server --directory site 8000</code></pre>
+        </section>
+
+        <section class="panel">
+          <h2>Output layout</h2>
+          <pre class="code-block"><code>artifacts/runs/&lt;run_id&gt;/metrics.json
+artifacts/runs/&lt;run_id&gt;/report.html
+artifacts/site/latest/metrics.json
+artifacts/site/latest/report.html</code></pre>
+        </section>
+
+        <section class="panel">
+          <h2>Operating rules</h2>
+          <ul class="checklist">
+            <li>Fix seeds for smoke tests and published runs</li>
+            <li>Check in only source and curated milestone artifacts</li>
+            <li>Keep generated outputs under `artifacts/` and rebuild the site from source</li>
+            <li>Prefer short-lived branches and PR review before merge</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

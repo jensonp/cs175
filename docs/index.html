@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CS175 Research Project</title>
+    <link rel="stylesheet" href="assets/site.css" />
+    <script defer src="assets/site.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div>
+          <p class="eyebrow">CS175 Research Site</p>
+          <h1>Confidence-aware scheduling for online cloud workloads</h1>
+          <p class="lede">
+            A small static research site for a theory-forward CS175 project:
+            formal model, milestones, reproducibility, and experiment results.
+          </p>
+        </div>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="index.html" aria-current="page">Overview</a>
+          <a href="model-summary.html">Model</a>
+          <a href="milestones.html">Milestones</a>
+          <a href="reproducibility.html">Reproducibility</a>
+          <a href="results.html">Results</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <section class="hero-grid">
+          <article class="panel panel-accent">
+            <h2>Project shape</h2>
+            <p>
+              A learning-augmented online scheduling project on identical
+              parallel machines with soft deadlines, predicted durations, and
+              confidence scores.
+            </p>
+            <p>
+              The site is intentionally static so GitHub Pages can host it
+              directly, while Python scripts later populate the results pages
+              with JSON or HTML artifacts.
+            </p>
+          </article>
+          <article class="panel">
+            <h2>What lives here</h2>
+            <ul class="checklist">
+              <li>Formal problem statement and assumptions</li>
+              <li>Milestone plan for proposal through final report</li>
+              <li>Reproducibility notes and run commands</li>
+              <li>Experiment dashboards and embedded artifacts</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="panel">
+          <h2>Quick links</h2>
+          <div class="card-grid">
+            <a class="card" href="model-summary.html">
+              <h3>Model summary</h3>
+              <p>Variables, objective, and the confidence-aware scheduler.</p>
+            </a>
+            <a class="card" href="results.html">
+              <h3>Experiments and results</h3>
+              <p>Embed generated JSON or HTML outputs as they are produced.</p>
+            </a>
+            <a class="card" href="reproducibility.html">
+              <h3>Reproducibility</h3>
+              <p>Environment, run conventions, and output layout.</p>
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
+

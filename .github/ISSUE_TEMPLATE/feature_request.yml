@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a new capability, experiment, or documentation improvement.
+body:
+  - type: markdown
+    attributes:
+      value: Use this for scoped additions to the project or repo automation.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What do you want to add?
+      placeholder: Describe the feature or change.
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why this matters
+      description: What value does it provide?
+      placeholder: Explain the impact, user, or research value.
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: Success criteria
+      description: How would we know it is done?
+      placeholder: Include tests, plots, docs, or behavior changes.
+    validations:
+      required: true
