@@ -13,21 +13,21 @@ The slides use several symbols informally. This reconstruction uses one consiste
 
 | Symbol | Meaning |
 | --- | --- |
-| `O_t` | observation available at time `t` |
-| `S_t` | state representation used by the agent at time `t` |
-| `A_t` | action selected at time `t` |
-| `R_{t+1}` | reward observed after taking action `A_t` |
-| `H_t` | full history up to time `t` |
-| `\pi(a \mid s)` | policy, meaning the probability of action `a` in state `s` |
-| `G_t` | discounted return starting at time `t` |
-| `v_\pi(s)` | state value under policy `\pi` |
-| `q_\pi(s,a)` | action value under policy `\pi` |
-| `Q(s,a)` | learned estimate of an action value |
-| `\gamma` | discount factor |
-| `\alpha` | learning rate |
-| `\delta` | temporal-difference error |
+| $O_t$ | observation available at time step t |
+| $S_t$ | state representation used by the agent at time step t |
+| $A_t$ | action selected at time step t |
+| $R_{t+1}$ | reward observed after the action at that time step |
+| $H_t$ | full history up to time step t |
+| $\pi(a \mid s)$ | policy: probability of choosing action a in state s |
+| $G_t$ | discounted return starting at time step t |
+| $v_\pi(s)$ | state value under the current policy |
+| $q_\pi(s,a)$ | action value under the current policy |
+| $Q(s,a)$ | learned estimate of an action value |
+| $\gamma$ | discount factor |
+| $\alpha$ | learning rate |
+| $\delta$ | temporal-difference error |
 
-The slides sometimes write rewards as `R_t` or `r_t`. Here I use `R_{t+1}` because the reward is received after action `A_t`.
+The slides sometimes index rewards differently. In these notes, reward notation always uses the next time step after the action.
 
 ## 1. Why Reinforcement Learning Is Different
 
@@ -117,8 +117,8 @@ The lecture asks a design question before it introduces algorithms:
 
 The answer depends on the **state** representation.
 
-- **History** `H_t`: everything that has happened so far.
-- **State** `S_t`: a summary of that history used for decision making.
+- **History** $H_t$: everything that has happened so far.
+- **State** $S_t$: a summary of that history used for decision making.
 
 The source slides write the history as
 
@@ -134,9 +134,9 @@ $$
 
 Possible state choices from the lecture:
 
-- `O_t`
-- `O_t, R_t`
-- `A_{t-1}, O_t, R_t`
+- $O_t$
+- $O_t, R_t$
+- $A_{t-1}, O_t, R_t$
 - a short window of recent observations
 
 This leads to the **Markov property**:
@@ -185,7 +185,7 @@ $$
 G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + \cdots
 $$
 
-where `0 \le \gamma \le 1` is the **discount factor**.
+where $0 \le \gamma \le 1$ is the **discount factor**.
 
 You can derive the recursive form by factoring out the first reward:
 
@@ -225,9 +225,9 @@ The lecture next shifts from "which policy is best?" to "how do we estimate how 
 Definitions:
 
 - **Episode**: one complete run of interaction, usually from a start state to termination.
-- **Trajectory**: the sequence `S_t, A_t, R_{t+1}, S_{t+1}, ...` observed during an episode.
-- **State value** `v_\pi(s)`: expected return starting from state `s` and following policy `\pi`.
-- **Action value** `q_\pi(s,a)`: expected return starting from state `s`, taking action `a`, then following policy `\pi`.
+- **Trajectory**: the sequence $S_t, A_t, R_{t+1}, S_{t+1}, \ldots$ observed during an episode.
+- **State value** $v_\pi(s)$: expected return starting from state $s$ and following policy $\pi$.
+- **Action value** $q_\pi(s,a)$: expected return starting from state $s$, taking action $a$, then following policy $\pi$.
 
 The link between them is
 
@@ -237,7 +237,7 @@ $$
 
 That equation says state values are policy-weighted averages of action values. Going the other direction is harder because you need a transition model.
 
-- **PTM** or **probabilistic transition model**: the distribution `P(s', r \mid s, a)` describing how the environment evolves.
+- **PTM** or **probabilistic transition model**: the distribution $P(s', r \mid s, a)$ describing how the environment evolves.
 
 If the PTM is unknown, learning action values directly is often simpler than trying to compute them from state values.
 
@@ -293,7 +293,7 @@ This leads to **policy iteration**:
 
 ![Bellman and policy iteration loop](assets/figures/bellman-policy-iteration-loop.svg)
 
-1. evaluate the current policy to estimate `v_\pi` or `q_\pi`
+1. evaluate the current policy to estimate $v_\pi$ or $q_\pi$
 2. improve the policy by acting greedily with respect to those estimates
 3. repeat until the policy stops changing
 
@@ -303,7 +303,7 @@ The lecture ends this block with **tabular** Q-learning:
 
 - **Tabular** means there is one explicit table entry for each discrete state-action pair.
 
-When the state and action spaces are small, the table stores `Q(s,a)` directly. The one-step update rule comes from turning Bellman optimality into an incremental learning rule:
+When the state and action spaces are small, the table stores $Q(s,a)$ directly. The one-step update rule comes from turning Bellman optimality into an incremental learning rule:
 
 $$
 Q(s,a) \leftarrow Q(s,a) + \alpha \delta
@@ -327,7 +327,7 @@ The Q-learning cycle is:
 
 1. sample experience
 2. update the value estimate
-3. improve the policy by being greedier with respect to `Q`
+3. improve the policy by being greedier with respect to $Q$
 
 The greedy policy induced by a Q-function is
 
@@ -337,7 +337,7 @@ $$
 
 But a purely greedy learner stops exploring too early, so the lecture introduces **epsilon-greedy** exploration.
 
-- **Epsilon-greedy**: choose the greedy action with probability `1 - \epsilon`, otherwise choose a random action.
+- **Epsilon-greedy**: choose the greedy action with probability $1 - \epsilon$, otherwise choose a random action.
 
 Formally,
 
@@ -382,10 +382,10 @@ $$
 This is still model-free:
 
 - **Model-free** means the algorithm learns from sampled transitions without an explicit PTM.
-- **Bootstrapping** means an update target is built partly from the current value estimate itself, as in `r + \gamma \max_{a'} Q(s',a')`.
+- **Bootstrapping** means an update target is built partly from the current value estimate itself, as in $r + \gamma \max_{a'} Q(s',a')$.
 
 > Intuition:
-> Q-learning does not need to know how the world works in advance. It only needs experience tuples `(s, a, r, s')` and a way to revise its estimates.
+> Q-learning does not need to know how the world works in advance. It only needs experience tuples $(s, a, r, s')$ and a way to revise its estimates.
 
 ## 7. Why Tabular Methods Break, Then Function Approximation
 
@@ -414,7 +414,7 @@ $$
 \hat q(s,a; w) \approx q_\pi(s,a),
 $$
 
-where `w` are the model parameters.
+where $w$ are the model parameters.
 
 Why this helps:
 
@@ -440,7 +440,7 @@ Concrete source illustration:
 
 ![Atari screenshot and raw-pixel state motivation](assets/extracted/asset-047.jpg)
 
-A **deep Q-network** or **DQN** uses a neural network `Q(s,a; w)` that takes the observation as input and outputs one value per action.
+A **deep Q-network** or **DQN** uses a neural network $Q(s,a; w)$ that takes the observation as input and outputs one value per action.
 
 The high-level workflow is:
 
@@ -454,7 +454,7 @@ $$
 y = r + \gamma \max_{a'} Q(s',a'; w^-),
 $$
 
-where `w^-` is the **target network** parameter set.
+where $w^-$ is the **target network** parameter set.
 
 - **Target network**: a delayed copy of the online network used only for target computation.
 
@@ -479,7 +479,7 @@ Replay helps because it
 
 Without a target network, the network would be changing the value estimate and the target at the same time. That creates unstable feedback because the learner is chasing a moving target that it is also producing.
 
-Using `w^-` slows the movement of the target and stabilizes optimization.
+Using $w^-$ slows the movement of the target and stabilizes optimization.
 
 > Pitfall:
 > Bootstrapping is powerful because it learns from partial trajectories, but it is also dangerous because errors can feed back into future targets. Replay and target networks are the lecture's main fixes for that instability.
@@ -488,9 +488,9 @@ Using `w^-` slows the movement of the target and stabilizes optimization.
 
 Slides covered: `46-49`
 
-Value-based methods learn `Q` and then derive a policy by maximization. **Policy-gradient** methods learn the policy directly.
+Value-based methods learn $Q$ and then derive a policy by maximization. **Policy-gradient** methods learn the policy directly.
 
-- **Policy gradient**: optimize the parameters of `\pi_\theta(a \mid s)` by maximizing expected return.
+- **Policy gradient**: optimize the parameters of $\pi_\theta(a \mid s)$ by maximizing expected return.
 
 The objective is
 
@@ -500,7 +500,7 @@ $$
 
 ### Log-derivative trick
 
-Let `\tau` be a trajectory and `R(\tau)` its return. Then
+Let $\tau$ be a trajectory and $R(\tau)$ its return. Then
 
 $$
 J(\theta) = \sum_\tau p_\theta(\tau) R(\tau).
@@ -528,7 +528,7 @@ $$
 = \mathbb{E}_{\pi_\theta}\!\left[\nabla_\theta \log p_\theta(\tau)\, R(\tau)\right].
 $$
 
-Because only the policy terms depend on `\theta`, the gradient becomes
+Because only the policy terms depend on $\theta$, the gradient becomes
 
 $$
 \nabla_\theta J(\theta)
@@ -554,14 +554,14 @@ Slides covered: `50-52`
 
 REINFORCE is correct but high variance. The lecture's fix is **actor-critic**.
 
-- **Actor**: the policy model `\pi_\theta(a \mid s)`.
+- **Actor**: the policy model $\pi_\theta(a \mid s)$.
 - **Critic**: a value estimator that evaluates states or actions and supplies a lower-variance learning signal.
 
 Workflow:
 
 ![Actor-critic workflow](assets/figures/actor-critic-workflow.svg)
 
-If the critic estimates a state value `V_w(s)`, then the critic's one-step TD error is
+If the critic estimates a state value $V_w(s)$, then the critic's one-step TD error is
 
 $$
 \delta_t = R_{t+1} + \gamma V_w(S_{t+1}) - V_w(S_t).
@@ -581,7 +581,7 @@ $$
 
 Why this reduces variance:
 
-- REINFORCE waits for the whole return `G_t`
+- REINFORCE waits for the whole return $G_t$
 - actor-critic replaces that noisy return with a learned local estimate of whether the action was better or worse than expected
 
 The lecture also links to a reference overview:
@@ -613,7 +613,7 @@ Slides `55-58` make a critical distinction:
 - **Reward** is immediate.
 - **Q-value** is long-term.
 
-Formally, `Q(s,a)` is the expected return after taking action `a` in state `s`. That is why an action can have pleasant immediate reward but poor Q-value, or unpleasant immediate reward but high Q-value.
+Formally, $Q(s,a)$ is the expected return after taking action $a$ in state $s$. That is why an action can have pleasant immediate reward but poor Q-value, or unpleasant immediate reward but high Q-value.
 
 The lecture's "party versus study" example is exactly this:
 
@@ -639,11 +639,11 @@ Suppose you give positive reward whenever the agent gets closer to the goal. Tha
 
 That is **reward hacking**: the agent exploits the literal reward definition without solving the intended task.
 
-In navigation tasks, a small negative step cost such as `-1` per move often works better because it gives the agent a reason to terminate quickly.
+In navigation tasks, a small negative step cost such as $-1$ per move often works better because it gives the agent a reason to terminate quickly.
 
 ### Gridworld reward thresholds
 
-Slide `59` shows that optimal policies in the classic stochastic 4x3 gridworld change when the per-step reward `r` changes.
+Slide `59` shows that optimal policies in the classic stochastic 4x3 gridworld change when the per-step reward $r$ changes.
 
 ![Gridworld policy regions](assets/figures/gridworld-policy-regions.svg)
 
@@ -653,18 +653,18 @@ $$
 Q^*(s,a_1; r) = Q^*(s,a_2; r).
 $$
 
-For a candidate route of length `T` that eventually reaches a terminal reward `R_{\text{terminal}}`, the expected return has the form
+For a candidate route of length $T$ that eventually reaches a terminal reward $R_{\text{terminal}}$, the expected return has the form
 
 $$
 G(r) = \sum_{t=0}^{T-1} \gamma^t r + \gamma^T R_{\text{terminal}},
 $$
 
-with additional stochastic terms when slippage can send the agent toward the `-1` square. The thresholds on the slide arise by solving equalities of that form between competing routes:
+with additional stochastic terms when slippage can send the agent toward the $-1$ square. The thresholds on the slide arise by solving equalities of that form between competing routes:
 
-- `r < -1.6497`
-- `-0.7311 < r < -0.4526`
-- `-0.0274 < r < 0`
-- `r > 0`
+- $r < -1.6497$
+- $-0.7311 < r < -0.4526$
+- $-0.0274 < r < 0$
+- $r > 0$
 
 You do not need to memorize the constants. The real lesson is that changing the living reward changes the balance between speed, safety, and even the incentive to terminate.
 
@@ -674,7 +674,7 @@ Slide `60` switches from control to evaluation:
 
 ![Random policy gridworld](assets/figures/random-policy-gridworld.svg)
 
-This is an **undiscounted episodic MDP** with `\gamma = 1`, reward `-1` per step, and a uniform random policy:
+This is an **undiscounted episodic MDP** with $\gamma = 1$, reward $-1$ per step, and a uniform random policy:
 
 $$
 \pi(n \mid s) = \pi(e \mid s) = \pi(s \mid s) = \pi(w \mid s) = 0.25.
@@ -687,7 +687,7 @@ v_\pi(s)
 = \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)\,[r + v_\pi(s')].
 $$
 
-Because every move costs `-1`, states farther from termination have more negative value.
+Because every move costs $-1$, states farther from termination have more negative value.
 
 ## 12. On-Policy vs Off-Policy, SARSA vs Q-Learning
 
@@ -732,7 +732,7 @@ $$
 a_t = \arg\max_a \left(Q(s_t,a) + \lambda h(a)\right),
 $$
 
-where `h(a)` is a hand-designed guidance term and `\lambda` controls how strongly it is used.
+where $h(a)$ is a hand-designed guidance term and $\lambda$ controls how strongly it is used.
 
 The conceptual separation remains the same:
 
@@ -784,8 +784,8 @@ $$
 
 One clean interpretation is:
 
-- `2^4` cases when the four neighbors are just binary terrain types
-- `4 \times 2^3` additional cases when one neighbor is the goal and the other three remain binary
+- $2^4$ cases when the four neighbors are just binary terrain types
+- $4 \times 2^3$ additional cases when one neighbor is the goal and the other three remain binary
 
 So the total is
 
@@ -825,7 +825,7 @@ That is why the lecture concludes with **non-tabular Q-learning** and, in modern
 - **Critic**: the value estimator in actor-critic methods.
 - **Environment**: the external system the agent interacts with.
 - **Episode**: one complete interaction sequence from start to termination.
-- **Epsilon-greedy**: exploration rule that is greedy with probability `1-\epsilon` and random with probability `\epsilon`.
+- **Epsilon-greedy**: exploration rule that is greedy with probability $1-\epsilon$ and random with probability $\epsilon$.
 - **Experience replay**: training on minibatches sampled from a stored transition buffer.
 - **Function approximation**: representing a value function with a parameterized model instead of a table.
 - **History**: the full sequence of observations, rewards, and actions seen so far.
@@ -837,19 +837,19 @@ That is why the lecture concludes with **non-tabular Q-learning** and, in modern
 - **On-policy**: learning about the same policy that generates the data.
 - **Policy**: a rule that maps states to actions or action probabilities.
 - **Policy gradient**: a direct gradient-based method for optimizing policy parameters.
-- **PTM**: probabilistic transition model `P(s',r \mid s,a)`.
-- **Q-value**: expected return from taking action `a` in state `s`.
+- **PTM**: probabilistic transition model $P(s',r \mid s,a)$.
+- **Q-value**: expected return from taking action $a$ in state $s$.
 - **REINFORCE**: Monte Carlo policy-gradient algorithm using sampled returns.
 - **Reward**: immediate scalar feedback from the environment.
 - **Reward hacking**: exploiting the literal reward signal without solving the intended task.
 - **Return**: discounted sum of future rewards.
-- **SARSA**: on-policy TD control method using `S, A, R, S', A'`.
+- **SARSA**: on-policy TD control method using $S, A, R, S', A'$.
 - **State**: internal representation used for decision making.
 - **Tabular**: storing one value for each discrete state or state-action pair.
 - **Target network**: a delayed copy of the online Q-network used to stabilize targets.
 - **TD error**: difference between a target and the current estimate.
 - **Trajectory**: observed sequence of states, actions, and rewards.
-- **Value**: expected return under a policy, typically `v_\pi(s)` or `q_\pi(s,a)`.
+- **Value**: expected return under a policy, typically $v_\pi(s)$ or $q_\pi(s,a)$.
 
 ## Slide Coverage Map
 
