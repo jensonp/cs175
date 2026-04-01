@@ -1,5 +1,14 @@
 .DS_Store
+.venv/
 tmp/
 output/lecture02/assets/tmp/
 output/lecture02/assets/pages/
 output/lecture02/drafts/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.mypy_cache/
+artifacts/
+site/
+dist/
