@@ -1,0 +1,40 @@
+digraph DQNWorkflow {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.25",
+    nodesep="0.45",
+    ranksep="0.75"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=12,
+    margin="0.18,0.12",
+    color="#334155",
+    fillcolor="#f8fafc"
+  ];
+  edge [
+    fontname="Helvetica",
+    fontsize=11,
+    color="#2563eb",
+    arrowsize=0.75,
+    penwidth=2.0
+  ];
+
+  state [label="Input state\n4 stacked frames"];
+  online [label="Online Q-network\nQ(s,a; w)", fillcolor="#dbeafe", color="#1d4ed8"];
+  policy [label="epsilon-greedy action\na_t", fillcolor="#eff6ff"];
+  env [label="Environment", fillcolor="#fff7ed", color="#c77700"];
+  replay [label="Replay buffer", fillcolor="#ecfccb", color="#4d7c0f"];
+  sample [label="Sample minibatch", fillcolor="#ecfccb", color="#4d7c0f"];
+  target [label="Target network\nQ(s,a; w^-)", fillcolor="#ede9fe", color="#6d28d9"];
+  loss [label="Squared TD error\nloss(w)", fillcolor="#fce7f3", color="#be185d"];
+  sync [label="Periodic sync\nw^- <- w", fillcolor="#ede9fe", color="#6d28d9"];
+
+  state -> online -> policy -> env -> replay -> sample -> target -> loss -> online;
+  target -> loss [style=dashed, arrowhead=none];
+  online -> sync [style=dashed, color="#6d28d9"];
+  sync -> target [style=dashed, color="#6d28d9"];
+}

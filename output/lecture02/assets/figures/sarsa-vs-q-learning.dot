@@ -1,0 +1,60 @@
+digraph SarsaVsQLearning {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.25",
+    nodesep="0.55",
+    ranksep="0.8"
+  ];
+  node [
+    shape=circle,
+    style="filled",
+    fontname="Helvetica",
+    fontsize=12,
+    margin="0.08",
+    color="#334155",
+    fillcolor="#f8fafc"
+  ];
+  edge [
+    fontname="Helvetica",
+    fontsize=11,
+    arrowsize=0.75,
+    penwidth=2.0
+  ];
+
+  subgraph cluster_sarsa {
+    label="On-policy SARSA";
+    color="#60a5fa";
+    fontname="Helvetica-Bold";
+    fontsize=14;
+    style="rounded";
+
+    s1 [label="S,A", fillcolor="#dbeafe"];
+    r1 [label="R", shape=box, fillcolor="#eff6ff"];
+    sp1 [label="S'", fillcolor="#dbeafe"];
+    ap1 [label="A'", fillcolor="#dbeafe"];
+    tgt1 [label="target\nR + gamma Q(S',A')", shape=box, fillcolor="#eff6ff"];
+
+    s1 -> r1 -> sp1 -> ap1;
+    ap1 -> tgt1 [style=dashed, arrowhead=none];
+  }
+
+  subgraph cluster_q {
+    label="Off-policy Q-learning";
+    color="#f59e0b";
+    fontname="Helvetica-Bold";
+    fontsize=14;
+    style="rounded";
+
+    s2 [label="S,A", fillcolor="#ffedd5"];
+    r2 [label="R", shape=box, fillcolor="#fff7ed"];
+    sp2 [label="S'", fillcolor="#ffedd5"];
+    max2 [label="max_a Q(S',a)", shape=box, fillcolor="#fff7ed"];
+    tgt2 [label="target\nR + gamma max_a Q(S',a)", shape=box, fillcolor="#fff7ed"];
+
+    s2 -> r2 -> sp2 -> max2;
+    max2 -> tgt2 [style=dashed, arrowhead=none];
+  }
+
+  note [label="Same sample\nDifferent backup target", shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#64748b"];
+}

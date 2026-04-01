@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+  <style>
+    .title { font: 30px Helvetica, Arial, sans-serif; fill: #1b1f23; }
+    .subtitle { font: 18px Helvetica, Arial, sans-serif; fill: #374151; }
+    .label { font: 20px Helvetica, Arial, sans-serif; fill: #111827; }
+    .small { font: 16px Helvetica, Arial, sans-serif; fill: #374151; }
+    .state { font: 20px Helvetica, Arial, sans-serif; fill: #111827; text-anchor: middle; dominant-baseline: middle; }
+    .gridline { stroke: #475569; stroke-width: 2; }
+  </style>
+  <rect x="0" y="0" width="900" height="420" fill="#ffffff"/>
+  <text x="450" y="40" text-anchor="middle" class="title">Evaluating a Random Policy in a Small Gridworld</text>
+  <text x="450" y="68" text-anchor="middle" class="subtitle">Uniform random behavior turns the Bellman expectation equation into a linear system.</text>
+
+  <g transform="translate(60 110)">
+    <text x="0" y="0" class="label">Setup</text>
+    <text x="0" y="36" class="small">Undiscounted episodic MDP, gamma = 1</text>
+    <text x="0" y="62" class="small">Reward = -1 on every transition until termination</text>
+    <text x="0" y="88" class="small">Actions that leave the grid keep the state unchanged</text>
+    <text x="0" y="114" class="small">pi(n|s) = pi(e|s) = pi(s|s) = pi(w|s) = 0.25</text>
+  </g>
+
+  <g transform="translate(470 100)">
+    <rect x="0" y="0" width="240" height="240" fill="#ffffff" stroke="#475569" stroke-width="2"/>
+    <line x1="60" y1="0" x2="60" y2="240" class="gridline"/>
+    <line x1="120" y1="0" x2="120" y2="240" class="gridline"/>
+    <line x1="180" y1="0" x2="180" y2="240" class="gridline"/>
+    <line x1="0" y1="60" x2="240" y2="60" class="gridline"/>
+    <line x1="0" y1="120" x2="240" y2="120" class="gridline"/>
+    <line x1="0" y1="180" x2="240" y2="180" class="gridline"/>
+    <rect x="0" y="0" width="60" height="60" fill="#d1d5db"/>
+    <rect x="180" y="180" width="60" height="60" fill="#d1d5db"/>
+    <text x="90" y="30" class="state">1</text>
+    <text x="150" y="30" class="state">2</text>
+    <text x="210" y="30" class="state">3</text>
+    <text x="30" y="90" class="state">4</text>
+    <text x="90" y="90" class="state">5</text>
+    <text x="150" y="90" class="state">6</text>
+    <text x="210" y="90" class="state">7</text>
+    <text x="30" y="150" class="state">8</text>
+    <text x="90" y="150" class="state">9</text>
+    <text x="150" y="150" class="state">10</text>
+    <text x="210" y="150" class="state">11</text>
+    <text x="30" y="210" class="state">12</text>
+    <text x="90" y="210" class="state">13</text>
+    <text x="150" y="210" class="state">14</text>
+  </g>
+
+  <g transform="translate(745 150)">
+    <text x="0" y="0" class="small">Actions</text>
+    <line x1="34" y1="24" x2="34" y2="84" stroke="#111827" stroke-width="3"/>
+    <line x1="4" y1="54" x2="64" y2="54" stroke="#111827" stroke-width="3"/>
+    <polygon points="34,12 28,24 40,24" fill="#111827"/>
+    <polygon points="34,96 28,84 40,84" fill="#111827"/>
+    <polygon points="-8,54 4,48 4,60" fill="#111827"/>
+    <polygon points="76,54 64,48 64,60" fill="#111827"/>
+  </g>
+
+  <g transform="translate(60 320)">
+    <rect x="0" y="0" width="780" height="64" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="20" y="28" class="small">Bellman expectation equation:</text>
+    <text x="20" y="52" class="small">v_pi(s) = sum_a pi(a|s) sum_(s',r) p(s',r|s,a) [ r + gamma v_pi(s') ]</text>
+    <text x="530" y="52" class="small">With random actions, every available move contributes equally.</text>
+  </g>
+</svg>

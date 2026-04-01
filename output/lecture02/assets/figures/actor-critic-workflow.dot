@@ -1,0 +1,42 @@
+digraph ActorCriticWorkflow {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.25",
+    nodesep="0.45",
+    ranksep="0.8"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=12,
+    margin="0.18,0.12",
+    color="#334155",
+    fillcolor="#f8fafc"
+  ];
+  edge [
+    fontname="Helvetica",
+    fontsize=11,
+    arrowsize=0.75,
+    penwidth=2.0
+  ];
+
+  state [label="State s_t", fillcolor="#e0f2fe", color="#0284c7"];
+  actor [label="Actor\npolicy pi(a|s; theta)", fillcolor="#dbeafe", color="#2563eb"];
+  action [label="Action a_t", fillcolor="#eff6ff"];
+  env [label="Environment", fillcolor="#fff7ed", color="#c77700"];
+  critic [label="Critic\nV(s; phi) or Q(s,a; phi)", fillcolor="#ede9fe", color="#7c3aed"];
+  td [label="TD error delta_t\nr + gamma V(s') - V(s)", fillcolor="#fce7f3", color="#be185d"];
+  update_actor [label="Update actor\ngrad log pi * delta_t", fillcolor="#dbeafe", color="#2563eb"];
+  update_critic [label="Update critic\nminimize delta_t^2", fillcolor="#ede9fe", color="#7c3aed"];
+
+  state -> actor -> action -> env -> state;
+  env -> critic [label="r_t, s_{t+1}"];
+  critic -> td [label="value estimate"];
+  env -> td [label="reward + next state", style=dashed, color="#9ca3af"];
+  td -> update_actor;
+  td -> update_critic;
+  update_actor -> actor [label="policy step"];
+  update_critic -> critic [label="value step"];
+}

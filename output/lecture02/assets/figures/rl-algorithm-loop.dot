@@ -1,0 +1,37 @@
+digraph RLAlgorithmLoop {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.25",
+    nodesep="0.45",
+    ranksep="0.75"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=13,
+    margin="0.18,0.12",
+    color="#495869",
+    fillcolor="#f6f8fb"
+  ];
+  edge [
+    fontname="Helvetica",
+    fontsize=12,
+    color="#2d6cdf",
+    arrowsize=0.8,
+    penwidth=2.0
+  ];
+
+  policy [label="Current policy pi_k"];
+  sample [label="Generate experience\n(s, a, r, s')"];
+  estimate [label="Estimate values\nV^pi or Q^pi"];
+  improve [label="Improve policy\nargmax or gradient step"];
+  repeat [label="Repeat\nnew policy pi_{k+1}", fillcolor="#eef7ef", color="#4d8a55"];
+
+  policy -> sample;
+  sample -> estimate;
+  estimate -> improve;
+  improve -> repeat;
+  repeat -> policy [label="loop"];
+}

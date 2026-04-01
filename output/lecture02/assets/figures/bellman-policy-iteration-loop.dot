@@ -1,0 +1,35 @@
+digraph BellmanPolicyIterationLoop {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.25",
+    nodesep="0.5",
+    ranksep="0.8"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=13,
+    margin="0.18,0.12",
+    color="#4b5563",
+    fillcolor="#f8fafc"
+  ];
+  edge [
+    fontname="Helvetica",
+    fontsize=12,
+    color="#4f46e5",
+    arrowsize=0.8,
+    penwidth=2.0
+  ];
+
+  policy [label="Policy pi_k"];
+  eval [label="Policy evaluation\nBellman expectation backup\nV^pi, Q^pi"];
+  improve [label="Policy improvement\nuse Bellman optimality\npi_{k+1}(s) = argmax_a q(s,a)"];
+  model [label="Transition model\nP(s'|s,a) and rewards", fillcolor="#fff7ed", color="#c77700"];
+
+  policy -> eval;
+  model -> eval [style=dashed, color="#9ca3af"];
+  eval -> improve [label="compute values"];
+  improve -> policy [label="repeat until stable"];
+}
