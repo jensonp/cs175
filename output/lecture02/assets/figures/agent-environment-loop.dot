@@ -23,12 +23,28 @@ digraph AgentEnvironmentLoop {
     penwidth=2.1
   ];
 
-  agent [label="Agent\npolicy pi(a|s)\nchoose action"];
-  env [label="Environment\ndynamics P(s'|s,a)\ncompute next state"];
-  obs [label="Observation O_t\nReward R_t", fillcolor="#fff7e6", color="#c77b00"];
+  agent [label=<
+    <B>Agent</B><BR/>
+    policy &pi;(a | s)<BR/>
+    choose action
+  >];
+  env [label=<
+    <B>Environment</B><BR/>
+    dynamics P(s' | s, a)<BR/>
+    compute next state
+  >];
+  obs [label=<
+    <B>Observation</B> O<SUB>t</SUB><BR/>
+    <B>Reward</B> R<SUB>t</SUB>
+  >, fillcolor="#fff7e6", color="#c77b00"];
 
-  agent -> env [label="action A_t", minlen=2];
-  env -> agent [label="observation O_{t+1}\nreward R_{t+1}", minlen=2];
+  agent -> env [label=<
+    action A<SUB>t</SUB>
+  >, minlen=2];
+  env -> agent [label=<
+    observation O<SUB>t+1</SUB><BR/>
+    reward R<SUB>t+1</SUB>
+  >, minlen=2];
   env -> obs [style=dashed, color="#7a7a7a", arrowhead=none];
   obs -> agent [style=dashed, color="#7a7a7a", arrowhead=none];
 }

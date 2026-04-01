@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reinforcement Learning Foundations</title>
+  <link rel="stylesheet" href="comprehensive-print.css">
+  <script>
+    window.__MATHJAX_READY__ = false;
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\(', '\)']], displayMath: [['$$', '$$'], ['\[', '\]']] },
+      svg: { fontCache: 'global' },
+      startup: { typeset: false }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script>
+    window.addEventListener('load', async () => {
+      if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
+        await MathJax.startup.promise;
+        await MathJax.typesetPromise();
+        window.__MATHJAX_READY__ = true;
+      }
+    });
+  </script>
+</head>
+<body>
+  <main class="content">
+<h1 id="reinforcement-learning-foundations">Reinforcement Learning Foundations</h1>
+<p>This chapter presents a self-contained treatment of reinforcement learning at the level of explicit definitions, derivations, and justifications. The objective is to state the underlying optimization problems precisely, derive the central equations step by step, and separate formal arguments from optional illustrations. When a formula is written as a finite sum, the text is assuming finite state and action spaces. When a continuous space is intended, the corresponding sums are to be replaced by integrals and densities under the same definitions.</p>
+<h2 id="1-formal-problem-setup-and-agent-environment-interaction">1. Formal Problem Setup and Agent-Environment Interaction</h2>
+<h3 id="11-problem-statement">1.1 Problem statement</h3>
+<p>Let time be discrete, with index set</p>
+$$
+t \in \{0,1,2,\ldots\}.
+$$
+<p>At each time step, an agent interacts with an environment. The environment reveals information, the agent chooses an action, and the environment returns a reward and the information needed for the next step. The problem is to specify a rule for choosing actions so that a long-run performance objective is maximized.</p>
+<p>The primitive random variables are:</p>
+<ul>
+<li>$O_t$, the observation available at time $t$</li>
+<li>$A_t$, the action chosen at time $t$</li>
+<li>$R_{t+1}$, the reward observed after the choice of $A_t$</li>
+</ul>
+<p>The reward index is shifted by one because the action is chosen first and the reward is observed after the environment reacts. If the action at time $t$ is $A_t$, then the reward caused by that action is $R_{t+1}$.</p>
+<p>The interaction order is therefore:</p>
+<ol>
+<li>the environment reveals information available at time $t$</li>
+<li>the agent chooses $A_t$</li>
+<li>the environment generates the reward $R_{t+1}$ and the information needed for time $t+1$</li>
+</ol>
+<p>At this level of abstraction, the environment is the entire stochastic mechanism that maps past interaction to future observations and rewards. The agent is the decision rule applied to the information available so far.</p>
+<h3 id="12-policies">1.2 Policies</h3>
+<p>A policy is a rule for selecting actions. If the decision rule depends on the current information summary $x$, then a deterministic policy is a function</p>
+$$
+\pi : x \mapsto a,
+$$
+<p>while a stochastic policy is a conditional distribution</p>
+$$
+\pi(a \mid x) = P(A_t = a \mid X_t = x).
+$$
+<p>The choice of $X_t$ is deferred until the state construction in Section 3. For the moment, the only point that must be fixed is that a policy is the object being optimized.</p>
+<h3 id="13-notation-used-throughout">1.3 Notation used throughout</h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$O_t$</td>
+<td>observation at time $t$</td>
+</tr>
+<tr>
+<td>$S_t$</td>
+<td>state representation used for decision making at time $t$</td>
+</tr>
+<tr>
+<td>$A_t$</td>
+<td>action at time $t$</td>
+</tr>
+<tr>
+<td>$R_{t+1}$</td>
+<td>reward after action $A_t$</td>
+</tr>
+<tr>
+<td>$H_t$</td>
+<td>interaction history available up to time $t$</td>
+</tr>
+<tr>
+<td>$\pi(a \mid s)$</td>
+<td>policy probability of action $a$ in state $s$</td>
+</tr>
+<tr>
+<td>$G_t$</td>
+<td>discounted return from time $t$ onward</td>
+</tr>
+<tr>
+<td>$V^\pi(s)$</td>
+<td>state value under policy $\pi$</td>
+</tr>
+<tr>
+<td>$Q^\pi(s,a)$</td>
+<td>action value under policy $\pi$</td>
+</tr>
+<tr>
+<td>$A^\pi(s,a)$</td>
+<td>advantage of action $a$ under policy $\pi$</td>
+</tr>
+<tr>
+<td>$P(s', r \mid s, a)$</td>
+<td>transition-reward law</td>
+</tr>
+<tr>
+<td>$\gamma$</td>
+<td>discount factor</td>
+</tr>
+<tr>
+<td>$\alpha$</td>
+<td>step size</td>
+</tr>
+<tr>
+<td>$\delta_t$</td>
+<td>temporal-difference error at time $t$</td>
+</tr>
+</tbody>
+</table>
+<h3 id="14-optional-illustrations">1.4 Optional illustrations</h3>
+<p>The formal interaction loop is shown below.</p>
+<p><img alt="Agent-environment loop" src="assets/figures/agent-environment-loop.svg"></p>
+<p>Optional illustration. In Atari, the observation is a pixel array, the action is a controller input, and the reward is the score change returned by the game engine.</p>
+<p><img alt="Atari example" src="assets/extracted/asset-047.jpg"></p>
+<p>Optional illustration. In robotic control, delayed consequences are often more important than immediate reward. A control action that looks locally poor may still have higher long-run value because it changes later reachable states.</p>
+<h2 id="2-mathematical-preliminaries">2. Mathematical Preliminaries</h2>
+<h3 id="21-standing-assumptions">2.1 Standing assumptions</h3>
+<p>Unless a subsection states otherwise, the following assumptions are in force:</p>
+<ol>
+<li>State and action spaces are finite whenever a formula is written as a sum over states or actions.</li>
+<li>Rewards are uniformly bounded: there exists $R_{\max} \ge 0$ such that</li>
+</ol>
+$$
+   |R_t| \le R_{\max}
+   $$
+<p>almost surely for every $t$.
+3. The discount factor satisfies</p>
+$$
+   0 \le \gamma < 1
+   $$
+<p>in continuing tasks. Episodic finite-horizon formulas may also allow $\gamma = 1$.
+4. When policy gradients are derived, the trajectory space under discussion is finite-horizon and the policy is differentiable with respect to the parameter vector $\theta$.</p>
+<p>These assumptions are sufficient for the derivations used later in the chapter. They are not the most general assumptions possible, but they permit explicit proofs without measure-theoretic machinery.</p>
+<h3 id="22-expectation">2.2 Expectation</h3>
+<p>Let $X$ be a discrete random variable taking values in a finite or countable set $\mathcal{X}$. Its expectation is</p>
+$$
+\mathbb{E}[X] = \sum_{x \in \mathcal{X}} x P(X = x),
+$$
+<p>provided the sum converges absolutely.</p>
+<p>If $X$ takes the values $0$ and $5$ with probabilities $0.7$ and $0.3$, then</p>
+$$
+\mathbb{E}[X]
+= 0 \cdot 0.7 + 5 \cdot 0.3
+= 0 + 1.5
+= 1.5.
+$$
+<p>Every expectation appearing later in the chapter is obtained by applying this definition to a random quantity induced by a policy and an environment.</p>
+<h3 id="23-conditional-expectation-and-the-law-of-total-expectation">2.3 Conditional expectation and the law of total expectation</h3>
+<p>Let $X$ and $Y$ be discrete random variables. The conditional expectation of $X$ given $Y=y$ is</p>
+$$
+\mathbb{E}[X \mid Y = y]
+= \sum_x x P(X = x \mid Y = y).
+$$
+<p>If one then averages over the possible values of $Y$, one recovers the unconditional expectation:</p>
+$$
+\mathbb{E}[X]
+= \sum_y P(Y=y)\mathbb{E}[X \mid Y=y].
+$$
+<p>To verify this identity, expand the right-hand side:</p>
+$$
+\sum_y P(Y=y)\mathbb{E}[X \mid Y=y]
+= \sum_y P(Y=y)\sum_x x P(X=x \mid Y=y).
+$$
+<p>Use the definition of conditional probability,</p>
+$$
+P(X=x \mid Y=y) = \frac{P(X=x, Y=y)}{P(Y=y)},
+$$
+<p>whenever $P(Y=y) > 0$. Substituting gives</p>
+$$
+\sum_y P(Y=y)\sum_x x P(X=x \mid Y=y)
+= \sum_y \sum_x x P(X=x, Y=y).
+$$
+<p>Interchange the order of summation:</p>
+$$
+\sum_y \sum_x x P(X=x, Y=y)
+= \sum_x x \sum_y P(X=x, Y=y).
+$$
+<p>Finally use</p>
+$$
+\sum_y P(X=x, Y=y) = P(X=x),
+$$
+<p>which yields</p>
+$$
+\sum_x x P(X=x) = \mathbb{E}[X].
+$$
+<p>This identity will be used repeatedly in Bellman-equation derivations.</p>
+<h3 id="24-discounted-sums-and-convergence">2.4 Discounted sums and convergence</h3>
+<p>Let the return from time $t$ be</p>
+$$
+G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}.
+$$
+<p>Under the standing assumptions, this series converges absolutely. The proof is direct. Since $|R_{t+k+1}| \le R_{\max}$ for every $k$,</p>
+$$
+|G_t|
+= \left|\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\right|
+\le \sum_{k=0}^{\infty} \gamma^k |R_{t+k+1}|
+\le \sum_{k=0}^{\infty} \gamma^k R_{\max}.
+$$
+<p>Factor out the constant $R_{\max}$:</p>
+$$
+\sum_{k=0}^{\infty} \gamma^k R_{\max}
+= R_{\max} \sum_{k=0}^{\infty} \gamma^k.
+$$
+<p>The remaining sum is the geometric series:</p>
+$$
+\sum_{k=0}^{\infty} \gamma^k = \frac{1}{1-\gamma},
+$$
+<p>because $0 \le \gamma < 1$. Therefore</p>
+$$
+|G_t| \le \frac{R_{\max}}{1-\gamma}.
+$$
+<p>Hence $G_t$ is well-defined and uniformly bounded.</p>
+<h3 id="25-trajectory-distributions">2.5 Trajectory distributions</h3>
+<p>For a finite-horizon episodic problem with horizon $T$, define a trajectory by</p>
+$$
+\tau = (s_0, a_0, r_1, s_1, a_1, r_2, \ldots, s_{T-1}, a_{T-1}, r_T, s_T).
+$$
+<p>Let $\rho(s_0)$ be the initial-state distribution. Under a policy $\pi$ and environment law $P$, the trajectory probability factorizes as</p>
+$$
+p_\pi(\tau)
+= \rho(s_0)\prod_{t=0}^{T-1}\pi(a_t \mid s_t) P(s_{t+1}, r_{t+1} \mid s_t, a_t).
+$$
+<p>This factorization follows from repeated application of the chain rule for probabilities together with the Markov property of the environment model stated later. When the policy is parameterized by $\theta$, the corresponding distribution is written $p_\theta(\tau)$.</p>
+<h3 id="26-gradients-of-expectations-and-the-log-derivative-identity">2.6 Gradients of expectations and the log-derivative identity</h3>
+<p>Suppose $\mathcal{T}$ is a finite trajectory set and $p_\theta(\tau) > 0$ for every $\tau \in \mathcal{T}$. Let $f(\tau)$ be a trajectory-dependent scalar that does not itself depend on $\theta$. Then</p>
+$$
+\nabla_\theta \sum_{\tau \in \mathcal{T}} p_\theta(\tau) f(\tau)
+= \sum_{\tau \in \mathcal{T}} \nabla_\theta p_\theta(\tau) f(\tau),
+$$
+<p>because differentiation distributes over a finite sum.</p>
+<p>The log-derivative identity is obtained as follows. Start from</p>
+$$
+\log p_\theta(\tau).
+$$
+<p>Differentiate with respect to $\theta$:</p>
+$$
+\nabla_\theta \log p_\theta(\tau)
+= \frac{1}{p_\theta(\tau)} \nabla_\theta p_\theta(\tau).
+$$
+<p>Multiply both sides by $p_\theta(\tau)$:</p>
+$$
+p_\theta(\tau)\nabla_\theta \log p_\theta(\tau)
+= \nabla_\theta p_\theta(\tau).
+$$
+<p>Rewriting the left-hand side gives the standard form</p>
+$$
+\nabla_\theta p_\theta(\tau)
+= p_\theta(\tau)\nabla_\theta \log p_\theta(\tau).
+$$
+<p>This identity is the only calculus fact needed for the REINFORCE derivation later in the chapter.</p>
+<h3 id="27-optional-illustration">2.7 Optional illustration</h3>
+<p>Optional illustration. The bound</p>
+$$
+|G_t| \le \frac{R_{\max}}{1-\gamma}
+$$
+<p>shows that if $R_{\max}=5$ and $\gamma=0.9$, then every discounted return satisfies</p>
+$$
+|G_t| \le \frac{5}{1-0.9} = \frac{5}{0.1} = 50.
+$$
+<p>The statement is an upper bound. It does not say that the return equals $50$. It says the return cannot exceed $50$ in absolute value under the standing assumptions.</p>
+<h2 id="3-states-histories-markov-decision-processes-and-the-objective">3. States, Histories, Markov Decision Processes, and the Objective</h2>
+<h3 id="31-problem-statement">3.1 Problem statement</h3>
+<p>The next task is to specify what information the agent is allowed to condition on and what objective the policy is intended to optimize.</p>
+<h3 id="32-histories-and-state-representations">3.2 Histories and state representations</h3>
+<p>The full interaction history available up to time $t$ is</p>
+$$
+H_t = (O_0, A_0, R_1, O_1, A_1, R_2, \ldots, O_t).
+$$
+<p>The agent may choose to act on a compressed representation of that history rather than on the full history itself. A state representation is a mapping</p>
+$$
+S_t = f(H_t).
+$$
+<p>No Markov assumption has yet been imposed. At this stage, $S_t$ is simply whatever summary the designer or learning algorithm chooses to use for decision making.</p>
+<h3 id="33-markov-property-and-mdp-definition">3.3 Markov property and MDP definition</h3>
+<p>The state representation is Markov if, once $S_t$ and $A_t$ are known, the remainder of the history adds no additional information about the distribution of the next state and reward. Formally, the Markov property is</p>
+$$
+P(S_{t+1}, R_{t+1} \mid H_t, A_t)
+= P(S_{t+1}, R_{t+1} \mid S_t, A_t).
+$$
+<p>A Markov decision process is a tuple</p>
+$$
+(\mathcal{S}, \mathcal{A}, P, \rho, \gamma),
+$$
+<p>where:</p>
+<ul>
+<li>$\mathcal{S}$ is the state space</li>
+<li>$\mathcal{A}$ is the action space</li>
+<li>$P(s', r \mid s, a)$ is the transition-reward law</li>
+<li>$\rho$ is the initial-state distribution</li>
+<li>$\gamma$ is the discount factor</li>
+</ul>
+<p>The reward function is encoded inside the transition-reward law. When a separate expected reward function is desired, one may define</p>
+$$
+\bar r(s,a) = \sum_{s',r} r P(s',r \mid s,a).
+$$
+<p>An episodic task terminates after a finite random number of steps. A continuing task has no such terminal time built into the model. In this chapter, continuing tasks are analyzed under $\gamma < 1$ and bounded rewards so that discounted returns remain finite.</p>
+<h3 id="34-return-recursion">3.4 Return recursion</h3>
+<p>The discounted return from time $t$ is</p>
+$$
+G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}.
+$$
+<p>The one-step recursion for $G_t$ is obtained by separating the $k=0$ term from the remaining terms:</p>
+$$
+G_t
+= R_{t+1} + \sum_{k=1}^{\infty} \gamma^k R_{t+k+1}.
+$$
+<p>The remaining series starts at $k=1$. Introduce a new index</p>
+$$
+j = k-1.
+$$
+<p>If $k=1$, then $j=0$. If $k \to \infty$, then $j \to \infty$. Therefore</p>
+$$
+\sum_{k=1}^{\infty} \gamma^k R_{t+k+1}
+= \sum_{j=0}^{\infty} \gamma^{j+1} R_{t+j+2}.
+$$
+<p>Factor out one power of $\gamma$:</p>
+$$
+\sum_{j=0}^{\infty} \gamma^{j+1} R_{t+j+2}
+= \gamma \sum_{j=0}^{\infty} \gamma^j R_{t+j+2}.
+$$
+<p>By the definition of return at time $t+1$,</p>
+$$
+G_{t+1} = \sum_{j=0}^{\infty} \gamma^j R_{t+j+2}.
+$$
+<p>Substituting this identity yields</p>
+$$
+G_t = R_{t+1} + \gamma G_{t+1}.
+$$
+<p>This recursion is an exact identity, not an approximation.</p>
+<h3 id="35-objective">3.5 Objective</h3>
+<p>For a policy $\pi$, define the performance objective by</p>
+$$
+J(\pi) = \mathbb{E}_\pi[G_0].
+$$
+<p>The notation $\mathbb{E}_\pi$ indicates that the expectation is taken with respect to the trajectory distribution induced by $\pi$, the environment law, and the initial-state distribution. The control problem is</p>
+$$
+\pi^* \in \arg\max_\pi J(\pi).
+$$
+<p>When a maximizer does not exist, the same discussion can be phrased with $\sup_\pi J(\pi)$ instead of $\max_\pi J(\pi)$. In the finite discounted setting used here, an optimal policy exists.</p>
+<h3 id="36-optional-illustration">3.6 Optional illustration</h3>
+<p>Optional illustration. Suppose the next three rewards are $2$, $0$, and $5$ and the discount factor is $\gamma = 0.9$. Then</p>
+$$
+G_t = 2 + 0.9 \cdot 0 + 0.9^2 \cdot 5
+= 2 + 0 + 0.81 \cdot 5
+= 2 + 4.05
+= 6.05.
+$$
+<p>Optional illustration. A single image frame in a maze may fail to record whether a key has already been collected. In that case the observation is not Markov, but a state augmented with the key indicator may be Markov.</p>
+<h2 id="4-value-functions-bellman-equations-policy-improvement-and-generalized-policy-iteration">4. Value Functions, Bellman Equations, Policy Improvement, and Generalized Policy Iteration</h2>
+<h3 id="41-problem-statement">4.1 Problem statement</h3>
+<p>The objective $J(\pi)$ is defined over complete trajectories. The next problem is to convert this long-horizon quantity into recursively defined local objects that can be evaluated or optimized state by state.</p>
+<h3 id="42-policies-value-functions-and-advantage">4.2 Policies, value functions, and advantage</h3>
+<p>For a policy $\pi$, define the state value by</p>
+$$
+V^\pi(s) = \mathbb{E}_\pi[G_t \mid S_t = s]
+$$
+<p>and the action value by</p>
+$$
+Q^\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t = s, A_t = a].
+$$
+<p>The advantage is</p>
+$$
+A^\pi(s,a) = Q^\pi(s,a) - V^\pi(s).
+$$
+<p>This is an exact identity. It is not an approximation and does not introduce any new assumptions.</p>
+<h3 id="43-derivation-of-the-state-value-and-action-value-relation">4.3 Derivation of the state-value and action-value relation</h3>
+<p>Problem. Derive $V^\pi(s)$ in terms of $Q^\pi(s,a)$.</p>
+<p>Condition on the first action chosen by the policy. Since the action set is finite,</p>
+$$
+V^\pi(s)
+= \mathbb{E}_\pi[G_t \mid S_t = s]
+= \sum_a P(A_t = a \mid S_t = s)\mathbb{E}_\pi[G_t \mid S_t=s, A_t=a].
+$$
+<p>Now use the definitions</p>
+$$
+P(A_t = a \mid S_t = s) = \pi(a \mid s)
+$$
+<p>and</p>
+$$
+\mathbb{E}_\pi[G_t \mid S_t=s, A_t=a] = Q^\pi(s,a).
+$$
+<p>Substituting these identities gives</p>
+$$
+V^\pi(s) = \sum_a \pi(a \mid s) Q^\pi(s,a).
+$$
+<p>The right-hand side is a weighted average of the action values, with nonnegative weights $\pi(a \mid s)$ that sum to $1$.</p>
+<h3 id="44-bellman-expectation-equation-for-state-value">4.4 Bellman expectation equation for state value</h3>
+<p>Problem. Derive a recursive formula for $V^\pi(s)$.</p>
+<p>Start from the definition:</p>
+$$
+V^\pi(s) = \mathbb{E}_\pi[G_t \mid S_t = s].
+$$
+<p>Use the return recursion from Section 3:</p>
+$$
+G_t = R_{t+1} + \gamma G_{t+1}.
+$$
+<p>Substitute into the definition of $V^\pi(s)$:</p>
+$$
+V^\pi(s)
+= \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid S_t = s].
+$$
+<p>Linearity of expectation gives</p>
+$$
+V^\pi(s)
+= \mathbb{E}_\pi[R_{t+1} \mid S_t = s]
++ \gamma \mathbb{E}_\pi[G_{t+1} \mid S_t = s].
+$$
+<p>To expand the second term, condition first on the current action and then on the next state and reward:</p>
+$$
+V^\pi(s)
+= \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)
+\left[r + \gamma \mathbb{E}_\pi[G_{t+1} \mid S_{t+1}=s']\right].
+$$
+<p>The remaining conditional expectation is the definition of the next-state value:</p>
+$$
+\mathbb{E}_\pi[G_{t+1} \mid S_{t+1}=s'] = V^\pi(s').
+$$
+<p>Therefore</p>
+$$
+V^\pi(s)
+= \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)
+\left[r + \gamma V^\pi(s')\right].
+$$
+<p>This is the Bellman expectation equation for state values.</p>
+<h3 id="45-bellman-expectation-equation-for-action-value">4.5 Bellman expectation equation for action value</h3>
+<p>Problem. Derive a recursive formula for $Q^\pi(s,a)$.</p>
+<p>Start from the definition:</p>
+$$
+Q^\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t=s, A_t=a].
+$$
+<p>Substitute the return recursion:</p>
+$$
+Q^\pi(s,a)
+= \mathbb{E}_\pi[R_{t+1} + \gamma G_{t+1} \mid S_t=s, A_t=a].
+$$
+<p>Condition on the next state and reward:</p>
+$$
+Q^\pi(s,a)
+= \sum_{s',r} P(s',r \mid s,a)
+\left[r + \gamma \mathbb{E}_\pi[G_{t+1} \mid S_{t+1}=s']\right].
+$$
+<p>After arriving in state $s'$, the next action is chosen according to $\pi$. Apply the result of Section 4.3 at the next state:</p>
+$$
+\mathbb{E}_\pi[G_{t+1} \mid S_{t+1}=s']
+= \sum_{a'} \pi(a' \mid s')Q^\pi(s',a').
+$$
+<p>Substituting yields</p>
+$$
+Q^\pi(s,a)
+= \sum_{s',r} P(s',r \mid s,a)
+\left[r + \gamma \sum_{a'} \pi(a' \mid s')Q^\pi(s',a')\right].
+$$
+<p>This is the Bellman expectation equation for action values.</p>
+<h3 id="46-bellman-operators-and-contraction-properties">4.6 Bellman operators and contraction properties</h3>
+<p>Define the Bellman expectation operator for a fixed policy $\pi$ by</p>
+$$
+(T^\pi V)(s)
+= \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)\left[r + \gamma V(s')\right].
+$$
+<p>Define the Bellman optimality operator by</p>
+$$
+(T^* V)(s)
+= \max_a \sum_{s',r} P(s',r \mid s,a)\left[r + \gamma V(s')\right].
+$$
+<p>Proposition. Both $T^\pi$ and $T^*$ are $\gamma$-contractions in the supremum norm on bounded value functions.</p>
+<p>Proof for $T^\pi$. Let $V$ and $W$ be bounded functions. For a fixed state $s$,</p>
+$$
+\begin{aligned}
+|(T^\pi V)(s) - (T^\pi W)(s)|
+&= \left|\sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)\gamma\left(V(s')-W(s')\right)\right| \\
+&\le \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)\gamma |V(s')-W(s')| \\
+&\le \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)\gamma \|V-W\|_\infty.
+\end{aligned}
+$$
+<p>Since $\|V-W\|_\infty$ is constant with respect to the sums,</p>
+$$
+\sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a)\gamma \|V-W\|_\infty
+= \gamma \|V-W\|_\infty \sum_a \pi(a \mid s)\sum_{s',r} P(s',r \mid s,a).
+$$
+<p>For each fixed $(s,a)$,</p>
+$$
+\sum_{s',r} P(s',r \mid s,a) = 1,
+$$
+<p>and</p>
+$$
+\sum_a \pi(a \mid s) = 1.
+$$
+<p>Therefore</p>
+$$
+|(T^\pi V)(s) - (T^\pi W)(s)| \le \gamma \|V-W\|_\infty.
+$$
+<p>Taking the supremum over $s$ gives</p>
+$$
+\|T^\pi V - T^\pi W\|_\infty \le \gamma \|V-W\|_\infty.
+$$
+<p>Proof for $T^*$. Define</p>
+$$
+F_a(V,s) = \sum_{s',r} P(s',r \mid s,a)\left[r + \gamma V(s')\right].
+$$
+<p>Then</p>
+$$
+(T^*V)(s) = \max_a F_a(V,s).
+$$
+<p>For any two collections of real numbers $\{x_a\}$ and $\{y_a\}$,</p>
+$$
+|\max_a x_a - \max_a y_a| \le \max_a |x_a-y_a|.
+$$
+<p>Apply this inequality with $x_a = F_a(V,s)$ and $y_a = F_a(W,s)$:</p>
+$$
+|(T^*V)(s) - (T^*W)(s)| \le \max_a |F_a(V,s)-F_a(W,s)|.
+$$
+<p>For each fixed action $a$,</p>
+$$
+\begin{aligned}
+|F_a(V,s)-F_a(W,s)|
+&= \left|\sum_{s',r} P(s',r \mid s,a)\gamma\left(V(s')-W(s')\right)\right| \\
+&\le \sum_{s',r} P(s',r \mid s,a)\gamma |V(s')-W(s')| \\
+&\le \gamma \|V-W\|_\infty.
+\end{aligned}
+$$
+<p>Hence</p>
+$$
+|(T^*V)(s) - (T^*W)(s)| \le \gamma \|V-W\|_\infty.
+$$
+<p>Taking the supremum over $s$ yields</p>
+$$
+\|T^*V - T^*W\|_\infty \le \gamma \|V-W\|_\infty.
+$$
+<p>This completes the proof.</p>
+<h3 id="47-bellman-optimality-equations">4.7 Bellman optimality equations</h3>
+<p>Define the optimal value functions by</p>
+$$
+V^*(s) = \max_\pi V^\pi(s),
+\qquad
+Q^*(s,a) = \max_\pi Q^\pi(s,a).
+$$
+<p>For $V^*(s)$, the first action may be chosen arbitrarily, after which the continuation is chosen optimally. Therefore</p>
+$$
+\begin{aligned}
+V^*(s)
+&= \max_a \mathbb{E}\left[R_{t+1} + \gamma V^*(S_{t+1}) \mid S_t=s, A_t=a\right] \\
+&= \max_a \sum_{s',r} P(s',r \mid s,a)\left[r + \gamma V^*(s')\right].
+\end{aligned}
+$$
+<p>For $Q^*(s,a)$, the first action is fixed as $a$, but every later action is chosen optimally. Hence</p>
+$$
+\begin{aligned}
+Q^*(s,a)
+&= \mathbb{E}\left[R_{t+1} + \gamma \max_{a'} Q^*(S_{t+1},a') \mid S_t=s, A_t=a\right] \\
+&= \sum_{s',r} P(s',r \mid s,a)\left[r + \gamma \max_{a'} Q^*(s',a')\right].
+\end{aligned}
+$$
+<p>These are the Bellman optimality equations.</p>
+<h3 id="48-policy-improvement-theorem">4.8 Policy improvement theorem</h3>
+<p>Problem. Let $\pi$ be a policy, and define a greedy policy $\pi'$ by</p>
+$$
+\pi'(s) \in \arg\max_a Q^\pi(s,a).
+$$
+<p>Show that</p>
+$$
+V^{\pi'}(s) \ge V^\pi(s)
+$$
+<p>for every state $s$.</p>
+<p>First, use Section 4.3:</p>
+$$
+V^\pi(s) = \sum_a \pi(a \mid s)Q^\pi(s,a).
+$$
+<p>The right-hand side is a weighted average of the numbers $\{Q^\pi(s,a)\}_a$. A weighted average of finitely many real numbers cannot exceed their maximum. Therefore</p>
+$$
+V^\pi(s) \le \max_a Q^\pi(s,a).
+$$
+<p>By the definition of $\pi'$,</p>
+$$
+\max_a Q^\pi(s,a) = Q^\pi(s,\pi'(s)).
+$$
+<p>Hence</p>
+$$
+V^\pi(s) \le Q^\pi(s,\pi'(s)).
+$$
+<p>Now compare the Bellman operators. Since $\pi'$ is greedy with respect to $Q^\pi$, one has</p>
+$$
+(T^{\pi'}V^\pi)(s) = \max_a \sum_{s',r} P(s',r \mid s,a)\left[r + \gamma V^\pi(s')\right] = (T^*V^\pi)(s).
+$$
+<p>Also, because $V^\pi$ is the fixed point of $T^\pi$,</p>
+$$
+(T^\pi V^\pi)(s) = V^\pi(s).
+$$
+<p>The greedy maximization cannot be smaller than the policy-weighted average, so</p>
+$$
+(T^{\pi'}V^\pi)(s) \ge (T^\pi V^\pi)(s) = V^\pi(s).
+$$
+<p>Thus</p>
+$$
+T^{\pi'}V^\pi \ge V^\pi
+$$
+<p>pointwise.</p>
+<p>Apply $T^{\pi'}$ repeatedly. Since $T^{\pi'}$ is monotone and a contraction, the sequence</p>
+$$
+V^\pi,\quad T^{\pi'}V^\pi,\quad (T^{\pi'})^2V^\pi,\quad \ldots
+$$
+<p>is pointwise nondecreasing and converges to the unique fixed point of $T^{\pi'}$, namely $V^{\pi'}$. Therefore</p>
+$$
+V^{\pi'} \ge V^\pi.
+$$
+<p>This completes the proof.</p>
+<h3 id="49-generalized-policy-iteration">4.9 Generalized policy iteration</h3>
+<p>Generalized policy iteration is the alternation of:</p>
+<ol>
+<li>approximate or exact policy evaluation</li>
+<li>approximate or exact policy improvement</li>
+</ol>
+<p>The phrase covers dynamic programming, Monte Carlo control, temporal-difference control, and actor-critic methods. The details differ, but the structural decomposition into evaluation and improvement remains the same.</p>
+<h3 id="410-optional-illustrations">4.10 Optional illustrations</h3>
+<p>Optional illustration. If a policy chooses two actions with probabilities $0.25$ and $0.75$, and the corresponding action values are $2$ and $6$, then</p>
+$$
+V^\pi(s)
+= 0.25 \cdot 2 + 0.75 \cdot 6
+= 0.5 + 4.5
+= 5.
+$$
+<p>The following figure is optional support for the Bellman backups introduced above.</p>
+<p><img alt="Bellman backup taxonomy" src="assets/figures/bellman-backup-taxonomy.svg"></p>
+<p>The following figure is optional support for the policy-evaluation/policy-improvement cycle.</p>
+<p><img alt="Bellman and policy iteration loop" src="assets/figures/bellman-policy-iteration-loop.svg"></p>
+<h2 id="5-dynamic-programming-monte-carlo-temporal-difference-learning-sarsa-q-learning-and-exploration">5. Dynamic Programming, Monte Carlo, Temporal-Difference Learning, SARSA, Q-Learning, and Exploration</h2>
+<h3 id="51-problem-statement">5.1 Problem statement</h3>
+<p>The Bellman equations specify the fixed points of the quantities of interest. The next problem is to determine how those quantities are computed when the transition law is known and how they are estimated when the transition law is unknown.</p>
+<h3 id="52-dynamic-programming">5.2 Dynamic programming</h3>
+<p>For a fixed policy $\pi$, define the iterative policy-evaluation sequence</p>
+$$
+V_{k+1} = T^\pi V_k.
+$$
+<p>Since $T^\pi$ is a $\gamma$-contraction, the Banach fixed-point theorem implies:</p>
+<ol>
+<li>$T^\pi$ has a unique fixed point</li>
+<li>the unique fixed point is $V^\pi$</li>
+<li>the iteration converges to $V^\pi$ from any bounded initial function $V_0$</li>
+</ol>
+<p>Similarly, value iteration is defined by</p>
+$$
+V_{k+1} = T^*V_k.
+$$
+<p>Because $T^*$ is also a $\gamma$-contraction, the same theorem implies convergence to the unique fixed point $V^*$.</p>
+<p>These are exact convergence statements in the discounted finite-state setting. They are not heuristic claims.</p>
+<h3 id="53-monte-carlo-estimation">5.3 Monte Carlo estimation</h3>
+<p>Suppose the policy is fixed and trajectories are sampled under that policy until termination. If a state $s$ is visited on episodes indexed by a set $\mathcal{I}(s)$, the empirical return estimator is</p>
+$$
+\widehat V_N(s) = \frac{1}{N}\sum_{i \in \mathcal{I}(s)} G_t^{(i)},
+$$
+<p>where $N = |\mathcal{I}(s)|$ and $G_t^{(i)}$ denotes the sampled return following the visit to $s$ in episode $i$.</p>
+<p>This is an average of complete returns. It does not bootstrap, because the target is an observed trajectory return rather than a quantity that depends on the current estimate.</p>
+<h3 id="54-temporal-difference-learning">5.4 Temporal-difference learning</h3>
+<p>Problem. Derive the one-step temporal-difference target from the Bellman expectation equation.</p>
+<p>The Bellman expectation equation for state value is</p>
+$$
+V^\pi(S_t) = \mathbb{E}_\pi[R_{t+1} + \gamma V^\pi(S_{t+1}) \mid S_t].
+$$
+<p>A single sampled transition replaces the conditional expectation with the observed one-step sample. The resulting target is</p>
+$$
+Y_t^{\mathrm{TD}} = R_{t+1} + \gamma V(S_{t+1}).
+$$
+<p>The temporal-difference error is target minus current prediction:</p>
+$$
+\delta_t = Y_t^{\mathrm{TD}} - V(S_t)
+= R_{t+1} + \gamma V(S_{t+1}) - V(S_t).
+$$
+<p>The update is</p>
+$$
+V(S_t) \leftarrow V(S_t) + \alpha \delta_t.
+$$
+<p>This update is a stochastic approximation to the Bellman fixed point.</p>
+<h3 id="55-behavior-policies-target-policies-and-mathinline_176-greedy-exploration">5.5 Behavior policies, target policies, and $\epsilon$-greedy exploration</h3>
+<p>The behavior policy is the policy that generates the data. The target policy is the policy whose value is being estimated or improved.</p>
+<p>Assume a finite action set of size $|\mathcal{A}|$ and, for the moment, assume a unique greedy action</p>
+$$
+a_g(s) \in \arg\max_a Q(s,a).
+$$
+<p>Under $\epsilon$-greedy behavior, the agent chooses the greedy action with probability $1-\epsilon$ and chooses uniformly from all actions with probability $\epsilon$. Therefore the greedy action probability is</p>
+$$
+\mu(a_g(s) \mid s)
+= (1-\epsilon) + \epsilon \frac{1}{|\mathcal{A}|},
+$$
+<p>because the greedy action can be chosen in two disjoint ways: through the greedy branch, or through the uniform-random branch.</p>
+<p>For a non-greedy action $a \neq a_g(s)$, the only way it can be selected is through the random branch. Hence</p>
+$$
+\mu(a \mid s) = \epsilon \frac{1}{|\mathcal{A}|}.
+$$
+<p>Consequently, every action satisfies the lower bound</p>
+$$
+\mu(a \mid s) \ge \frac{\epsilon}{|\mathcal{A}|}.
+$$
+<p>This is an exact lower bound in the unique-greedy-action case. If multiple greedy actions exist, the formula changes according to the tie-breaking rule, but the lower bound $\epsilon/|\mathcal{A}|$ remains valid.</p>
+<h3 id="56-sarsa">5.6 SARSA</h3>
+<p>Problem. Derive the SARSA target from the Bellman expectation equation for action values.</p>
+<p>Under an on-policy behavior policy $\pi$, the Bellman expectation equation for action values is</p>
+$$
+Q^\pi(s,a)
+= \mathbb{E}_\pi\left[R_{t+1} + \gamma Q^\pi(S_{t+1},A_{t+1}) \mid S_t=s, A_t=a\right].
+$$
+<p>A one-step sample of the right-hand side gives the SARSA target</p>
+$$
+Y_t^{\mathrm{SARSA}}
+= R_{t+1} + \gamma Q(S_{t+1},A_{t+1}).
+$$
+<p>The SARSA error is</p>
+$$
+\delta_t^{\mathrm{SARSA}}
+= Y_t^{\mathrm{SARSA}} - Q(S_t,A_t)
+= R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t).
+$$
+<p>Therefore the update is</p>
+$$
+Q(S_t,A_t)
+\leftarrow
+Q(S_t,A_t) + \alpha\left[R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t)\right].
+$$
+<p>Because $A_{t+1}$ is the action actually sampled under the current behavior policy, SARSA is on-policy.</p>
+<h3 id="57-q-learning">5.7 Q-learning</h3>
+<p>Problem. Derive the Q-learning target from the Bellman optimality equation.</p>
+<p>The Bellman optimality equation for action values is</p>
+$$
+Q^*(s,a)
+= \mathbb{E}\left[R_{t+1} + \gamma \max_{a'}Q^*(S_{t+1},a') \mid S_t=s, A_t=a\right].
+$$
+<p>Replace the conditional expectation with a one-step sample to obtain the Q-learning target:</p>
+$$
+Y_t^{\mathrm{QL}}
+= R_{t+1} + \gamma \max_{a'} Q(S_{t+1},a').
+$$
+<p>The corresponding error is</p>
+$$
+\delta_t^{\mathrm{QL}}
+= Y_t^{\mathrm{QL}} - Q(S_t,A_t)
+= R_{t+1} + \gamma \max_{a'} Q(S_{t+1},a') - Q(S_t,A_t).
+$$
+<p>The update is therefore</p>
+$$
+Q(S_t,A_t)
+\leftarrow
+Q(S_t,A_t) + \alpha\left[R_{t+1} + \gamma \max_{a'}Q(S_{t+1},a') - Q(S_t,A_t)\right].
+$$
+<p>This is off-policy because the target is defined by the greedy action, not necessarily by the action sampled under the behavior policy.</p>
+<h3 id="58-exact-comparison-between-sarsa-and-q-learning">5.8 Exact comparison between SARSA and Q-learning</h3>
+<p>The distinction between SARSA and Q-learning is localized entirely in the target:</p>
+$$
+Y_t^{\mathrm{SARSA}}
+= R_{t+1} + \gamma Q(S_{t+1},A_{t+1}),
+$$
+<p>while</p>
+$$
+Y_t^{\mathrm{QL}}
+= R_{t+1} + \gamma \max_{a'}Q(S_{t+1},a').
+$$
+<p>The SARSA target depends on the next action actually sampled by the current behavior policy. The Q-learning target depends only on the maximal next-state action value. Therefore:</p>
+<ul>
+<li>SARSA evaluates the current behavior policy</li>
+<li>Q-learning evaluates the greedy target implied by the current estimate</li>
+</ul>
+<p>This is an exact statement about the target definitions.</p>
+<h3 id="59-optional-illustration">5.9 Optional illustration</h3>
+<p>Optional illustration. Let</p>
+$$
+Q(s,a)=4,\qquad r=2,\qquad \max_{a'}Q(s',a')=6,\qquad \gamma=0.9,\qquad \alpha=0.1.
+$$
+<p>Then the Q-learning target is</p>
+$$
+Y = 2 + 0.9 \cdot 6 = 2 + 5.4 = 7.4.
+$$
+<p>The temporal-difference error is</p>
+$$
+\delta = 7.4 - 4 = 3.4.
+$$
+<p>The updated estimate is</p>
+$$
+Q_{\mathrm{new}}(s,a)
+= 4 + 0.1 \cdot 3.4
+= 4 + 0.34
+= 4.34.
+$$
+<p>The following figure is optional support for the target comparison.</p>
+<p><img alt="SARSA versus Q-learning" src="assets/figures/sarsa-vs-q-learning.svg"></p>
+<h2 id="6-function-approximation-the-deadly-triad-and-dqn">6. Function Approximation, the Deadly Triad, and DQN</h2>
+<h3 id="61-problem-statement">6.1 Problem statement</h3>
+<p>Tabular methods become impractical when the state-action space is too large to enumerate explicitly. The next problem is to replace tables by parameterized function classes while keeping the learning objective well defined.</p>
+<h3 id="62-function-approximation">6.2 Function approximation</h3>
+<p>Let $w \in \mathbb{R}^d$ be a parameter vector. A value approximator is a function</p>
+$$
+\widehat V(\cdot;w)
+$$
+<p>or</p>
+$$
+\widehat Q(\cdot,\cdot;w).
+$$
+<p>Given a target random variable $Y$, the squared-error regression objective for action values under a data distribution $\nu$ is</p>
+$$
+L(w) = \mathbb{E}_{(S,A,Y)\sim \nu}\left[(Y-\widehat Q(S,A;w))^2\right].
+$$
+<p>If the expectation is approximated with a batch of $B$ samples, the empirical loss is</p>
+$$
+\widehat L_B(w) = \frac{1}{B}\sum_{i=1}^B (Y_i - \widehat Q(S_i,A_i;w))^2.
+$$
+<p>Differentiate term by term:</p>
+$$
+\nabla_w \widehat L_B(w)
+= \frac{1}{B}\sum_{i=1}^B 2(\widehat Q(S_i,A_i;w)-Y_i)\nabla_w \widehat Q(S_i,A_i;w).
+$$
+<p>This is the exact batch gradient for the empirical loss.</p>
+<h3 id="63-the-deadly-triad">6.3 The deadly triad</h3>
+<p>The phrase deadly triad refers to the simultaneous presence of:</p>
+<ol>
+<li>function approximation</li>
+<li>bootstrapping</li>
+<li>off-policy learning</li>
+</ol>
+<p>This phrase is descriptive rather than a theorem with a universal hypothesis-conclusion form. The precise claim that can be made here is the following: when all three ingredients are present, the target distribution and the prediction function are coupled in a way that can invalidate the stability properties available in the tabular contraction setting. Whether a specific algorithm diverges depends on additional details of the approximation class, data distribution, and optimization procedure.</p>
+<p>The following figure is optional support for the dependency structure.</p>
+<p><img alt="The deadly triad" src="assets/figures/deadly-triad.svg"></p>
+<h3 id="64-dqn-objective">6.4 DQN objective</h3>
+<p>Deep Q-Networks keep the Q-learning target but replace the table by a neural approximator $Q(\cdot,\cdot;w)$. Introduce:</p>
+<ul>
+<li>a replay buffer distribution $\nu_t$ over sampled transitions</li>
+<li>a target-network parameter vector $w^-$ held fixed for several optimization steps</li>
+<li>a terminal indicator $\zeta \in \{0,1\}$, where $\zeta=1$ means the transition ends the episode</li>
+</ul>
+<p>For a sampled transition $(S_t, A_t, R_{t+1}, S_{t+1}, \zeta_t)$, define the target</p>
+$$
+Y_t^{\mathrm{DQN}}
+= R_{t+1} + \gamma (1-\zeta_t)\max_{a'}Q(S_{t+1},a';w^-).
+$$
+<p>The factor $(1-\zeta_t)$ enforces the terminal-state convention:</p>
+<ul>
+<li>if $\zeta_t = 1$, then the future contribution is multiplied by $0$</li>
+<li>if $\zeta_t = 0$, then the future contribution is preserved</li>
+</ul>
+<p>Therefore:</p>
+$$
+\zeta_t = 1 \implies Y_t^{\mathrm{DQN}} = R_{t+1},
+$$
+<p>and</p>
+$$
+\zeta_t = 0 \implies Y_t^{\mathrm{DQN}} = R_{t+1} + \gamma \max_{a'}Q(S_{t+1},a';w^-).
+$$
+<p>The population loss at training stage $t$ is</p>
+$$
+L_t(w;w^-)
+= \mathbb{E}_{(S,A,R,S',\zeta)\sim \nu_t}
+\left[
+\left(R + \gamma(1-\zeta)\max_{a'}Q(S',a';w^-) - Q(S,A;w)\right)^2
+\right].
+$$
+<p>The exact role of the target network is now explicit: during optimization with respect to $w$, the target depends on $w^-$ rather than on the same parameter vector currently being updated. Consequently the right-hand side is a well-defined regression target as long as $w^-$ is frozen.</p>
+<h3 id="65-replay-distribution-and-computational-cost">6.5 Replay distribution and computational cost</h3>
+<p>If the replay buffer contains transitions</p>
+$$
+\mathcal{B}_t = \{(S_i,A_i,R_i,S_i',\zeta_i)\}_{i=1}^{N_t},
+$$
+<p>then the empirical replay distribution is uniform over these $N_t$ stored samples unless a prioritized scheme is specified. For a batch of size $B$, the exact per-batch target evaluation cost is</p>
+$$
+O(B|\mathcal{A}|)
+$$
+<p>for discrete actions, because each of the $B$ next states requires evaluating the approximator over the $|\mathcal{A}|$ candidate actions inside the maximization.</p>
+<p>This is an upper bound under dense action evaluation. If the action space is continuous, the discrete maximization is no longer available and the algorithm must be modified.</p>
+<h3 id="66-representation-and-state-encodings">6.6 Representation and state encodings</h3>
+<p>A representation is a map from raw observations or histories into the input space consumed by the approximator. If a gridworld state is represented by the four neighboring binary terrain indicators, then each neighbor has $2$ possibilities and there are $4$ neighbors. Therefore the number of binary neighborhood patterns is</p>
+$$
+2 \cdot 2 \cdot 2 \cdot 2 = 2^4 = 16.
+$$
+<p>If, in addition, exactly one of the four neighboring locations may contain a goal marker and the remaining three locations retain binary terrain values, then:</p>
+<ol>
+<li>the goal may occupy any one of $4$ positions</li>
+<li>once the goal position is fixed, the remaining $3$ cells each have $2$ binary possibilities</li>
+<li>therefore the goal-containing patterns contribute</li>
+</ol>
+$$
+   4 \cdot 2^3 = 4 \cdot 8 = 32
+   $$
+<p>distinct states</p>
+<p>Adding the two disjoint cases gives</p>
+$$
+2^4 + 4 \cdot 2^3 = 16 + 32 = 48.
+$$
+<p>This is an exact count under the specified binary-neighborhood model. If the cell alphabet changes, the count changes accordingly.</p>
+<p>If instead a full map contains $60$ binary cells, then each cell has $2$ possibilities and the total number of map configurations is</p>
+$$
+\underbrace{2 \cdot 2 \cdot 2 \cdots 2}_{60 \text{ factors}} = 2^{60}.
+$$
+<p>This is again an exact count under the binary-cell assumption.</p>
+<h3 id="67-optional-illustrations">6.7 Optional illustrations</h3>
+<p>The following figure is optional support for the DQN dataflow.</p>
+<p><img alt="DQN workflow" src="assets/figures/dqn-workflow.svg"></p>
+<p>The following figure is optional support for the representation tradeoff.</p>
+<p><img alt="State-representation spectrum" src="assets/figures/state-encoding-spectrum.svg"></p>
+<h2 id="7-policy-gradient-objectives-reinforce-baselines-actor-critic-ppo-and-sac">7. Policy-Gradient Objectives, REINFORCE, Baselines, Actor-Critic, PPO, and SAC</h2>
+<h3 id="71-problem-statement">7.1 Problem statement</h3>
+<p>Value-based methods optimize policies indirectly through value functions. The next problem is to optimize a parameterized policy directly and to derive the corresponding gradient expressions without skipping the intermediate probability calculations.</p>
+<h3 id="72-policy-parameterization-and-objective">7.2 Policy parameterization and objective</h3>
+<p>Let $\pi_\theta(a \mid s)$ be a differentiable stochastic policy with parameter vector $\theta$. For a finite-horizon episodic problem with horizon $T$, define the trajectory return</p>
+$$
+G_0(\tau) = \sum_{t=0}^{T-1}\gamma^t R_{t+1}.
+$$
+<p>The objective is</p>
+$$
+J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[G_0(\tau)]
+= \sum_{\tau} p_\theta(\tau) G_0(\tau).
+$$
+<p>The second equality uses the trajectory distribution defined in Section 2.</p>
+<h3 id="73-derivation-of-the-policy-gradient">7.3 Derivation of the policy gradient</h3>
+<p>Differentiate the objective:</p>
+$$
+\nabla_\theta J(\theta)
+= \nabla_\theta \sum_\tau p_\theta(\tau)G_0(\tau).
+$$
+<p>Since the trajectory set is finite in the present derivation,</p>
+$$
+\nabla_\theta J(\theta)
+= \sum_\tau \nabla_\theta p_\theta(\tau)G_0(\tau).
+$$
+<p>Apply the log-derivative identity from Section 2:</p>
+$$
+\nabla_\theta p_\theta(\tau)
+= p_\theta(\tau)\nabla_\theta \log p_\theta(\tau).
+$$
+<p>Substituting gives</p>
+$$
+\nabla_\theta J(\theta)
+= \sum_\tau p_\theta(\tau)\nabla_\theta \log p_\theta(\tau)G_0(\tau)
+= \mathbb{E}_{\tau \sim p_\theta}\left[\nabla_\theta \log p_\theta(\tau)G_0(\tau)\right].
+$$
+<p>Next expand the trajectory log-probability. By Section 2,</p>
+$$
+p_\theta(\tau)
+= \rho(s_0)\prod_{t=0}^{T-1}\pi_\theta(a_t \mid s_t)P(s_{t+1},r_{t+1} \mid s_t,a_t).
+$$
+<p>Take logarithms:</p>
+$$
+\log p_\theta(\tau)
+= \log \rho(s_0)
++ \sum_{t=0}^{T-1}\log \pi_\theta(a_t \mid s_t)
++ \sum_{t=0}^{T-1}\log P(s_{t+1},r_{t+1} \mid s_t,a_t).
+$$
+<p>Differentiate with respect to $\theta$. The initial distribution $\rho$ and environment law $P$ do not depend on $\theta$, so their gradients are zero. Therefore</p>
+$$
+\nabla_\theta \log p_\theta(\tau)
+= \sum_{t=0}^{T-1}\nabla_\theta \log \pi_\theta(a_t \mid s_t).
+$$
+<p>Substituting this identity into the gradient of $J$ yields</p>
+$$
+\nabla_\theta J(\theta)
+= \mathbb{E}\left[\sum_{t=0}^{T-1}\nabla_\theta \log \pi_\theta(A_t \mid S_t) G_0\right].
+$$
+<p>This is already a correct policy-gradient expression. The next step is to replace the full-trajectory return $G_0$ by the reward-to-go term $G_t$.</p>
+<h3 id="74-replacement-of-full-return-by-reward-to-go">7.4 Replacement of full return by reward-to-go</h3>
+<p>Fix a time index $t$. Decompose the total return into the part accumulated before time $t$ and the part accumulated from time $t$ onward:</p>
+$$
+G_0 = \sum_{k=0}^{t-1}\gamma^k R_{k+1} + \sum_{k=t}^{T-1}\gamma^k R_{k+1}.
+$$
+<p>Define</p>
+$$
+C_t = \sum_{k=0}^{t-1}\gamma^k R_{k+1}.
+$$
+<p>The second sum can be reindexed by writing $j = k-t$. When $k=t$, one has $j=0$. When $k=T-1$, one has $j=T-1-t$. Hence</p>
+$$
+\sum_{k=t}^{T-1}\gamma^k R_{k+1}
+= \sum_{j=0}^{T-1-t}\gamma^{j+t}R_{t+j+1}.
+$$
+<p>Factor out $\gamma^t$:</p>
+$$
+\sum_{j=0}^{T-1-t}\gamma^{j+t}R_{t+j+1}
+= \gamma^t \sum_{j=0}^{T-1-t}\gamma^j R_{t+j+1}.
+$$
+<p>The remaining finite sum is exactly $G_t$. Therefore</p>
+$$
+G_0 = C_t + \gamma^t G_t.
+$$
+<p>Substitute this decomposition into the contribution of time $t$:</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) G_0\right]
+= \mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) C_t\right]
++ \gamma^t \mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) G_t\right].
+$$
+<p>It remains to prove that the first expectation is zero. Condition on the history up to time $t$:</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) C_t\right]
+= \mathbb{E}\left[
+C_t \,
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) \mid H_t\right]
+\right].
+$$
+<p>Inside the conditional expectation, $C_t$ is constant because it depends only on rewards observed before action $A_t$ is chosen. Also, conditioning on $H_t$ determines $S_t$. Therefore</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) \mid H_t\right]
+= \sum_a \pi_\theta(a \mid S_t)\nabla_\theta \log \pi_\theta(a \mid S_t).
+$$
+<p>Use the identity $\pi \nabla \log \pi = \nabla \pi$:</p>
+$$
+\sum_a \pi_\theta(a \mid S_t)\nabla_\theta \log \pi_\theta(a \mid S_t)
+= \sum_a \nabla_\theta \pi_\theta(a \mid S_t).
+$$
+<p>Since the policy probabilities sum to $1$,</p>
+$$
+\sum_a \pi_\theta(a \mid S_t) = 1.
+$$
+<p>Differentiate both sides:</p>
+$$
+\sum_a \nabla_\theta \pi_\theta(a \mid S_t) = \nabla_\theta 1 = 0.
+$$
+<p>Hence</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) \mid H_t\right] = 0,
+$$
+<p>and therefore</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) C_t\right] = 0.
+$$
+<p>Consequently</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) G_0\right]
+= \gamma^t \mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t) G_t\right].
+$$
+<p>Summing over $t$ gives</p>
+$$
+\nabla_\theta J(\theta)
+= \mathbb{E}\left[\sum_{t=0}^{T-1}\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t) G_t\right].
+$$
+<p>This is the rigorous reward-to-go form of the REINFORCE gradient for the discounted finite-horizon objective $J(\theta)=\mathbb{E}[G_0]$.</p>
+<h3 id="75-baseline-subtraction">7.5 Baseline subtraction</h3>
+<p>Let $b(S_t)$ be any scalar function of the state only. Consider the baseline term</p>
+$$
+\mathbb{E}\left[\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)b(S_t)\right].
+$$
+<p>Apply conditional expectation with respect to $S_t$:</p>
+$$
+\mathbb{E}\left[\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)b(S_t)\right]
+= \mathbb{E}\left[
+\gamma^t b(S_t)
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t)\mid S_t\right]
+\right].
+$$
+<p>For a fixed state $s$,</p>
+$$
+\mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t)\mid S_t=s\right]
+= \sum_a \pi_\theta(a \mid s)\nabla_\theta \log \pi_\theta(a \mid s)
+= \sum_a \nabla_\theta \pi_\theta(a \mid s).
+$$
+<p>Again use normalization:</p>
+$$
+\sum_a \pi_\theta(a \mid s) = 1
+\implies
+\sum_a \nabla_\theta \pi_\theta(a \mid s) = 0.
+$$
+<p>Therefore the conditional expectation is zero, which implies</p>
+$$
+\mathbb{E}\left[\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)b(S_t)\right] = 0.
+$$
+<p>Hence one may subtract any state-dependent baseline without changing the expected gradient:</p>
+$$
+\nabla_\theta J(\theta)
+= \mathbb{E}\left[\sum_{t=0}^{T-1}\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)\left(G_t - b(S_t)\right)\right].
+$$
+<p>If $b(S_t)$ is chosen as $V^\pi(S_t)$, then the multiplicative term becomes the advantage</p>
+$$
+A^\pi(S_t,A_t) = Q^\pi(S_t,A_t) - V^\pi(S_t).
+$$
+<h3 id="76-actor-critic">7.6 Actor-critic</h3>
+<p>Problem. Specify an actor update and a critic update while making explicit which quantity is estimated and which derivative is exact.</p>
+<p>Let the actor be the policy $\pi_\theta(a \mid s)$ and let the critic be a parameterized value function $V_w(s)$. From Section 7.5, the exact policy-gradient contribution at time $t$ is</p>
+$$
+\mathbb{E}\left[\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)A^{\pi_\theta}(S_t,A_t)\right].
+$$
+<p>Actor-critic methods replace the unknown advantage $A^{\pi_\theta}(S_t,A_t)$ by a learned estimator $\widehat A_t$. The resulting stochastic update direction is</p>
+$$
+\widehat g_t(\theta)
+= \gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)\widehat A_t.
+$$
+<p>If the estimator satisfies</p>
+$$
+\mathbb{E}[\widehat A_t \mid S_t, A_t]
+= A^{\pi_\theta}(S_t,A_t),
+$$
+<p>then conditional expectation gives</p>
+$$
+\mathbb{E}[\widehat g_t(\theta) \mid S_t, A_t]
+= \gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)A^{\pi_\theta}(S_t,A_t).
+$$
+<p>Taking total expectation on both sides yields</p>
+$$
+\mathbb{E}[\widehat g_t(\theta)]
+= \mathbb{E}\left[\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)A^{\pi_\theta}(S_t,A_t)\right].
+$$
+<p>Thus the expected actor update agrees with the exact policy-gradient contribution when the advantage estimator is conditionally unbiased.</p>
+<p>A common one-step choice is the TD residual. Define</p>
+$$
+\delta_t = R_{t+1} + \gamma V_w(S_{t+1}) - V_w(S_t).
+$$
+<p>If $\delta_t$ is used as the advantage estimator, the actor step becomes</p>
+$$
+\theta \leftarrow \theta + \alpha \gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)\delta_t.
+$$
+<p>This is an exact stochastic gradient only if the conditional expectation of $\delta_t$ matches the true advantage. With an approximate critic, bias may be introduced, but the variance can be reduced relative to using full returns.</p>
+<p>The critic itself is trained against a Bellman target. Introduce a frozen target parameter vector $w^-$. Define</p>
+$$
+Y_t^{V}(w^-)
+= R_{t+1} + \gamma V_{w^-}(S_{t+1}),
+$$
+<p>and define the critic objective</p>
+$$
+L_V(w;w^-)
+= \frac{1}{2}\mathbb{E}\left[\left(Y_t^{V}(w^-) - V_w(S_t)\right)^2\right].
+$$
+<p>Differentiate with respect to $w$. Since $w^-$ is frozen, the target is constant with respect to $w$, so</p>
+$$
+\nabla_w L_V(w;w^-)
+= \mathbb{E}\left[
+\left(V_w(S_t) - Y_t^{V}(w^-)\right)\nabla_w V_w(S_t)
+\right].
+$$
+<p>Define the frozen-target TD residual</p>
+$$
+\delta_t^-
+= Y_t^{V}(w^-) - V_w(S_t)
+= R_{t+1} + \gamma V_{w^-}(S_{t+1}) - V_w(S_t).
+$$
+<p>Then a negative gradient step is</p>
+$$
+w \leftarrow w + \beta \delta_t^- \nabla_w V_w(S_t).
+$$
+<p>If one sets $w^- = w$ in the target and then suppresses the derivative through $V_w(S_{t+1})$, one recovers the usual semi-gradient TD update. Writing the frozen-target objective first makes explicit which dependence is being differentiated and which dependence is being ignored.</p>
+<h3 id="77-ppo">7.7 PPO</h3>
+<p>Problem. Define a surrogate objective for data generated by an older policy and state exactly how clipping alters that surrogate.</p>
+<p>Let $\pi_{\theta_{\mathrm{old}}}$ be the data-collecting policy and define the probability ratio</p>
+$$
+r_t(\theta) = \frac{\pi_\theta(A_t \mid S_t)}{\pi_{\theta_{\mathrm{old}}}(A_t \mid S_t)}.
+$$
+<p>Suppose $\hat A_t$ is an advantage estimator treated as constant with respect to $\theta$ during the update. The unclipped surrogate objective is</p>
+$$
+L^{\mathrm{PG}}(\theta) = \mathbb{E}[r_t(\theta)\hat A_t].
+$$
+<p>Differentiate this objective:</p>
+$$
+\nabla_\theta L^{\mathrm{PG}}(\theta)
+= \mathbb{E}\left[\nabla_\theta r_t(\theta)\hat A_t\right].
+$$
+<p>Since $\pi_{\theta_{\mathrm{old}}}(A_t \mid S_t)$ is constant with respect to $\theta$,</p>
+$$
+\nabla_\theta r_t(\theta)
+= \frac{\nabla_\theta \pi_\theta(A_t \mid S_t)}
+{\pi_{\theta_{\mathrm{old}}}(A_t \mid S_t)}.
+$$
+<p>Use the identity $\nabla \pi = \pi \nabla \log \pi$:</p>
+$$
+\nabla_\theta r_t(\theta)
+= \frac{\pi_\theta(A_t \mid S_t)\nabla_\theta \log \pi_\theta(A_t \mid S_t)}
+{\pi_{\theta_{\mathrm{old}}}(A_t \mid S_t)}
+= r_t(\theta)\nabla_\theta \log \pi_\theta(A_t \mid S_t).
+$$
+<p>Therefore</p>
+$$
+\nabla_\theta L^{\mathrm{PG}}(\theta)
+= \mathbb{E}\left[r_t(\theta)\nabla_\theta \log \pi_\theta(A_t \mid S_t)\hat A_t\right].
+$$
+<p>At $\theta = \theta_{\mathrm{old}}$, the ratio equals $1$, so</p>
+$$
+\nabla_\theta L^{\mathrm{PG}}(\theta)\big|_{\theta=\theta_{\mathrm{old}}}
+= \mathbb{E}\left[\nabla_\theta \log \pi_\theta(A_t \mid S_t)\hat A_t\right]_{\theta=\theta_{\mathrm{old}}}.
+$$
+<p>This equality is the first-order justification for optimizing the surrogate with samples generated under the old policy.</p>
+<p>PPO replaces this by the clipped surrogate</p>
+$$
+L^{\mathrm{clip}}(\theta)
+= \mathbb{E}\left[
+\min\left(
+r_t(\theta)\hat A_t,
+\operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\hat A_t
+\right)
+\right].
+$$
+<p>To see what the clipping does, consider two cases.</p>
+<p>If $\hat A_t > 0$ and $r_t(\theta) > 1+\epsilon$, then</p>
+$$
+\operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon) = 1+\epsilon,
+$$
+<p>so</p>
+$$
+\operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\hat A_t
+= (1+\epsilon)\hat A_t
+< r_t(\theta)\hat A_t.
+$$
+<p>The minimum therefore selects the clipped value, which removes the incentive to push the ratio further above $1+\epsilon$ when the estimated advantage is positive.</p>
+<p>If $\hat A_t < 0$ and $r_t(\theta) < 1-\epsilon$, then</p>
+$$
+\operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon) = 1-\epsilon,
+$$
+<p>and multiplication by the negative quantity $\hat A_t$ reverses the inequality:</p>
+$$
+(1-\epsilon)\hat A_t > r_t(\theta)\hat A_t.
+$$
+<p>Again the minimum selects the clipped branch, which removes the incentive to push the ratio further below $1-\epsilon$ in the negative-advantage direction.</p>
+<p>This is the precise algebra behind the clipping rule.</p>
+<h3 id="78-soft-actor-critic">7.8 Soft Actor-Critic</h3>
+<p>Problem. Define the entropy-regularized objective and then state the critic and actor objectives that approximate it.</p>
+<p>Soft Actor-Critic optimizes an entropy-regularized objective. Let $\alpha_{\mathrm{ent}} > 0$ be the entropy coefficient. The discounted entropy-regularized return is</p>
+$$
+G_0^{\mathrm{soft}}
+= \sum_{t=0}^{\infty}\gamma^t\left(R_{t+1} + \alpha_{\mathrm{ent}}\mathcal{H}(\pi(\cdot \mid S_t))\right).
+$$
+<p>The corresponding objective is</p>
+$$
+J_{\mathrm{soft}}(\pi)
+= \mathbb{E}_\pi[G_0^{\mathrm{soft}}].
+$$
+<p>Define the soft value quantities by</p>
+$$
+Q^\pi_{\mathrm{soft}}(s,a)
+= \mathbb{E}_\pi\left[R_{t+1} + \gamma V^\pi_{\mathrm{soft}}(S_{t+1}) \mid S_t=s, A_t=a\right]
+$$
+<p>and</p>
+$$
+V^\pi_{\mathrm{soft}}(s)
+= \mathbb{E}_{A\sim \pi(\cdot \mid s)}
+\left[
+Q^\pi_{\mathrm{soft}}(s,A) - \alpha_{\mathrm{ent}}\log \pi(A \mid s)
+\right].
+$$
+<p>These are the soft Bellman relations. The entropy term enters with a minus sign inside $V^\pi_{\mathrm{soft}}$ because</p>
+$$
+\mathcal{H}(\pi(\cdot \mid s))
+= -\mathbb{E}_{A\sim\pi(\cdot\mid s)}[\log \pi(A \mid s)].
+$$
+<p>Substituting this identity into the entropy bonus yields the displayed formula.</p>
+<p>To fit a soft critic, introduce a frozen target parameter vector $w^-$. For a sampled transition $(S_t,A_t,R_{t+1},S_{t+1})$, define the soft target</p>
+$$
+Y_t^{\mathrm{soft}}(w^-,\theta)
+= R_{t+1} + \gamma
+\mathbb{E}_{A' \sim \pi_\theta(\cdot \mid S_{t+1})}
+\left[
+Q_{w^-}(S_{t+1},A') - \alpha_{\mathrm{ent}}\log \pi_\theta(A' \mid S_{t+1})
+\right].
+$$
+<p>The corresponding critic loss is</p>
+$$
+L_{\mathrm{soft}}(w;w^-,\theta)
+= \frac{1}{2}\mathbb{E}\left[
+\left(
+Y_t^{\mathrm{soft}}(w^-,\theta) - Q_w(S_t,A_t)
+\right)^2
+\right].
+$$
+<p>This is a squared Bellman-residual objective for the soft Bellman relation, with the target frozen through $w^-$.</p>
+<p>For the actor, fix a critic $Q_w$ and define the soft value induced by $\pi_\theta$ at a state $s$ by</p>
+$$
+V_{w,\theta}^{\mathrm{soft}}(s)
+= \mathbb{E}_{A \sim \pi_\theta(\cdot \mid s)}
+\left[
+Q_w(s,A) - \alpha_{\mathrm{ent}}\log \pi_\theta(A \mid s)
+\right].
+$$
+<p>Let $d$ denote the state distribution used for policy improvement. Maximizing the soft value over that distribution is equivalent to minimizing</p>
+$$
+I_{\mathrm{soft}}(\theta;w)
+= \mathbb{E}_{S \sim d}
+\mathbb{E}_{A \sim \pi_\theta(\cdot \mid S)}
+\left[
+\alpha_{\mathrm{ent}}\log \pi_\theta(A \mid S) - Q_w(S,A)
+\right].
+$$
+<p>The equivalence is exact because</p>
+$$
+I_{\mathrm{soft}}(\theta;w)
+= -\mathbb{E}_{S \sim d}\left[V_{w,\theta}^{\mathrm{soft}}(S)\right].
+$$
+<p>Therefore minimizing $I_{\mathrm{soft}}(\theta;w)$ is the same as maximizing the critic-defined entropy-regularized value under the chosen state distribution.</p>
+<h3 id="79-optional-illustrations">7.9 Optional illustrations</h3>
+<p>The following figure is optional support for the policy-gradient derivation.</p>
+<p><img alt="Policy-gradient estimator flow" src="assets/figures/policy-gradient-estimator.svg"></p>
+<p>The following figure is optional support for actor-critic structure.</p>
+<p><img alt="Actor-critic workflow" src="assets/figures/actor-critic-workflow.svg"></p>
+<p>The following figure is optional support for the PPO clipping rule.</p>
+<p><img alt="PPO clipping intuition" src="assets/figures/ppo-clipped-objective.svg"></p>
+<h2 id="8-reward-design-representation-evaluation-methodology-and-roadmap">8. Reward Design, Representation, Evaluation Methodology, and Roadmap</h2>
+<h3 id="81-problem-statement">8.1 Problem statement</h3>
+<p>The final section formalizes three issues that are often discussed informally: reward specification, state representation, and empirical evaluation. Each of these affects the objective being optimized or the evidence available about whether the objective has been achieved.</p>
+<h3 id="82-reward-versus-value">8.2 Reward versus value</h3>
+<p>A reward function assigns immediate scalar feedback. A value function assigns expected long-run return. Formally, the immediate reward at time $t+1$ is $R_{t+1}$, while</p>
+$$
+Q^\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t=s, A_t=a].
+$$
+<p>Therefore the distinction is exact:</p>
+<ul>
+<li>reward is a one-step quantity</li>
+<li>value is a long-horizon expectation induced by the reward law and the dynamics</li>
+</ul>
+<p>No policy is optimized directly with respect to raw reward alone unless $\gamma=0$.</p>
+<h3 id="83-potential-based-reward-shaping">8.3 Potential-based reward shaping</h3>
+<p>Let the original reward be $r_t$. Choose any potential function $\Phi : \mathcal{S} \to \mathbb{R}$ and define the shaped reward by</p>
+$$
+r_t' = r_t + \gamma \Phi(S_{t+1}) - \Phi(S_t).
+$$
+<p>The shaped discounted return from time $0$ is</p>
+$$
+G_0'
+= \sum_{t=0}^{\infty}\gamma^t r_{t+1}'.
+$$
+<p>Substitute the definition of $r_t'$:</p>
+$$
+G_0'
+= \sum_{t=0}^{\infty}\gamma^t
+\left(
+r_{t+1} + \gamma \Phi(S_{t+1}) - \Phi(S_t)
+\right).
+$$
+<p>Distribute the sum:</p>
+$$
+G_0'
+= \sum_{t=0}^{\infty}\gamma^t r_{t+1}
++ \sum_{t=0}^{\infty}\gamma^{t+1}\Phi(S_{t+1})
+- \sum_{t=0}^{\infty}\gamma^t \Phi(S_t).
+$$
+<p>The first term is $G_0$. Rewrite the second sum with index $j=t+1$:</p>
+$$
+\sum_{t=0}^{\infty}\gamma^{t+1}\Phi(S_{t+1})
+= \sum_{j=1}^{\infty}\gamma^j \Phi(S_j).
+$$
+<p>Therefore</p>
+$$
+G_0'
+= G_0 + \sum_{j=1}^{\infty}\gamma^j \Phi(S_j) - \sum_{t=0}^{\infty}\gamma^t \Phi(S_t).
+$$
+<p>Split the second series at $t=0$:</p>
+$$
+\sum_{t=0}^{\infty}\gamma^t \Phi(S_t)
+= \Phi(S_0) + \sum_{t=1}^{\infty}\gamma^t \Phi(S_t).
+$$
+<p>Substituting gives</p>
+$$
+G_0'
+= G_0 + \sum_{j=1}^{\infty}\gamma^j \Phi(S_j)
+- \Phi(S_0)
+- \sum_{t=1}^{\infty}\gamma^t \Phi(S_t).
+$$
+<p>The two infinite sums cancel term by term, so</p>
+$$
+G_0' = G_0 - \Phi(S_0).
+$$
+<p>under the bounded-discounted setting where the telescoping tail vanishes. Therefore, for a fixed initial state $S_0=s$,</p>
+$$
+J'(\pi \mid S_0=s) = J(\pi \mid S_0=s) - \Phi(s).
+$$
+<p>The difference depends only on the start state, not on the policy. Consequently the set of optimal policies is unchanged.</p>
+<p>This is a theorem-level guarantee. A heuristic shaping term that is not potential-based does not automatically preserve optimal policies.</p>
+<h3 id="84-gridworld-route-thresholds">8.4 Gridworld route thresholds</h3>
+<p>Consider two candidate routes indexed by $i \in \{1,2\}$. Suppose route $i$ lasts $T_i$ steps and ends in terminal reward $R_i$. Let $r$ denote the living reward collected at each nonterminal step. The discounted return of route $i$ is</p>
+$$
+G_i(r)
+= \sum_{t=0}^{T_i-1}\gamma^t r + \gamma^{T_i}R_i.
+$$
+<p>If $\gamma \ne 1$, the finite geometric sum is</p>
+$$
+\sum_{t=0}^{T_i-1}\gamma^t
+= \frac{1-\gamma^{T_i}}{1-\gamma}.
+$$
+<p>Therefore</p>
+$$
+G_i(r)
+= r\frac{1-\gamma^{T_i}}{1-\gamma} + \gamma^{T_i}R_i.
+$$
+<p>To find the threshold at which the two routes tie, solve</p>
+$$
+G_1(r) = G_2(r).
+$$
+<p>Substitute the formulas:</p>
+$$
+r\frac{1-\gamma^{T_1}}{1-\gamma} + \gamma^{T_1}R_1
+=
+r\frac{1-\gamma^{T_2}}{1-\gamma} + \gamma^{T_2}R_2.
+$$
+<p>Move the $r$-terms to the left and the terminal terms to the right:</p>
+$$
+r\frac{1-\gamma^{T_1}}{1-\gamma}
+- r\frac{1-\gamma^{T_2}}{1-\gamma}
+=
+\gamma^{T_2}R_2 - \gamma^{T_1}R_1.
+$$
+<p>Factor out $r$:</p>
+$$
+r\left(
+\frac{1-\gamma^{T_1}}{1-\gamma}
+- \frac{1-\gamma^{T_2}}{1-\gamma}
+\right)
+=
+\gamma^{T_2}R_2 - \gamma^{T_1}R_1.
+$$
+<p>Combine the fractions:</p>
+$$
+r\left(
+\frac{(1-\gamma^{T_1})-(1-\gamma^{T_2})}{1-\gamma}
+\right)
+=
+\gamma^{T_2}R_2 - \gamma^{T_1}R_1.
+$$
+<p>Simplify the numerator:</p>
+$$
+(1-\gamma^{T_1})-(1-\gamma^{T_2})
+= 1-\gamma^{T_1}-1+\gamma^{T_2}
+= \gamma^{T_2}-\gamma^{T_1}.
+$$
+<p>Hence</p>
+$$
+r \frac{\gamma^{T_2}-\gamma^{T_1}}{1-\gamma}
+=
+\gamma^{T_2}R_2 - \gamma^{T_1}R_1.
+$$
+<p>If $\gamma^{T_2} \ne \gamma^{T_1}$, isolate $r$:</p>
+$$
+r
+=
+\frac{(1-\gamma)(\gamma^{T_2}R_2 - \gamma^{T_1}R_1)}
+{\gamma^{T_2}-\gamma^{T_1}}.
+$$
+<p>This is the exact threshold value in the $\gamma \ne 1$ case.</p>
+<p>If $\gamma=1$ and the horizon is finite, then</p>
+$$
+G_i(r) = T_i r + R_i.
+$$
+<p>Setting $G_1(r)=G_2(r)$ gives</p>
+$$
+T_1 r + R_1 = T_2 r + R_2.
+$$
+<p>Move the $r$-terms to one side:</p>
+$$
+T_1 r - T_2 r = R_2 - R_1.
+$$
+<p>Factor out $r$:</p>
+$$
+(T_1 - T_2)r = R_2 - R_1.
+$$
+<p>If $T_1 \ne T_2$, then</p>
+$$
+r = \frac{R_2 - R_1}{T_1 - T_2}.
+$$
+<h3 id="85-evaluation-methodology">8.5 Evaluation methodology</h3>
+<p>Suppose an algorithm is run with $N$ independent random seeds, producing evaluation returns</p>
+$$
+X_1, X_2, \ldots, X_N.
+$$
+<p>The sample mean is</p>
+$$
+\widehat \mu_N = \frac{1}{N}\sum_{i=1}^N X_i.
+$$
+<p>The unbiased sample variance is</p>
+$$
+\widehat \sigma_N^2 = \frac{1}{N-1}\sum_{i=1}^N (X_i - \widehat \mu_N)^2
+$$
+<p>for $N \ge 2$.</p>
+<p>The standard error of the sample mean is</p>
+$$
+\operatorname{SE}(\widehat \mu_N) = \frac{\widehat \sigma_N}{\sqrt{N}}.
+$$
+<p>These quantities justify three common evaluation requirements:</p>
+<ol>
+<li>reporting a single seed does not estimate variability</li>
+<li>reporting multiple seeds permits estimation of the mean and uncertainty</li>
+<li>comparing two algorithms meaningfully requires the same evaluation protocol, not merely the same training curve</li>
+</ol>
+<p>Training-policy return and evaluation-policy return are distinct random variables if the evaluation policy differs from the behavior policy. That distinction must be recorded explicitly in any reported result.</p>
+<p>An ablation study is a controlled comparison between a method and one or more modified versions obtained by removing or changing individual components while keeping the rest of the protocol fixed. If the protocol changes simultaneously in multiple ways, the comparison is no longer a clean ablation.</p>
+<h3 id="86-representation-counts-and-non-markov-encodings">8.6 Representation counts and non-Markov encodings</h3>
+<p>The exact local-neighborhood count was derived in Section 6. The remaining formal point is the possibility of non-Markov aliasing. Let $\phi$ be a representation map from full states to encoded states. The representation is not Markov if there exist distinct full states $s_1$ and $s_2$ such that</p>
+$$
+\phi(s_1) = \phi(s_2)
+$$
+<p>but</p>
+$$
+P(S_{t+1},R_{t+1}\mid S_t=s_1, A_t=a)
+\ne
+P(S_{t+1},R_{t+1}\mid S_t=s_2, A_t=a)
+$$
+<p>for some action $a$.</p>
+<p>This condition states precisely why two globally different maze locations may be indistinguishable under a local view while still requiring different optimal actions.</p>
+<h3 id="87-optional-illustrations">8.7 Optional illustrations</h3>
+<p>The following figure is optional support for reward-threshold changes in gridworld.</p>
+<p><img alt="Gridworld policy regions" src="assets/figures/gridworld-policy-regions.svg"></p>
+<p>The following figure is optional support for random-policy evaluation.</p>
+<p><img alt="Random policy gridworld" src="assets/figures/random-policy-gridworld.svg"></p>
+<p>The following figure is optional support for evaluation protocol.</p>
+<p><img alt="Evaluation workflow" src="assets/figures/evaluation-workflow.svg"></p>
+<h3 id="88-roadmap-beyond-the-core">8.8 Roadmap beyond the core</h3>
+<p>The chapter has treated the discounted finite or bounded setting in enough detail to derive the principal identities used by value-based and policy-based reinforcement learning. Several neighboring topics extend the same formal template rather than replacing it.</p>
+<ul>
+<li>Model-based reinforcement learning changes the source of the transition law used in planning.</li>
+<li>Offline reinforcement learning changes the data distribution by replacing active interaction with a fixed logged dataset.</li>
+<li>Imitation learning changes the source of supervision by introducing demonstrations.</li>
+<li>RLHF and related methods change the reward-generation mechanism while preserving the same optimization structure over trajectories or policies.</li>
+</ul>
+<p>The same formal questions recur in each case: what objective is being optimized, what distribution generates the data, which quantities are exact and which are estimated, and what assumptions justify the update rule being used.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Berkeley CS 185/285 Deep Reinforcement Learning, Decision Making, and Control: <a href="https://rail.eecs.berkeley.edu/deeprlcourse/">https://rail.eecs.berkeley.edu/deeprlcourse/</a></li>
+<li>David Silver reinforcement learning lectures: <a href="https://www.davidsilver.uk/teaching/">https://www.davidsilver.uk/teaching/</a></li>
+<li>Sutton and Barto, Reinforcement Learning: An Introduction: <a href="https://incompleteideas.net/book/the-book-2nd.html">https://incompleteideas.net/book/the-book-2nd.html</a></li>
+<li>Sutton and Barto on generalized policy iteration: <a href="https://www.incompleteideas.net/book/4/node7.html">https://www.incompleteideas.net/book/4/node7.html</a></li>
+<li>Stanford CS234: Reinforcement Learning: <a href="https://web.stanford.edu/class/cs234/">https://web.stanford.edu/class/cs234/</a></li>
+<li>Stanford CS224R: Deep Reinforcement Learning: <a href="https://cs224r.stanford.edu/">https://cs224r.stanford.edu/</a></li>
+</ul>
+  </main>
+</body>
+</html>

@@ -23,10 +23,23 @@ digraph BellmanPolicyIterationLoop {
     penwidth=2.0
   ];
 
-  policy [label="Policy pi_k"];
-  eval [label="Policy evaluation\nBellman expectation backup\nV^pi, Q^pi"];
-  improve [label="Policy improvement\nuse Bellman optimality\npi_{k+1}(s) = argmax_a q(s,a)"];
-  model [label="Transition model\nP(s'|s,a) and rewards", fillcolor="#fff7ed", color="#c77700"];
+  policy [label=<
+    <B>Policy</B> &pi;<SUB>k</SUB>
+  >];
+  eval [label=<
+    <B>Policy evaluation</B><BR/>
+    Bellman expectation backup<BR/>
+    v<SUB>&pi;</SUB>, q<SUB>&pi;</SUB>
+  >];
+  improve [label=<
+    <B>Policy improvement</B><BR/>
+    use Bellman optimality<BR/>
+    &pi;<SUB>k+1</SUB>(s) = arg max q(s,a)
+  >];
+  model [label=<
+    <B>Transition model</B><BR/>
+    P(s' | s, a) and rewards
+  >, fillcolor="#fff7ed", color="#c77700"];
 
   policy -> eval;
   model -> eval [style=dashed, color="#9ca3af"];

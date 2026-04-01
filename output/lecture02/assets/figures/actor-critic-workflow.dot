@@ -22,17 +22,40 @@ digraph ActorCriticWorkflow {
     penwidth=2.0
   ];
 
-  state [label="State s_t", fillcolor="#e0f2fe", color="#0284c7"];
-  actor [label="Actor\npolicy pi(a|s; theta)", fillcolor="#dbeafe", color="#2563eb"];
-  action [label="Action a_t", fillcolor="#eff6ff"];
-  env [label="Environment", fillcolor="#fff7ed", color="#c77700"];
-  critic [label="Critic\nV(s; phi) or Q(s,a; phi)", fillcolor="#ede9fe", color="#7c3aed"];
-  td [label="TD error delta_t\nr + gamma V(s') - V(s)", fillcolor="#fce7f3", color="#be185d"];
-  update_actor [label="Update actor\ngrad log pi * delta_t", fillcolor="#dbeafe", color="#2563eb"];
-  update_critic [label="Update critic\nminimize delta_t^2", fillcolor="#ede9fe", color="#7c3aed"];
+  state [label=<
+    <B>State</B> s<SUB>t</SUB>
+  >, fillcolor="#e0f2fe", color="#0284c7"];
+  actor [label=<
+    <B>Actor</B><BR/>
+    policy &pi;(a | s; &theta;)
+  >, fillcolor="#dbeafe", color="#2563eb"];
+  action [label=<
+    <B>Action</B> a<SUB>t</SUB>
+  >, fillcolor="#eff6ff"];
+  env [label=<
+    <B>Environment</B>
+  >, fillcolor="#fff7ed", color="#c77700"];
+  critic [label=<
+    <B>Critic</B><BR/>
+    V(s; &phi;) or Q(s,a; &phi;)
+  >, fillcolor="#ede9fe", color="#7c3aed"];
+  td [label=<
+    <B>TD error</B> &delta;<SUB>t</SUB><BR/>
+    r + &gamma;V(s') - V(s)
+  >, fillcolor="#fce7f3", color="#be185d"];
+  update_actor [label=<
+    <B>Update actor</B><BR/>
+    grad log &pi; * &delta;<SUB>t</SUB>
+  >, fillcolor="#dbeafe", color="#2563eb"];
+  update_critic [label=<
+    <B>Update critic</B><BR/>
+    minimize &delta;<SUB>t</SUB><SUP>2</SUP>
+  >, fillcolor="#ede9fe", color="#7c3aed"];
 
   state -> actor -> action -> env -> state;
-  env -> critic [label="r_t, s_{t+1}"];
+  env -> critic [label=<
+    r<SUB>t</SUB>, s<SUB>t+1</SUB>
+  >];
   critic -> td [label="value estimate"];
   env -> td [label="reward + next state", style=dashed, color="#9ca3af"];
   td -> update_actor;

@@ -10,8 +10,8 @@
 <title>SarsaVsQLearning</title>
 <g id="clust1" class="cluster">
 <title>cluster_sarsa</title>
-<path fill="none" stroke="#60a5fa" d="M48.76,-8C48.76,-8 670.93,-8 670.93,-8 676.93,-8 682.93,-14 682.93,-20 682.93,-20 682.93,-77 682.93,-77 682.93,-83 676.93,-89 670.93,-89 670.93,-89 48.76,-89 48.76,-89 42.76,-89 36.76,-83 36.76,-77 36.76,-77 36.76,-20 36.76,-20 36.76,-14 42.76,-8 48.76,-8"/>
-<text xml:space="preserve" text-anchor="middle" x="359.85" y="-71.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="14.00">On&#45;policy SARSA</text>
+<path fill="none" stroke="#60a5fa" d="M48.76,-8C48.76,-8 676.18,-8 676.18,-8 682.18,-8 688.18,-14 688.18,-20 688.18,-20 688.18,-77 688.18,-77 688.18,-83 682.18,-89 676.18,-89 676.18,-89 48.76,-89 48.76,-89 42.76,-89 36.76,-83 36.76,-77 36.76,-77 36.76,-20 36.76,-20 36.76,-14 42.76,-8 48.76,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="362.47" y="-71.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="14.00">On&#45;policy SARSA</text>
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_q</title>
@@ -51,26 +51,27 @@
 <!-- ap1 -->
 <g id="node4" class="node">
 <title>ap1</title>
-<ellipse fill="#dbeafe" stroke="#334155" cx="439.15" cy="-37" rx="18" ry="18"/>
-<text xml:space="preserve" text-anchor="middle" x="439.15" y="-31.98" font-family="Helvetica,sans-Serif" font-size="12.00">A&#39;</text>
+<ellipse fill="#dbeafe" stroke="#334155" cx="447.4" cy="-37" rx="18" ry="18"/>
+<text xml:space="preserve" text-anchor="middle" x="447.4" y="-31.98" font-family="Helvetica,sans-Serif" font-size="12.00">A&#39;</text>
 </g>
 <!-- sp1&#45;&gt;ap1 -->
 <g id="edge3" class="edge">
 <title>sp1&#45;&gt;ap1</title>
-<path fill="none" stroke="black" stroke-width="2" d="M337.88,-37C356.99,-37 387.99,-37 410.47,-37"/>
-<polygon fill="black" stroke="black" stroke-width="2" points="410.2,-39.63 417.7,-37 410.2,-34.38 410.2,-39.63"/>
+<path fill="none" stroke="black" stroke-width="2" d="M337.76,-37C358.55,-37 393.77,-37 418.46,-37"/>
+<polygon fill="black" stroke="black" stroke-width="2" points="418.44,-39.63 425.94,-37 418.44,-34.38 418.44,-39.63"/>
 </g>
 <!-- tgt1 -->
 <g id="node5" class="node">
 <title>tgt1</title>
-<polygon fill="#eff6ff" stroke="#334155" points="674.93,-55.51 558.41,-55.51 558.41,-18.49 674.93,-18.49 674.93,-55.51"/>
-<text xml:space="preserve" text-anchor="middle" x="616.67" y="-38.35" font-family="Helvetica,sans-Serif" font-size="12.00">target</text>
-<text xml:space="preserve" text-anchor="middle" x="616.67" y="-25.6" font-family="Helvetica,sans-Serif" font-size="12.00">R + gamma Q(S&#39;,A&#39;)</text>
+<polygon fill="#eff6ff" stroke="#334155" points="680.18,-55 569.66,-55 569.66,-19 680.18,-19 680.18,-55"/>
+<text xml:space="preserve" text-anchor="start" x="599.42" y="-38.6" font-family="Helvetica,sans-Serif" font-size="12.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text xml:space="preserve" text-anchor="start" x="617.42" y="-38.6" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00">target</text>
+<text xml:space="preserve" text-anchor="start" x="575.42" y="-26.6" font-family="Helvetica,sans-Serif" font-size="12.00"> &#160;&#160;&#160;&#160;&#160;R + γQ(S&#39;,A&#39;) &#160;&#160;&#160;</text>
 </g>
 <!-- ap1&#45;&gt;tgt1 -->
 <g id="edge4" class="edge">
 <title>ap1&#45;&gt;tgt1</title>
-<path fill="none" stroke="black" stroke-width="2" stroke-dasharray="5,2" d="M457.63,-37C480.86,-37 523.08,-37 558.04,-37"/>
+<path fill="none" stroke="black" stroke-width="2" stroke-dasharray="5,2" d="M465.88,-37C489.81,-37 533.87,-37 569.4,-37"/>
 </g>
 <!-- s2 -->
 <g id="node6" class="node">
@@ -105,26 +106,27 @@
 <!-- max2 -->
 <g id="node9" class="node">
 <title>max2</title>
-<polygon fill="#fff7ed" stroke="#334155" points="482.79,-144 395.52,-144 395.52,-108 482.79,-108 482.79,-144"/>
-<text xml:space="preserve" text-anchor="middle" x="439.15" y="-120.97" font-family="Helvetica,sans-Serif" font-size="12.00">max_a Q(S&#39;,a)</text>
+<polygon fill="#fff7ed" stroke="#334155" points="499.29,-144 395.52,-144 395.52,-108 499.29,-108 499.29,-144"/>
+<text xml:space="preserve" text-anchor="start" x="401.28" y="-122.62" font-family="Helvetica,sans-Serif" font-size="12.00"> &#160;&#160;&#160;&#160;&#160;max Q(S&#39;,a) &#160;&#160;&#160;</text>
 </g>
 <!-- sp2&#45;&gt;max2 -->
 <g id="edge7" class="edge">
 <title>sp2&#45;&gt;max2</title>
-<path fill="none" stroke="black" stroke-width="2" d="M337.88,-126C350.32,-126 367.79,-126 384.67,-126"/>
-<polygon fill="black" stroke="black" stroke-width="2" points="384.52,-128.63 392.02,-126 384.52,-123.38 384.52,-128.63"/>
+<path fill="none" stroke="black" stroke-width="2" d="M337.76,-126C350.14,-126 367.65,-126 385,-126"/>
+<polygon fill="black" stroke="black" stroke-width="2" points="384.63,-128.63 392.13,-126 384.63,-123.38 384.63,-128.63"/>
 </g>
 <!-- tgt2 -->
 <g id="node10" class="node">
 <title>tgt2</title>
-<polygon fill="#fff7ed" stroke="#334155" points="692.56,-144.51 540.79,-144.51 540.79,-107.49 692.56,-107.49 692.56,-144.51"/>
-<text xml:space="preserve" text-anchor="middle" x="616.67" y="-127.35" font-family="Helvetica,sans-Serif" font-size="12.00">target</text>
-<text xml:space="preserve" text-anchor="middle" x="616.67" y="-114.6" font-family="Helvetica,sans-Serif" font-size="12.00">R + gamma max_a Q(S&#39;,a)</text>
+<polygon fill="#fff7ed" stroke="#334155" points="692.56,-144 557.29,-144 557.29,-108 692.56,-108 692.56,-144"/>
+<text xml:space="preserve" text-anchor="start" x="599.42" y="-127.6" font-family="Helvetica,sans-Serif" font-size="12.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text xml:space="preserve" text-anchor="start" x="617.42" y="-127.6" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00">target</text>
+<text xml:space="preserve" text-anchor="start" x="563.05" y="-115.6" font-family="Helvetica,sans-Serif" font-size="12.00"> &#160;&#160;&#160;&#160;&#160;R + γ max Q(S&#39;,a) &#160;&#160;&#160;</text>
 </g>
 <!-- max2&#45;&gt;tgt2 -->
 <g id="edge8" class="edge">
 <title>max2&#45;&gt;tgt2</title>
-<path fill="none" stroke="black" stroke-width="2" stroke-dasharray="5,2" d="M483.09,-126C500.35,-126 520.76,-126 540.33,-126"/>
+<path fill="none" stroke="black" stroke-width="2" stroke-dasharray="5,2" d="M499.64,-126C517.55,-126 537.93,-126 556.94,-126"/>
 </g>
 <!-- note -->
 <g id="node11" class="node">

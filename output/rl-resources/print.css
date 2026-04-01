@@ -40,11 +40,6 @@ h2 {
   margin-top: 1.6em;
   border-top: 1px solid #e5e7eb;
   padding-top: 0.7em;
-  break-before: page;
-}
-
-h2:first-of-type {
-  break-before: auto;
 }
 
 h3 {
@@ -173,10 +168,4 @@ header {
 #TOC > ul > li > ul {
   margin-left: 0;
   padding-left: 1.2em;
-}
-
-.math.display {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0.2em 0;
 }

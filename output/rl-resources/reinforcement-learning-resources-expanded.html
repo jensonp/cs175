@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Reinforcement Learning Notes Synthesized from the CS175
+Resource Links</title>
+  <style>
+
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+</style>
+  <style type="text/css">@page {
+size: Letter;
+margin: 0.7in 0.72in 0.8in 0.72in;
+}
+html {
+font-size: 11pt;
+-webkit-print-color-adjust: exact;
+print-color-adjust: exact;
+}
+body {
+font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+color: #1f2937;
+line-height: 1.5;
+max-width: 8.1in;
+margin: 0 auto;
+}
+h1, h2, h3, h4 {
+font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+color: #111827;
+line-height: 1.2;
+margin-top: 1.2em;
+margin-bottom: 0.5em;
+page-break-after: avoid;
+break-after: avoid-page;
+}
+h1 {
+font-size: 26pt;
+margin-top: 0;
+margin-bottom: 0.35em;
+border-bottom: 2px solid #d97706;
+padding-bottom: 0.18em;
+}
+h2 {
+font-size: 18pt;
+margin-top: 1.6em;
+border-top: 1px solid #e5e7eb;
+padding-top: 0.7em;
+}
+h3 {
+font-size: 13.5pt;
+}
+p, ul, ol, table, blockquote, pre, figure {
+page-break-inside: avoid;
+break-inside: avoid-page;
+}
+p, li {
+widows: 3;
+orphans: 3;
+}
+a {
+color: #0f4c81;
+text-decoration: none;
+}
+a[href^="http"]::after {
+content: "";
+}
+code, pre {
+font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+font-size: 0.92em;
+}
+code {
+background: #f3f4f6;
+padding: 0.08em 0.28em;
+border-radius: 4px;
+}
+pre {
+background: #f8fafc;
+border: 1px solid #e5e7eb;
+border-radius: 8px;
+padding: 0.9em;
+overflow-wrap: anywhere;
+white-space: pre-wrap;
+}
+blockquote {
+margin: 1em 0;
+padding: 0.8em 1em;
+background: #fff7ed;
+border-left: 4px solid #f59e0b;
+border-radius: 6px;
+}
+table {
+width: 100%;
+border-collapse: collapse;
+margin: 1em 0 1.2em;
+font-size: 0.95em;
+}
+th, td {
+border: 1px solid #d1d5db;
+padding: 0.48em 0.56em;
+vertical-align: top;
+}
+th {
+background: #f3f4f6;
+font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+text-align: left;
+}
+img, svg {
+display: block;
+max-width: 100%;
+height: auto;
+margin: 0.9em auto 1em;
+}
+hr {
+border: 0;
+border-top: 1px solid #d1d5db;
+margin: 1.6em 0;
+}
+.title-block-header,
+header {
+margin-bottom: 1.2em;
+}
+#TOC {
+background: #f8fafc;
+border: 1px solid #dbe3ec;
+border-radius: 10px;
+padding: 0.9em 1.1em;
+margin: 1em 0 1.8em;
+page-break-inside: avoid;
+}
+#TOC::before {
+content: "Contents";
+display: block;
+font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 1.05rem;
+font-weight: 700;
+margin-bottom: 0.45em;
+}
+#TOC ul {
+margin: 0.2em 0 0.2em 1.2em;
+}
+#TOC > ul {
+margin-left: 0;
+padding-left: 0;
+}
+#TOC > ul > li {
+list-style: none;
+}
+#TOC > ul > li > a {
+display: none;
+}
+#TOC > ul > li > ul {
+margin-left: 0;
+padding-left: 1.2em;
+}
+</style>
+</head>
+<body>
+<h1 id="reinforcement-learning-notes-synthesized-from-the-cs175-resource-links">Reinforcement
+Learning Notes Synthesized from the CS175 Resource Links</h1>
+<p>This document extracts the actual reinforcement learning content that
+is taught across the linked tutorials, libraries, courses, and books
+from the CS175 Canvas page. It is not a catalog of resource types.
+Instead, it turns the linked material into a set of study notes
+organized around the ideas of reinforcement learning itself.</p>
+<p>The sources behind this synthesis include Sutton and Barto, David
+Silver&#39;s UCL course, Denny Britz&#39;s notebook-based repo, OpenAI Spinning
+Up, Berkeley&#39;s deep RL course, the Francois-Lavet deep RL monograph,
+Csaba Szepesvari&#39;s theory text, Bertsekas&#39;s dynamic-programming and
+control materials, and the library documentation for RLlib, MushroomRL,
+Baselines, and Coach.</p>
+<h2 id="1-the-agent-the-environment-and-the-learning-objective">1. The
+Agent, the Environment, and the Learning Objective</h2>
+<p>Reinforcement learning begins with repeated interaction. At time step
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>,
+the agent receives a state or observation, chooses an action, and the
+environment responds with both a scalar reward and a next state. The key
+point is that the agent is not given labeled correct actions. Instead,
+it must learn from consequences. That is what makes RL different from
+ordinary supervised learning: the learner&#39;s actions change its future
+data, so learning and control are inseparable.</p>
+<p>The quantity the agent tries to maximize is not immediate reward
+alone, but <strong>return</strong>, the total future reward from a time
+step onward. In the discounted case,</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>G</mi><mi>t</mi></msub><mo>=</mo><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>+</mo><mi>γ</mi><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>2</mn></mrow></msub><mo>+</mo><msup><mi>γ</mi><mn>2</mn></msup><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>3</mn></mrow></msub><mo>+</mo><mi>⋯</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">
+G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots,
+</annotation></semantics></math></p>
+<p>where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi><mo>∈</mo><mo stretchy="false" form="prefix">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\gamma \in [0,1]</annotation></semantics></math>
+is the discount factor. Discounting makes delayed rewards count less,
+keeps continuing problems mathematically well-defined, and encodes the
+preference for sooner reward over later reward. Once return is the
+objective, a locally bad action can still be globally good if it
+improves the future enough.</p>
+<p>This agent-environment-return framing is the common starting point
+across Sutton and Barto, Silver&#39;s first two lectures, and Britz&#39;s
+introductory notes. The same loop also sits underneath all of the
+library APIs. Whether a framework is simple or distributed, it is still
+formalizing the same cycle of observing, acting, receiving reward, and
+updating.</p>
+<p>Sources: <a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a>,
+<a href="https://www.davidsilver.uk/teaching/">https://www.davidsilver.uk/teaching/</a>,
+<a href="https://github.com/dennybritz/reinforcement-learning">https://github.com/dennybritz/reinforcement-learning</a>,
+<a href="https://docs.ray.io/en/latest/rllib/package_ref/env.html">https://docs.ray.io/en/latest/rllib/package_ref/env.html</a>,
+<a href="https://mushroomrl.readthedocs.io/en/latest/source/mushroom_rl.agent_environment_interface.html">https://mushroomrl.readthedocs.io/en/latest/source/mushroom_rl.agent_environment_interface.html</a></p>
+<h2 id="2-states-markov-decision-processes-and-value-functions">2.
+States, Markov Decision Processes, and Value Functions</h2>
+<p>The next conceptual step is deciding what information the agent
+should treat as its state. In the cleanest setting, the chosen state has
+the <strong>Markov property</strong>, meaning that once the current
+state is known, the future depends only on that state and the chosen
+action, not on the full past history. A control problem with states,
+actions, transition-reward dynamics, and discount is then modeled as a
+<strong>Markov Decision Process</strong>, or MDP.</p>
+<p>Given an MDP and a policy
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>,
+the central objects are the <strong>state value</strong>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mi>π</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">v_\pi(s)</annotation></semantics></math>
+and the <strong>action value</strong>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>π</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">q_\pi(s,a)</annotation></semantics></math>.
+The state value is the expected return starting from state
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>
+and following policy
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>.
+The action value is the expected return starting from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>,
+first taking action
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>a</mi><annotation encoding="application/x-tex">a</annotation></semantics></math>,
+and then following
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>π</mi><annotation encoding="application/x-tex">\pi</annotation></semantics></math>.
+Optimal control asks for a policy whose values dominate all
+alternatives, producing the optimal value functions
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>v</mi><mo>*</mo></msub><annotation encoding="application/x-tex">v_*</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>q</mi><mo>*</mo></msub><annotation encoding="application/x-tex">q_*</annotation></semantics></math>.</p>
+<p>These definitions matter because they turn the vague goal of &quot;do well
+over time&quot; into something the agent can estimate and optimize. Much of
+RL can be understood as different ways of approximating or improving
+these value functions under different assumptions about what is known,
+what is sampled, and what function class is being used.</p>
+<p>Sources: <a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a>,
+<a href="https://www.davidsilver.uk/teaching/">https://www.davidsilver.uk/teaching/</a>,
+<a href="https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/MDP/README.md">https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/MDP/README.md</a>,
+<a href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf</a></p>
+<h2 id="3-bellman-equations-dynamic-programming-and-generalized-policy-iteration">3.
+Bellman Equations, Dynamic Programming, and Generalized Policy
+Iteration</h2>
+<p>The Bellman equations are the mathematical backbone of RL. They
+express a value recursively as immediate reward plus discounted
+continuation value. For a fixed policy, the Bellman expectation equation
+defines
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>v</mi><mi>π</mi></msub><annotation encoding="application/x-tex">v_\pi</annotation></semantics></math>
+by averaging over the policy&#39;s actions and the environment&#39;s stochastic
+transitions. For optimal control, the Bellman optimality equation
+replaces that policy average with a maximum over actions. This is the
+bridge from value estimation to actual decision making.</p>
+<p>Dynamic programming assumes that the transition-reward model is known
+exactly. Under that assumption, policy evaluation repeatedly applies
+Bellman expectation backups to compute
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>v</mi><mi>π</mi></msub><annotation encoding="application/x-tex">v_\pi</annotation></semantics></math>,
+and policy improvement makes the policy greedy with respect to that
+value function. Alternating those steps gives <strong>policy
+iteration</strong>. Repeatedly applying the Bellman optimality operator
+gives <strong>value iteration</strong>. These methods show the ideal
+structure of RL clearly, but they become impractical when the model is
+unknown or the state space is too large.</p>
+<p>Sutton and Barto&#39;s notion of <strong>generalized policy
+iteration</strong> is the broader synthesis. Most RL algorithms can be
+seen as incomplete, interleaved forms of evaluation and improvement.
+Bertsekas and Szepesvari push this idea further by viewing value
+iteration, policy iteration, actor-critic, LSPI-style methods, and even
+some rollout procedures as variants of approximate dynamic programming.
+That perspective is useful because it emphasizes the operator being
+approximated, not just the surface form of the algorithm.</p>
+<p>Sources: <a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a>,
+<a href="https://www.davidsilver.uk/teaching/">https://www.davidsilver.uk/teaching/</a>,
+<a href="https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/DP/README.md">https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/DP/README.md</a>,
+<a href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf</a>,
+<a href="https://ocw.mit.edu/courses/6-231-dynamic-programming-and-stochastic-control-fall-2015/dae6c8dca97f89b45bd0d7877a5433c9_MIT6_231F15_Notes.pdf">https://ocw.mit.edu/courses/6-231-dynamic-programming-and-stochastic-control-fall-2015/dae6c8dca97f89b45bd0d7877a5433c9_MIT6_231F15_Notes.pdf</a></p>
+<h2 id="4-monte-carlo-temporal-difference-learning-and-basic-control">4.
+Monte Carlo, Temporal-Difference Learning, and Basic Control</h2>
+<p>When the environment model is unknown, the agent can learn directly
+from sampled experience. <strong>Monte Carlo</strong> methods wait until
+an episode ends and then use the observed return to estimate values.
+They are conceptually simple and unbiased given enough data, but they
+have high variance and fit episodic tasks most naturally.</p>
+<p><strong>Temporal-difference learning</strong>, or TD learning, sits
+between dynamic programming and Monte Carlo. Like Monte Carlo, it is
+model-free and learns from sampled transitions. Like dynamic
+programming, it bootstraps by using a current estimate inside its
+target. The simplest TD update moves
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>S</mi><mi>t</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">V(S_t)</annotation></semantics></math>
+toward
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>+</mo><mi>γ</mi><mi>V</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>S</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">R_{t+1} + \gamma V(S_{t+1})</annotation></semantics></math>,
+so learning can happen online after every transition instead of waiting
+until the end of the episode. The standard tradeoff is that TD
+introduces bias through bootstrapping but often reduces variance enough
+to be much more practical.</p>
+<p>For control, these ideas lead to algorithms such as Monte Carlo
+control, <strong>SARSA</strong>, and <strong>Q-learning</strong>. SARSA
+is on-policy because it learns the value of the behavior it is actually
+following. Q-learning is off-policy because it learns toward the greedy
+target
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>+</mo><mi>γ</mi><msub><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mi>a</mi></msub><mi>Q</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>S</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>,</mo><mi>a</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">R_{t+1} + \gamma \max_a Q(S_{t+1},a)</annotation></semantics></math>
+whether or not the greedy action was taken. Both depend on continued
+exploration, usually through epsilon-greedy behavior that becomes
+increasingly greedy over time.</p>
+<p>Sources: <a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a>,
+<a href="https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/MC/README.md">https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/MC/README.md</a>,
+<a href="https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/TD/README.md">https://raw.githubusercontent.com/dennybritz/reinforcement-learning/master/TD/README.md</a>,
+<a href="https://www.davidsilver.uk/teaching/">https://www.davidsilver.uk/teaching/</a></p>
+<h2 id="5-approximation-generalization-and-why-tabular-methods-stop-scaling">5.
+Approximation, Generalization, and Why Tabular Methods Stop Scaling</h2>
+<p>Exact tabulation is only realistic in small discrete problems. Once
+the state-action space grows, the table becomes too large to store and
+too sparse to estimate well. More importantly, a table cannot
+generalize. If the agent has never visited a state before, the table has
+no principled way to infer a useful value for it from related
+states.</p>
+<p>This is where <strong>function approximation</strong> enters. Instead
+of storing exact values for every state or state-action pair, the
+learner represents values with a structured function class. In classical
+RL this could mean linear features, aggregation, kernels, local
+averaging, tile coding, Fourier bases, or least-squares approximations.
+In deep RL it often means neural networks. The real question is not
+simply whether the function class is expressive, but whether it behaves
+well under repeated Bellman updates.</p>
+<p>Szepesvari and Bertsekas both emphasize that approximation creates a
+tradeoff between approximation error and estimation error. Richer
+classes can fit more complicated value functions, but they can also
+overfit or behave poorly under Bellman operators. That is why
+theory-heavy RL spends so much time on projected fixed points,
+non-expansive approximation classes, aggregation, and error propagation.
+Neural networks are only one part of a broader approximation story.</p>
+<p>Sources: <a href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf</a>,
+<a href="https://ocw.mit.edu/courses/6-231-dynamic-programming-and-stochastic-control-fall-2015/dae6c8dca97f89b45bd0d7877a5433c9_MIT6_231F15_Notes.pdf">https://ocw.mit.edu/courses/6-231-dynamic-programming-and-stochastic-control-fall-2015/dae6c8dca97f89b45bd0d7877a5433c9_MIT6_231F15_Notes.pdf</a>,
+<a href="https://www.mit.edu/people/dimitrib/RLbook.html">https://www.mit.edu/people/dimitrib/RLbook.html</a>,
+<a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a></p>
+<h2 id="6-deep-value-based-reinforcement-learning">6. Deep Value-Based
+Reinforcement Learning</h2>
+<p>Deep RL extends the value-learning picture by replacing tables with
+neural networks. In <strong>DQN</strong>, the network
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Q</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo>;</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Q(s,a;\theta)</annotation></semantics></math>
+takes a state as input and outputs one Q-value per discrete action.
+Conceptually, DQN is still Q-learning. The Bellman target and the
+control logic remain the same. What changes is that the representation
+now generalizes across states instead of storing an isolated value at
+each table entry.</p>
+<p>The main benefit is scale. High-dimensional observations such as
+pixels can now be handled directly. The main cost is instability. A
+network update at one state-action pair changes predictions elsewhere,
+so the neat convergence behavior of tabular Q-learning no longer
+applies. Berkeley&#39;s notes, the Francois-Lavet monograph, and even simple
+FrozenLake-to-DQN tutorials all stress that deep Q-learning is not
+stable by default.</p>
+<p>That is why DQN relies on <strong>replay buffers</strong> and
+<strong>target networks</strong>. Replay breaks temporal correlation by
+training on randomly sampled past transitions instead of only the newest
+sample. Target networks slow the motion of the Bellman target by keeping
+a delayed copy of the Q-network for target construction. In modern
+value-based and actor-critic deep RL, many practical tricks can be
+understood as attempts to stabilize the interaction between
+bootstrapping, off-policy data, and nonlinear function
+approximation.</p>
+<p>Sources: <a href="https://spinningup.openai.com/">https://spinningup.openai.com/</a>,
+<a href="https://rail.eecs.berkeley.edu/deeprlcourse/">https://rail.eecs.berkeley.edu/deeprlcourse/</a>,
+<a href="https://www.nowpublishers.com/article/Download/MAL-071">https://www.nowpublishers.com/article/Download/MAL-071</a>,
+<a href="https://github.com/dennybritz/reinforcement-learning">https://github.com/dennybritz/reinforcement-learning</a>,
+<a href="https://avandekleut.github.io/dqn/">https://avandekleut.github.io/dqn/</a></p>
+<h2 id="7-policy-gradients-reinforce-actor-critic-ppo-and-sac">7. Policy
+Gradients, REINFORCE, Actor-Critic, PPO, and SAC</h2>
+<p>Value-based methods infer a policy from values.
+<strong>Policy-gradient</strong> methods optimize the policy directly.
+The core idea is to increase the probability of actions that lead to
+higher return and decrease the probability of actions that lead to lower
+return. The log-derivative trick makes this possible by rewriting the
+gradient of expected return as an expectation involving
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>∇</mi><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\nabla \log \pi(a \mid s)</annotation></semantics></math>.</p>
+<p>The simplest instance is <strong>REINFORCE</strong>, which uses
+full-trajectory returns to estimate the policy gradient. REINFORCE is
+conceptually clean and unbiased, but its variance is high because each
+action is weighted by a noisy Monte Carlo return. Practical
+policy-gradient methods therefore introduce reward-to-go, baselines, or
+learned critics to reduce variance.</p>
+<p>This leads to <strong>actor-critic</strong> methods, where the actor
+is the policy and the critic is a learned value estimator. The critic
+provides a lower-variance learning signal, often through TD-style
+bootstrapping, so the actor does not have to rely only on full returns.
+Modern algorithms such as <strong>PPO</strong> and <strong>SAC</strong>
+build on this pattern in different ways. PPO constrains how much the
+policy can change in one update, usually through clipping or
+trust-region-inspired control of policy drift. SAC combines off-policy
+actor-critic learning with entropy regularization, encouraging
+exploration by optimizing reward plus policy entropy. These methods are
+central in continuous control and in modern policy optimization more
+broadly.</p>
+<p>Sources: <a href="https://spinningup.openai.com/">https://spinningup.openai.com/</a>,
+<a href="https://rail.eecs.berkeley.edu/deeprlcourse/">https://rail.eecs.berkeley.edu/deeprlcourse/</a>,
+<a href="https://www.nowpublishers.com/article/Download/MAL-071">https://www.nowpublishers.com/article/Download/MAL-071</a>,
+<a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a></p>
+<h2 id="8-exploration-as-a-statistical-and-control-problem">8.
+Exploration as a Statistical and Control Problem</h2>
+<p>Exploration is often presented in beginner material as &quot;take random
+actions sometimes,&quot; but the theory-oriented resources make a deeper
+point. In RL, the agent chooses the data distribution by choosing
+actions, so exploration is not just noise injection. It is a statistical
+and control problem about how to gather information while still
+achieving good reward.</p>
+<p>At the heuristic level, epsilon-greedy and Boltzmann exploration
+remain common because they are simple and often effective. At a more
+principled level, methods such as UCB and optimism-based exploration
+treat uncertainty itself as part of the decision rule. Sutton and Barto
+also connect this to the older control-theoretic language of
+identification versus control, sometimes called dual control, where the
+agent must both perform well and learn about the system at the same
+time.</p>
+<p>In deep RL, exploration is often absorbed into entropy bonuses,
+stochastic policies, intrinsic rewards, goal relabeling, or schedule
+design. The underlying issue is the same across all of these views: the
+learner must decide which parts of the environment to sample in order to
+improve both its model of the world and its long-run behavior.</p>
+<p>Sources: <a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a>,
+<a href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf</a>,
+<a href="https://spinningup.openai.com/">https://spinningup.openai.com/</a>,
+<a href="https://rail.eecs.berkeley.edu/deeprlcourse/">https://rail.eecs.berkeley.edu/deeprlcourse/</a></p>
+<h2 id="9-reward-design-approximate-dynamic-programming-rollout-and-optimal-control">9.
+Reward Design, Approximate Dynamic Programming, Rollout, and Optimal
+Control</h2>
+<p>The control-oriented sources stress that RL is not only about neural
+training pipelines. It is also a form of stochastic optimal control. In
+that language, the central objects are policies as feedback laws,
+cost-to-go functions, Bellman equations, rollout procedures, and
+stability or improvement guarantees.</p>
+<p><strong>Approximate dynamic programming</strong>, or ADP, is the
+umbrella idea for preserving Bellman structure when exact DP is
+impossible. Approximation may appear in the cost-to-go, the policy
+class, the state aggregation, the minimization step, or the expectation
+calculation, but the goal is still to preserve the logic of dynamic
+programming as much as possible. Bertsekas organizes RL this way and
+treats many modern-looking methods as cases of approximate policy
+iteration or approximate value iteration.</p>
+<p>One especially useful control idea is <strong>rollout</strong>. Start
+from a base policy or heuristic, replace the unknown tail cost with the
+base policy&#39;s cost-to-go, perform one-step or multistep lookahead, and
+choose the first action with the best immediate cost plus approximated
+continuation value. This can be read as one policy-improvement step from
+a base policy. That connects RL to heuristic search, model predictive
+control, and Monte Carlo tree search rather than isolating it as a
+separate subject.</p>
+<p>Sources: <a href="https://www.mit.edu/people/dimitrib/RLbook.html">https://www.mit.edu/people/dimitrib/RLbook.html</a>,
+<a href="https://ocw.mit.edu/courses/6-231-dynamic-programming-and-stochastic-control-fall-2015/dae6c8dca97f89b45bd0d7877a5433c9_MIT6_231F15_Notes.pdf">https://ocw.mit.edu/courses/6-231-dynamic-programming-and-stochastic-control-fall-2015/dae6c8dca97f89b45bd0d7877a5433c9_MIT6_231F15_Notes.pdf</a>,
+<a href="https://faculty.engineering.asu.edu/bertsekas/wp-content/uploads/sites/129/2019/10/RL_2-SHORT-INTERNET-POSTED.pdf">https://faculty.engineering.asu.edu/bertsekas/wp-content/uploads/sites/129/2019/10/RL_2-SHORT-INTERNET-POSTED.pdf</a>,
+<a href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf</a></p>
+<h2 id="10-what-the-library-links-reveal-about-practical-rl-systems">10.
+What the Library Links Reveal About Practical RL Systems</h2>
+<p>The library links also teach reinforcement learning content, but
+indirectly, through the workflows they expose. Across RLlib, MushroomRL,
+Baselines, and Coach, the same algorithm families reappear: value-based
+methods, policy-gradient and actor-critic methods, continuous-control
+actor-critic methods, imitation-learning methods, and replay-augmented
+sparse-goal methods such as HER. That is a practical lesson in itself.
+Modern RL workflow selection is mostly about matching the algorithm
+family to the regime: discrete online control often uses DQN or PPO-like
+methods, continuous control often uses DDPG, TD3, SAC, or PPO-like
+pipelines, and offline or demonstration-heavy settings introduce BC,
+MARWIL, FQI, or GAIL-style methods.</p>
+<p>The environment interfaces also reveal how RL systems are organized.
+Simpler stacks expose a direct <code>reset/step</code> loop, while
+systems-heavy stacks add vectorization, multi-agent routing, replay
+components, and separate collection and learning processes. MushroomRL
+makes the training loop explicit through <code>Core.learn(...)</code>
+and <code>Core.evaluate(...)</code>. Coach exposes heatup, training, and
+evaluation phases. RLlib makes the same structure distributed,
+separating environment runners from learners and supporting replay
+buffers, offline datasets, and multi-agent environments as first-class
+components.</p>
+<p>Replay buffers, actor-critic pipelines, distributed rollouts, offline
+RL data flows, and multi-agent APIs are therefore not implementation
+trivia. They are concrete expressions of the deeper algorithmic ideas
+already discussed: off-policy reuse of experience, separation between
+action selection and value estimation, asynchronous sampling, and the
+scaling problems created by modern RL workloads.</p>
+<p>Sources: <a href="https://docs.ray.io/en/latest/rllib/rllib-algorithms.html">https://docs.ray.io/en/latest/rllib/rllib-algorithms.html</a>,
+<a href="https://docs.ray.io/en/latest/rllib/key-concepts.html">https://docs.ray.io/en/latest/rllib/key-concepts.html</a>,
+<a href="https://docs.ray.io/en/latest/rllib/rllib-replay-buffers.html">https://docs.ray.io/en/latest/rllib/rllib-replay-buffers.html</a>,
+<a href="https://docs.ray.io/en/latest/rllib/rllib-offline.html">https://docs.ray.io/en/latest/rllib/rllib-offline.html</a>,
+<a href="https://docs.ray.io/en/latest/rllib/multi-agent-envs.html">https://docs.ray.io/en/latest/rllib/multi-agent-envs.html</a>,
+<a href="https://mushroomrl.readthedocs.io/en/latest/">https://mushroomrl.readthedocs.io/en/latest/</a>,
+<a href="https://github.com/openai/baselines">https://github.com/openai/baselines</a>,
+<a href="https://intellabs.github.io/coach/">https://intellabs.github.io/coach/</a></p>
+<h2 id="11-a-clean-way-to-read-the-linked-material">11. A Clean Way to
+Read the Linked Material</h2>
+<p>Taken together, the linked material suggests a sensible conceptual
+order. Start with the agent-environment loop, return, MDPs, value
+functions, and Bellman equations. Then study dynamic programming, Monte
+Carlo, TD learning, and tabular control so that generalized policy
+iteration becomes intuitive. After that, move to approximation and
+generalization, because that is the step that makes deep RL necessary.
+Then study DQN, replay, target networks, policy gradients, actor-critic,
+PPO, and SAC as specific solutions to the instability created by
+combining bootstrapping, off-policy data, and nonlinear approximators.
+Finally, use the library documentation to see how those ideas are
+packaged into real training systems.</p>
+<p>That order is more faithful to the underlying subject than starting
+from a library or from a benchmark paper. It keeps the Bellman and
+control structure visible while still making room for modern deep RL and
+large-scale systems.</p>
+<h2 id="appendix-exact-links-extracted-from-the-canvas-page">Appendix:
+Exact Links Extracted from the Canvas Page</h2>
+<h3 id="tutorials">Tutorials</h3>
+<ul>
+<li>Basic tutorial and worked examples: <a href="https://github.com/dennybritz/reinforcement-learning">https://github.com/dennybritz/reinforcement-learning</a></li>
+<li>Blog series providing gentle intro: <a href="https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0">https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0</a></li>
+<li>Intro to DeepRL algorithms: <a href="https://spinningup.openai.com/">https://spinningup.openai.com/</a></li>
+</ul>
+<h3 id="libraries">Libraries</h3>
+<ul>
+<li>RLlib: <a href="https://ray.readthedocs.io/en/latest/rllib.html">https://ray.readthedocs.io/en/latest/rllib.html</a></li>
+<li>Baselines: <a href="https://github.com/openai/baselines">https://github.com/openai/baselines</a></li>
+<li>MushroomRL: <a href="https://mushroomrl.readthedocs.io/en/latest/">https://mushroomrl.readthedocs.io/en/latest/</a></li>
+<li>Coach: <a href="https://github.com/IntelLabs/coach">https://github.com/IntelLabs/coach</a></li>
+</ul>
+<h3 id="courses">Courses</h3>
+<ul>
+<li>David Silver (UCL): <a href="http://www0.cs.ucl.ac.uk/staff/D.Silver/web/Teaching.html">http://www0.cs.ucl.ac.uk/staff/D.Silver/web/Teaching.html</a></li>
+<li>Sergey Levine (Berkeley): <a href="http://rail.eecs.berkeley.edu/deeprlcourse/">http://rail.eecs.berkeley.edu/deeprlcourse/</a></li>
+<li>Dimitri Bertsekas (MIT): <a href="http://web.mit.edu/dimitrib/www/RLbook.html">http://web.mit.edu/dimitrib/www/RLbook.html</a></li>
+</ul>
+<h3 id="books">Books</h3>
+<ul>
+<li>Richard Sutton and Andrew Barto: <a href="http://www.incompleteideas.net/book/RLbook2018.pdf">http://www.incompleteideas.net/book/RLbook2018.pdf</a></li>
+<li>Vincent Francois-Lavet et al.: <a href="https://www.nowpublishers.com/article/Download/MAL-071">https://www.nowpublishers.com/article/Download/MAL-071</a></li>
+<li>Csaba Szepesvari: <a href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf</a></li>
+</ul>
+</body>
+</html>

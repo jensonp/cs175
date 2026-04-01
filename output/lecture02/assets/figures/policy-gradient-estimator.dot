@@ -1,0 +1,50 @@
+digraph PolicyGradientEstimator {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.25",
+    nodesep="0.45",
+    ranksep="0.7"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=12,
+    margin="0.18,0.12",
+    color="#334155",
+    fillcolor="#f8fafc"
+  ];
+  edge [
+    fontname="Helvetica",
+    fontsize=11,
+    arrowsize=0.75,
+    penwidth=2.0,
+    color="#2563eb"
+  ];
+
+  policy [label=<
+    <B>Policy network</B><BR/>
+    &pi;<SUB>&theta;</SUB>(a | s)
+  >, fillcolor="#dbeafe", color="#1d4ed8"];
+  rollout [label=<
+    <B>Sample trajectories</B><BR/>
+    collect (S, A, R)
+  >, fillcolor="#fff7ed", color="#c77700"];
+  returns [label=<
+    <B>Compute return or advantage</B><BR/>
+    G<SUB>t</SUB> or A-hat<SUB>t</SUB>
+  >, fillcolor="#ecfccb", color="#4d7c0f"];
+  score [label=<
+    <B>Score function term</B><BR/>
+    grad log &pi;<SUB>&theta;</SUB>(A<SUB>t</SUB> | S<SUB>t</SUB>)
+  >, fillcolor="#ede9fe", color="#7c3aed"];
+  update [label=<
+    <B>Policy update</B><BR/>
+    weight by return or advantage
+  >, fillcolor="#fce7f3", color="#be185d"];
+
+  policy -> rollout -> returns -> update -> policy;
+  rollout -> score;
+  score -> update;
+}

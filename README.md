@@ -1,16 +1,19 @@
 # CS175 Lecture Reconstruction
 
-This repository contains source material and reconstructed lecture notes for `lecture-02-intro-to-rl.pdf`.
+This repository contains source material and a single canonical foundations chapter for `lecture-02-intro-to-rl.pdf`.
 
 ## Main outputs
 
-- Reconstructed lecture notes: [`output/lecture02/lecture02-reconstructed.md`](output/lecture02/lecture02-reconstructed.md)
-- Print HTML: [`output/lecture02/lecture02-reconstructed.html`](output/lecture02/lecture02-reconstructed.html)
-- Rendered PDF: [`output/pdf/lecture02-reconstructed.pdf`](output/pdf/lecture02-reconstructed.pdf)
+- Foundations chapter: [`markdown/lecture02/reinforcement-learning-comprehensive.md`](markdown/lecture02/reinforcement-learning-comprehensive.md)
+- Print HTML: [`output/lecture02/reinforcement-learning-comprehensive.html`](output/lecture02/reinforcement-learning-comprehensive.html)
+- Rendered PDF: [`reinforcement-learning-comprehensive.pdf`](reinforcement-learning-comprehensive.pdf)
+- Resource notes: [`markdown/rl-resources/reinforcement-learning-resources-expanded.md`](markdown/rl-resources/reinforcement-learning-resources-expanded.md)
+- Rendered PDF: [`reinforcement-learning-resources-expanded.pdf`](reinforcement-learning-resources-expanded.pdf)
 
 ## Source material
 
 - Original lecture PDF: [`lecture-02-intro-to-rl.pdf`](lecture-02-intro-to-rl.pdf)
+- Additional lecture PDF: [`lecture-01-course-info.pdf`](lecture-01-course-info.pdf)
 
 ## Supporting assets
 

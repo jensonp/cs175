@@ -23,11 +23,25 @@ digraph RLAlgorithmLoop {
     penwidth=2.0
   ];
 
-  policy [label="Current policy pi_k"];
-  sample [label="Generate experience\n(s, a, r, s')"];
-  estimate [label="Estimate values\nV^pi or Q^pi"];
-  improve [label="Improve policy\nargmax or gradient step"];
-  repeat [label="Repeat\nnew policy pi_{k+1}", fillcolor="#eef7ef", color="#4d8a55"];
+  policy [label=<
+    <B>Current policy</B> &pi;<SUB>k</SUB>
+  >];
+  sample [label=<
+    <B>Generate experience</B><BR/>
+    (s, a, r, s')
+  >];
+  estimate [label=<
+    <B>Estimate values</B><BR/>
+    v<SUB>&pi;</SUB> or q<SUB>&pi;</SUB>
+  >];
+  improve [label=<
+    <B>Improve policy</B><BR/>
+    arg max or gradient step
+  >];
+  repeat [label=<
+    <B>Repeat</B><BR/>
+    new policy &pi;<SUB>k+1</SUB>
+  >, fillcolor="#eef7ef", color="#4d8a55"];
 
   policy -> sample;
   sample -> estimate;

@@ -33,7 +33,10 @@ digraph SarsaVsQLearning {
     r1 [label="R", shape=box, fillcolor="#eff6ff"];
     sp1 [label="S'", fillcolor="#dbeafe"];
     ap1 [label="A'", fillcolor="#dbeafe"];
-    tgt1 [label="target\nR + gamma Q(S',A')", shape=box, fillcolor="#eff6ff"];
+    tgt1 [label=<
+      <B>target</B><BR/>
+      R + &gamma;Q(S',A')
+    >, shape=box, fillcolor="#eff6ff"];
 
     s1 -> r1 -> sp1 -> ap1;
     ap1 -> tgt1 [style=dashed, arrowhead=none];
@@ -49,8 +52,13 @@ digraph SarsaVsQLearning {
     s2 [label="S,A", fillcolor="#ffedd5"];
     r2 [label="R", shape=box, fillcolor="#fff7ed"];
     sp2 [label="S'", fillcolor="#ffedd5"];
-    max2 [label="max_a Q(S',a)", shape=box, fillcolor="#fff7ed"];
-    tgt2 [label="target\nR + gamma max_a Q(S',a)", shape=box, fillcolor="#fff7ed"];
+    max2 [label=<
+      max Q(S',a)
+    >, shape=box, fillcolor="#fff7ed"];
+    tgt2 [label=<
+      <B>target</B><BR/>
+      R + &gamma; max Q(S',a)
+    >, shape=box, fillcolor="#fff7ed"];
 
     s2 -> r2 -> sp2 -> max2;
     max2 -> tgt2 [style=dashed, arrowhead=none];
