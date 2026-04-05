@@ -1,4 +1,11 @@
 .DS_Store
+.pytest_cache/
+.ruff_cache/
+.venv/
+artifacts/
+dist/
+docs/
+site/
 tmp/
 output/lecture02/assets/tmp/
 output/lecture02/assets/pages/

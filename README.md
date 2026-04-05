@@ -1,20 +1,19 @@
 # Reinforcement Learning Foundations - Rewritten Chapter Set
 
-This package is a reconstructed, chapterized rewrite of the source document:
+This repository is organized so each chapter lives in its own directory as a `README.md`.
+That makes GitHub render the chapter automatically when you open the folder.
 
-**Source:** `reinforcement-learning-comprehensive.md`
+## Chapters
 
-## What is in this package
-
-- `01_audit.md` - audit of the original document
-- `02_problem-setup-and-agent-environment-interaction.md`
-- `03_mathematical-preliminaries.md`
-- `04_states-histories-mdps-and-objective.md`
-- `05_value-functions-bellman-equations-and-policy-improvement.md`
-- `06_dynamic-programming-monte-carlo-td-sarsa-qlearning.md`
-- `07_function-approximation-deadly-triad-and-dqn.md`
-- `08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac.md`
-- `09_reward-design-representation-evaluation-and-roadmap.md`
+- [`01_audit/`](01_audit/) - audit of the original document
+- [`02_problem-setup-and-agent-environment-interaction/`](02_problem-setup-and-agent-environment-interaction/)
+- [`03_mathematical-preliminaries/`](03_mathematical-preliminaries/)
+- [`04_states-histories-mdps-and-objective/`](04_states-histories-mdps-and-objective/)
+- [`05_value-functions-bellman-equations-and-policy-improvement/`](05_value-functions-bellman-equations-and-policy-improvement/)
+- [`06_dynamic-programming-monte-carlo-td-sarsa-qlearning/`](06_dynamic-programming-monte-carlo-td-sarsa-qlearning/)
+- [`07_function-approximation-deadly-triad-and-dqn/`](07_function-approximation-deadly-triad-and-dqn/)
+- [`08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/`](08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/)
+- [`09_reward-design-representation-evaluation-and-roadmap/`](09_reward-design-representation-evaluation-and-roadmap/)
 
 ## Editorial goals
 
