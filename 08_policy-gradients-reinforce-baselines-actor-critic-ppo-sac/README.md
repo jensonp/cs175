@@ -27,17 +27,17 @@ Value-based methods try to estimate action values and then improve behavior indi
 
 Policy-gradient methods instead parameterize the policy itself:
 
-\[
+$$
 \pi_\theta(a \mid s).
-\]
+$$
 
-The goal is to adjust \(\theta\) so that the expected return objective increases.
+The goal is to adjust $\theta$ so that the expected return objective increases.
 
 A common finite-horizon objective is
 
-\[
+$$
 J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[G_0(\tau)].
-\]
+$$
 
 ### What changes conceptually
 
@@ -50,16 +50,16 @@ It is the primary optimization object.
 
 The derivation starts by writing the objective as an expectation over trajectories.
 
-Then differentiate that expectation with respect to \(\theta\).
+Then differentiate that expectation with respect to $\theta$.
 
-The derivative first lands on the trajectory probability \(p_\theta(\tau)\).  
+The derivative first lands on the trajectory probability $p_\theta(\tau)$.  
 Use the log-derivative identity to rewrite that derivative in the form
 
-\[
+$$
 p_\theta(\tau)\nabla_\theta \log p_\theta(\tau).
-\]
+$$
 
-Because the trajectory law factorizes over time and only the policy factors depend on \(\theta\), the resulting score term becomes a sum of policy-log-gradient terms across time.
+Because the trajectory law factorizes over time and only the policy factors depend on $\theta$, the resulting score term becomes a sum of policy-log-gradient terms across time.
 
 ### What this yields conceptually
 
@@ -73,17 +73,17 @@ That is the heart of REINFORCE.
 
 A finite-horizon REINFORCE-style gradient contribution has the form
 
-\[
+$$
 \sum_{t=0}^{T-1}
 \gamma^t
 \nabla_\theta \log \pi_\theta(A_t \mid S_t)\, G_t
-\]
+$$
 
 inside an expectation.
 
 ### What this means
 
-At time \(t\), actions that were followed by high return are reinforced in the direction that increases their log probability.
+At time $t$, actions that were followed by high return are reinforced in the direction that increases their log probability.
 
 ### What makes REINFORCE appealing
 
@@ -102,13 +102,13 @@ The next question is “how do we reduce variance without changing the expected 
 
 A baseline is a term subtracted from the return-like weight in the policy update.
 
-A standard safe choice is a state-dependent baseline \(b(S_t)\).
+A standard safe choice is a state-dependent baseline $b(S_t)$.
 
-Then the update weight becomes \(G_t - b(S_t)\).
+Then the update weight becomes $G_t - b(S_t)$.
 
 ### Why this does not change the expected gradient
 
-Condition on the current state \(S_t\).
+Condition on the current state $S_t$.
 
 The baseline term is now a factor that does not depend on which action was sampled.
 
@@ -132,15 +132,15 @@ The baseline must not depend on the sampled action in a way that breaks the zero
 
 ## 5. Advantage viewpoint
 
-If the baseline is chosen as the state value \(V^\pi(S_t)\), then the weight
+If the baseline is chosen as the state value $V^\pi(S_t)$, then the weight
 
-\[
+$$
 G_t - V^\pi(S_t)
-\]
+$$
 
 behaves like an advantage-style quantity.
 
-More fundamentally, the exact policy-gradient contribution at time \(t\) is associated with the true advantage \(A^\pi(S_t,A_t)\).
+More fundamentally, the exact policy-gradient contribution at time $t$ is associated with the true advantage $A^\pi(S_t,A_t)$.
 
 ### What this says conceptually
 
@@ -158,7 +158,7 @@ Actor–critic methods combine:
 - an actor, which updates the policy,
 - and a critic, which estimates value information used to build lower-variance policy-update weights.
 
-Typically, the critic provides an estimate \(\widehat A_t\) or related quantity for the actor update.
+Typically, the critic provides an estimate $\widehat A_t$ or related quantity for the actor update.
 
 ### What the actor needs
 

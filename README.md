@@ -44,13 +44,13 @@ Read [01_audit/](01_audit/) separately if you want the critique of the original 
 
 ## Conventions used throughout
 
-- Time is discrete, with index \(t \in \{0,1,2,\ldots\}\).
-- The action chosen at time \(t\) is \(A_t\).
-- The reward caused by that action is observed after the transition and is written \(R_{t+1}\).
+- Time is discrete, with index $t \in \{0,1,2,\ldots\}$.
+- The action chosen at time $t$ is $A_t$.
+- The reward caused by that action is observed after the transition and is written $R_{t+1}$.
 - A value function is always an expectation of return under stated conditioning.
 - Sums over states or actions assume finite or countable spaces unless the text explicitly switches to integrals.
-- For continuing discounted tasks, the default assumption is \(0 \le \gamma < 1\) and bounded rewards.
-- For finite-horizon episodic tasks, some formulas may allow \(\gamma = 1\) if the horizon is finite and rewards are bounded.
+- For continuing discounted tasks, the default assumption is $0 \le \gamma < 1$ and bounded rewards.
+- For finite-horizon episodic tasks, some formulas may allow $\gamma = 1$ if the horizon is finite and rewards are bounded.
 
 ## File contents
 

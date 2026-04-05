@@ -29,13 +29,13 @@ If the space is continuous, the same logic usually survives, but sums must be re
 
 ### Bounded rewards
 
-Assume there is a finite constant \(R_{\max} \ge 0\) such that
+Assume there is a finite constant $R_{\max} \ge 0$ such that
 
-\[
+$$
 |R_t| \le R_{\max}
-\]
+$$
 
-almost surely for every \(t\).
+almost surely for every $t$.
 
 This is what keeps discounted returns under control in continuing tasks.
 
@@ -43,30 +43,30 @@ This is what keeps discounted returns under control in continuing tasks.
 
 For continuing tasks, assume
 
-\[
+$$
 0 \le \gamma < 1.
-\]
+$$
 
-If \(\gamma = 1\) in a genuinely continuing problem, an infinite-horizon return can fail to converge unless extra structure is imposed.
+If $\gamma = 1$ in a genuinely continuing problem, an infinite-horizon return can fail to converge unless extra structure is imposed.
 
 ### Finite-horizon assumptions for policy-gradient derivations
 
 When the chapter writes expectations over full trajectories and differentiates them term by term, assume:
 
-- a finite horizon \(T\),
-- a differentiable policy \(\pi_\theta\),
+- a finite horizon $T$,
+- a differentiable policy $\pi_\theta$,
 - and enough regularity to justify interchanging derivative and summation.
 
 ---
 
 ## 2. Expectation
 
-Let \(X\) be a discrete random variable on a finite or countable set \(\mathcal{X}\).  
+Let $X$ be a discrete random variable on a finite or countable set $\mathcal{X}$.  
 Then
 
-\[
+$$
 \mathbb{E}[X] = \sum_{x \in \mathcal{X}} x \, P(X=x),
-\]
+$$
 
 provided the sum is well-defined.
 
@@ -74,7 +74,7 @@ provided the sum is well-defined.
 
 Expectation is a probability-weighted average of possible values.
 
-The possible values of \(X\) are the outcomes.  
+The possible values of $X$ are the outcomes.  
 The probabilities are the weights attached to those outcomes.
 
 ### Why this matters later
@@ -86,29 +86,29 @@ So if expectation itself is slippery, then every value definition later will fee
 
 ## 3. Conditional expectation
 
-If \(X\) and \(Y\) are random variables, then the conditional expectation of \(X\) given \(Y=y\) is
+If $X$ and $Y$ are random variables, then the conditional expectation of $X$ given $Y=y$ is
 
-\[
+$$
 \mathbb{E}[X \mid Y=y].
-\]
+$$
 
 In a discrete setting, this can be written as
 
-\[
+$$
 \mathbb{E}[X \mid Y=y] = \sum_x x \, P(X=x \mid Y=y).
-\]
+$$
 
 ### What conditioning changes
 
-Conditioning does **not** change the possible values of \(X\).  
-It changes the probability weights assigned to those values after the event \(Y=y\) is known.
+Conditioning does **not** change the possible values of $X$.  
+It changes the probability weights assigned to those values after the event $Y=y$ is known.
 
 ### Why this matters in RL
 
 Bellman equations are conditional expectation statements.
 
-For example, \(V^\pi(s)\) is not an unconditional average return over the whole process.  
-It is the expected return **conditional on the current state being \(s\)**.
+For example, $V^\pi(s)$ is not an unconditional average return over the whole process.  
+It is the expected return **conditional on the current state being $s$**.
 
 That conditioning event is the whole point.
 
@@ -116,18 +116,18 @@ That conditioning event is the whole point.
 
 ## 4. Law of total expectation
 
-The law of total expectation says that if you split according to the values of another random variable \(Y\), then
+The law of total expectation says that if you split according to the values of another random variable $Y$, then
 
-\[
+$$
 \mathbb{E}[X] = \sum_y P(Y=y)\,\mathbb{E}[X \mid Y=y].
-\]
+$$
 
 ### What this means procedurally
 
-To compute an overall expectation of \(X\), you may:
+To compute an overall expectation of $X$, you may:
 
-1. split the world into cases indexed by \(Y\),
-2. compute the expected value of \(X\) inside each case,
+1. split the world into cases indexed by $Y$,
+2. compute the expected value of $X$ inside each case,
 3. then average those case-specific expectations using the probabilities of the cases.
 
 ### Why this matters in Bellman derivations
@@ -144,35 +144,35 @@ Once you understand this move, Bellman equations stop looking like magic.
 
 ## 5. Discounted return
 
-Define the return from time \(t\) by
+Define the return from time $t$ by
 
-\[
+$$
 G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}.
-\]
+$$
 
-### Why the first reward term is \(R_{t+1}\)
+### Why the first reward term is $R_{t+1}$
 
-At time \(t\), action \(A_t\) is chosen.  
-The first reward caused by that action is observed after the transition, so the first term is \(R_{t+1}\), not \(R_t\).
+At time $t$, action $A_t$ is chosen.  
+The first reward caused by that action is observed after the transition, so the first term is $R_{t+1}$, not $R_t$.
 
-### Why the reward index is \(t+k+1\)
+### Why the reward index is $t+k+1$
 
-When \(k=0\), the reward is one step after time \(t\).  
-When \(k=1\), it is two steps after time \(t\).  
-So the \(k\)-th term must be indexed \(t+k+1\).
+When $k=0$, the reward is one step after time $t$.  
+When $k=1$, it is two steps after time $t$.  
+So the $k$-th term must be indexed $t+k+1$.
 
 ---
 
 ## 6. Why discounted return is well-defined
 
-Under bounded rewards and \(0 \le \gamma < 1\),
+Under bounded rewards and $0 \le \gamma < 1$,
 
-\[
+$$
 |G_t|
 \le \sum_{k=0}^{\infty} \gamma^k |R_{t+k+1}|
 \le \sum_{k=0}^{\infty} \gamma^k R_{\max}
 = \frac{R_{\max}}{1-\gamma}.
-\]
+$$
 
 ### What this proves
 
@@ -182,9 +182,9 @@ The infinite series converges absolutely and is uniformly bounded under the stan
 
 Once this bound is established, quantities like
 
-\[
+$$
 V^\pi(s) = \mathbb{E}[G_t \mid S_t=s]
-\]
+$$
 
 are at least meaningful mathematical objects under those assumptions.
 
@@ -195,29 +195,29 @@ A later Bellman derivation is only respectable if the quantity being manipulated
 
 ## 7. Finite-horizon trajectory distributions
 
-For a finite-horizon episodic problem with horizon \(T\), define a trajectory by
+For a finite-horizon episodic problem with horizon $T$, define a trajectory by
 
-\[
+$$
 \tau = (s_0, a_0, r_1, s_1, a_1, r_2, \ldots, s_{T-1}, a_{T-1}, r_T, s_T).
-\]
+$$
 
-Let \(\rho(s_0)\) be the initial-state distribution.  
-If the policy is \(\pi\) and the environment law is \(P(s',r \mid s,a)\), then
+Let $\rho(s_0)$ be the initial-state distribution.  
+If the policy is $\pi$ and the environment law is $P(s',r \mid s,a)$, then
 
-\[
+$$
 p_\pi(\tau)
 =
 \rho(s_0)\prod_{t=0}^{T-1}
 \pi(a_t \mid s_t)\,
 P(s_{t+1}, r_{t+1} \mid s_t, a_t).
-\]
+$$
 
 ### What this factorization checks
 
-At each time index \(t\), exactly two stochastic mechanisms are being applied:
+At each time index $t$, exactly two stochastic mechanisms are being applied:
 
-- the policy selects \(a_t\) given \(s_t\),
-- the environment produces \((s_{t+1}, r_{t+1})\) given \((s_t, a_t)\).
+- the policy selects $a_t$ given $s_t$,
+- the environment produces $(s_{t+1}, r_{t+1})$ given $(s_t, a_t)$.
 
 Multiplying these factors across time gives the trajectory probability.
 
@@ -230,16 +230,16 @@ Those expectations become manageable only after the trajectory law is written as
 
 ## 8. Differentiating expectations
 
-Suppose \(f(\tau)\) does not depend explicitly on the policy parameter vector \(\theta\).  
+Suppose $f(\tau)$ does not depend explicitly on the policy parameter vector $\theta$.  
 Then under the finite-horizon assumptions,
 
-\[
+$$
 \nabla_\theta \sum_\tau p_\theta(\tau) f(\tau)
 =
 \sum_\tau \nabla_\theta p_\theta(\tau) f(\tau).
-\]
+$$
 
-This still leaves the hard part: how to differentiate \(p_\theta(\tau)\).
+This still leaves the hard part: how to differentiate $p_\theta(\tau)$.
 
 ---
 
@@ -247,19 +247,19 @@ This still leaves the hard part: how to differentiate \(p_\theta(\tau)\).
 
 The key identity is
 
-\[
+$$
 \nabla_\theta \log p_\theta(\tau)
 =
 \frac{1}{p_\theta(\tau)} \nabla_\theta p_\theta(\tau),
-\]
+$$
 
 which can be rearranged as
 
-\[
+$$
 \nabla_\theta p_\theta(\tau)
 =
 p_\theta(\tau)\nabla_\theta \log p_\theta(\tau).
-\]
+$$
 
 ### What this identity changes
 
@@ -306,7 +306,7 @@ Conditioning changes weights, not the underlying possible values.
 
 No.  
 Its infinite-horizon form needs assumptions.  
-Bounded rewards and \(0 \le \gamma < 1\) are doing real work.
+Bounded rewards and $0 \le \gamma < 1$ are doing real work.
 
 ### Confusion 4: The policy-gradient trick starts with calculus and ends with luck
 

@@ -20,7 +20,7 @@ My overall judgment is:
 
 ### 1. It begins from definitions instead of folklore
 
-The document starts with the agent-environment loop, explicit random variables, and the reward-index shift \(R_{t+1}\). That is the right place to start. Many weaker notes jump straight into algorithms before fixing what is random, what is conditioned on, and what the optimization target actually is.
+The document starts with the agent-environment loop, explicit random variables, and the reward-index shift $R_{t+1}$. That is the right place to start. Many weaker notes jump straight into algorithms before fixing what is random, what is conditioned on, and what the optimization target actually is.
 
 ### 2. It distinguishes exact identities from approximations more often than most lecture notes
 
@@ -46,7 +46,7 @@ Several section titles cover too many objects at once. For example, one chapter 
 
 This matters because a learner needs to know the exact dependency chain:
 
-1. define \(V^\pi\), \(Q^\pi\), and \(A^\pi\)
+1. define $V^\pi$, $Q^\pi$, and $A^\pi$
 2. derive Bellman expectation equations
 3. define Bellman operators
 4. prove contraction and uniqueness
@@ -62,9 +62,9 @@ A formal definition and an algorithm update do not play the same role.
 
 For example:
 
-- “\(V^\pi\) is defined as ...” is a definition.
-- “\(T^\pi\) is a contraction” is a theorem.
-- “TD uses the target \(R_{t+1} + \gamma V(S_{t+1})\)” is a stochastic approximation recipe derived from the theorem-backed Bellman equation.
+- “$V^\pi$ is defined as ...” is a definition.
+- “$T^\pi$ is a contraction” is a theorem.
+- “TD uses the target $R_{t+1} + \gamma V(S_{t+1})$” is a stochastic approximation recipe derived from the theorem-backed Bellman equation.
 - “DQN uses replay and frozen targets” is an engineering construction motivated by instability.
 
 The original usually says correct things, but it does not always help the reader classify the kind of statement being made.
@@ -75,9 +75,9 @@ A learner can follow a derivation only if each conditioning variable and each in
 
 Typical friction points:
 
-- the transition from history \(H_t\) to state \(S_t\)
+- the transition from history $H_t$ to state $S_t$
 - the difference between a representation and a Markov state
-- the difference between \(Q^\pi\) and \(Q^*\)
+- the difference between $Q^\pi$ and $Q^*$
 - when a next action is sampled from a policy versus replaced by a maximization
 - when a target is treated as fixed during differentiation and when it is not
 
@@ -103,9 +103,9 @@ The most important traps are:
 
 #### Trap A: observation versus state
 
-An observation \(O_t\) is whatever the environment reveals.  
-A state \(S_t\) is whatever summary the agent conditions on.  
-A Markov state is a state summary for which the future depends on the past only through \(S_t\) and \(A_t\).
+An observation $O_t$ is whatever the environment reveals.  
+A state $S_t$ is whatever summary the agent conditions on.  
+A Markov state is a state summary for which the future depends on the past only through $S_t$ and $A_t$.
 
 Those are three different objects. If they are not kept separate, partial observability gets hidden inside notation.
 
@@ -149,8 +149,8 @@ Examples:
 
 - condition on the next state and reward
 - apply the law of total expectation
-- separate the \(k=0\) term
-- change the index from \(k\) to \(j=k-1\)
+- separate the $k=0$ term
+- change the index from $k$ to $j=k-1$
 - use policy normalization
 - freeze the target parameters and differentiate only with respect to the online parameters
 
@@ -167,8 +167,8 @@ This is the most important editorial upgrade.
 
 Examples:
 
-- \(0 \le \gamma < 1\) in continuing tasks
-- \(\gamma = 1\) only when the horizon is finite or return is still well-defined
+- $0 \le \gamma < 1$ in continuing tasks
+- $\gamma = 1$ only when the horizon is finite or return is still well-defined
 - finite sums require finite spaces unless one switches to integrals
 - terminal transitions zero out the future term
 - unique-greedy-action formulas change under ties, though lower bounds may survive

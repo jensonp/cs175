@@ -18,19 +18,19 @@ The goal is to make four facts explicit:
 
 ### Immediate reward
 
-The immediate reward is the one-step signal observed after action \(A_t\):
+The immediate reward is the one-step signal observed after action $A_t$:
 
-\[
+$$
 R_{t+1}.
-\]
+$$
 
 ### Return
 
-The return from time \(t\) aggregates future rewards:
+The return from time $t$ aggregates future rewards:
 
-\[
+$$
 G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
-\]
+$$
 
 in the continuing discounted case.
 
@@ -40,15 +40,15 @@ A value function is an expectation of return under specified conditioning and po
 
 For example,
 
-\[
+$$
 Q^\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t=s, A_t=a].
-\]
+$$
 
 ### Why this distinction matters
 
 A learner is usually not trying to maximize the immediate reward in isolation.
 
-Only when \(\gamma = 0\) does the problem collapse to one-step reward maximization.
+Only when $\gamma = 0$ does the problem collapse to one-step reward maximization.
 
 In general, reinforcement learning is about long-run consequences.
 
@@ -56,17 +56,17 @@ In general, reinforcement learning is about long-run consequences.
 
 ## 2. Potential-based reward shaping
 
-Suppose the original reward is \(r_t\), and choose a potential function
+Suppose the original reward is $r_t$, and choose a potential function
 
-\[
+$$
 \Phi : \mathcal{S} \to \mathbb{R}.
-\]
+$$
 
 Define the shaped reward by
 
-\[
+$$
 r_t' = r_t + \gamma \Phi(S_{t+1}) - \Phi(S_t).
-\]
+$$
 
 ### What this adds
 
@@ -133,15 +133,15 @@ A small representation is not automatically a good state.
 
 Suppose an algorithm is run under multiple independent random seeds, producing evaluation returns
 
-\[
+$$
 X_1, X_2, \ldots, X_N.
-\]
+$$
 
 A sample mean is then
 
-\[
+$$
 \widehat\mu_N = \frac{1}{N}\sum_{i=1}^N X_i.
-\]
+$$
 
 ### Why multiple seeds matter
 

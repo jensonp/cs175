@@ -33,19 +33,19 @@ It fails when the space is:
 
 So instead of a table, we use a parameterized approximator such as
 
-\[
+$$
 \widehat V(\cdot; w)
 \quad\text{or}\quad
 \widehat Q(\cdot,\cdot; w),
-\]
+$$
 
-with parameter vector \(w\).
+with parameter vector $w$.
 
 ### What changes conceptually
 
 In a table, each entry can be updated locally.
 
-With function approximation, changing \(w\) at one sample typically changes predictions at many other inputs too.
+With function approximation, changing $w$ at one sample typically changes predictions at many other inputs too.
 
 That coupling is the main conceptual shift.
 
@@ -53,17 +53,17 @@ That coupling is the main conceptual shift.
 
 ## 2. Approximation turns value learning into regression
 
-Suppose you have a target quantity \(Y_t\) that you want \(\widehat Q(S_t,A_t;w)\) to match.
+Suppose you have a target quantity $Y_t$ that you want $\widehat Q(S_t,A_t;w)$ to match.
 
 Then learning can be framed as reducing a prediction error, often through a squared loss of the form
 
-\[
+$$
 \bigl(Y_t - \widehat Q(S_t,A_t;w)\bigr)^2.
-\]
+$$
 
 ### What is being fitted
 
-The approximator is not being told the true \(Q^\pi\) or \(Q^*\) directly.
+The approximator is not being told the true $Q^\pi$ or $Q^*$ directly.
 
 It is being fit to targets constructed from data and possibly from current predictions.
 
@@ -125,21 +125,21 @@ DQN keeps the Q-learning target structure but replaces the tabular action-value 
 
 For a sampled transition
 
-\[
+$$
 (S_t, A_t, R_{t+1}, S_{t+1}, \zeta_t),
-\]
+$$
 
-where \(\zeta_t \in \{0,1\}\) indicates whether the transition is terminal, define the DQN target as
+where $\zeta_t \in \{0,1\}$ indicates whether the transition is terminal, define the DQN target as
 
-\[
+$$
 Y_t^{\mathrm{DQN}}
 =
 R_{t+1}
 +
 \gamma (1-\zeta_t)\max_{a'} Q(S_{t+1}, a'; w^-).
-\]
+$$
 
-Here \(w^-\) denotes the frozen target-network parameters.
+Here $w^-$ denotes the frozen target-network parameters.
 
 ---
 
@@ -147,29 +147,29 @@ Here \(w^-\) denotes the frozen target-network parameters.
 
 ### Immediate reward term
 
-\(R_{t+1}\) is the observed reward from the sampled transition.
+$R_{t+1}$ is the observed reward from the sampled transition.
 
 ### Terminal mask
 
-\((1-\zeta_t)\) checks whether future continuation should be included.
+$(1-\zeta_t)$ checks whether future continuation should be included.
 
-If \(\zeta_t = 1\), the sampled transition ends the episode and the continuation term must be zero.
+If $\zeta_t = 1$, the sampled transition ends the episode and the continuation term must be zero.
 
 ### Greedy continuation term
 
-\(\max_{a'}Q(S_{t+1}, a'; w^-)\) is the estimated best continuation value at the next state, evaluated using the target network.
+$\max_{a'}Q(S_{t+1}, a'; w^-)$ is the estimated best continuation value at the next state, evaluated using the target network.
 
 ### Discount factor
 
-\(\gamma\) scales the continuation term.
+$\gamma$ scales the continuation term.
 
 ### Terminal boundary condition
 
-If \(\zeta_t = 1\), then
+If $\zeta_t = 1$, then
 
-\[
+$$
 Y_t^{\mathrm{DQN}} = R_{t+1}.
-\]
+$$
 
 That boundary condition is important enough to say explicitly.
 
@@ -177,7 +177,7 @@ That boundary condition is important enough to say explicitly.
 
 ## 7. Why the target network is frozen
 
-The parameter vector \(w^-\) is held fixed for a period of time while the online network parameters \(w\) are updated.
+The parameter vector $w^-$ is held fixed for a period of time while the online network parameters $w$ are updated.
 
 ### What problem this addresses
 
@@ -220,9 +220,9 @@ If the target is still based on a different continuation policy structure than t
 
 ## 9. Semi-gradient flavor
 
-In practice, DQN fits the online network prediction to a target built using frozen parameters \(w^-\).
+In practice, DQN fits the online network prediction to a target built using frozen parameters $w^-$.
 
-That means the target is treated as fixed when differentiating with respect to \(w\) for that update.
+That means the target is treated as fixed when differentiating with respect to $w$ for that update.
 
 ### Why this matters
 

@@ -18,23 +18,23 @@ This rewrite keeps those axes separate on purpose.
 
 ## 1. Dynamic programming: planning with a known model
 
-Suppose the transition–reward law \(P(s',r \mid s,a)\) is known.
+Suppose the transition–reward law $P(s',r \mid s,a)$ is known.
 
-Then for a fixed policy \(\pi\), iterative policy evaluation applies the Bellman expectation operator repeatedly:
+Then for a fixed policy $\pi$, iterative policy evaluation applies the Bellman expectation operator repeatedly:
 
-\[
+$$
 V_{k+1} = T^\pi V_k.
-\]
+$$
 
 ### What is being updated
 
-- \(V_k\) is the current estimate after iteration \(k\),
-- \(T^\pi\) uses the known model and the fixed policy to compute the next estimate.
+- $V_k$ is the current estimate after iteration $k$,
+- $T^\pi$ uses the known model and the fixed policy to compute the next estimate.
 
 ### Why this converges
 
-In the discounted setting, \(T^\pi\) is a contraction.  
-So repeated application converges to the unique fixed point \(V^\pi\).
+In the discounted setting, $T^\pi$ is a contraction.  
+So repeated application converges to the unique fixed point $V^\pi$.
 
 ### What dynamic programming is
 
@@ -52,9 +52,9 @@ That distinction matters because later chapters move to settings where the model
 
 If the goal is optimal control rather than evaluation of a fixed policy, use the optimality operator:
 
-\[
+$$
 V_{k+1} = T^*V_k.
-\]
+$$
 
 ### What changes relative to policy evaluation
 
@@ -71,8 +71,8 @@ The convergence logic still comes from contraction in the discounted setting.
 
 Now move to a setting where you sample experience under a policy and use complete returns from episodes.
 
-Suppose state \(s\) is visited at time \(t\).  
-If you wait until the episode terminates, you can form the realized return \(G_t\) following that visit.
+Suppose state $s$ is visited at time $t$.  
+If you wait until the episode terminates, you can form the realized return $G_t$ following that visit.
 
 A Monte Carlo estimator averages those complete sampled returns.
 
@@ -100,27 +100,27 @@ You must wait for enough future rewards to observe the complete return.
 
 Start from the Bellman expectation equation for a policy:
 
-\[
+$$
 V^\pi(S_t)
 =
 \mathbb{E}_\pi[R_{t+1} + \gamma V^\pi(S_{t+1}) \mid S_t].
-\]
+$$
 
 A one-step TD method replaces the exact conditional expectation by the single transition that actually occurred.
 
 That gives the one-step target
 
-\[
+$$
 Y_t^{\mathrm{TD}} = R_{t+1} + \gamma V(S_{t+1}).
-\]
+$$
 
 The corresponding TD error is
 
-\[
+$$
 \delta_t
 =
 R_{t+1} + \gamma V(S_{t+1}) - V(S_t).
-\]
+$$
 
 ### What changed relative to the Bellman equation
 
@@ -129,7 +129,7 @@ The TD target is one noisy sample-based surrogate for that expectation.
 
 ### Why this is called bootstrapping
 
-The target depends partly on fresh data, \(R_{t+1}\), and partly on the current estimate, \(V(S_{t+1})\).
+The target depends partly on fresh data, $R_{t+1}$, and partly on the current estimate, $V(S_{t+1})$.
 
 So the method is learning partly from its own present prediction.
 
@@ -141,15 +141,15 @@ This distinction should become automatic.
 
 ### Monte Carlo target
 
-The target is the complete sampled return \(G_t\).
+The target is the complete sampled return $G_t$.
 
 ### TD target
 
 The target is
 
-\[
+$$
 R_{t+1} + \gamma V(S_{t+1}),
-\]
+$$
 
 which combines one-step data with a bootstrap term.
 
@@ -187,34 +187,34 @@ This distinction is one of the central classification checks in RL.
 
 ---
 
-## 7. \(\epsilon\)-greedy exploration
+## 7. $\epsilon$-greedy exploration
 
-Assume a finite action set \(\mathcal{A}\) and a unique greedy action at state \(s\).
+Assume a finite action set $\mathcal{A}$ and a unique greedy action at state $s$.
 
-An \(\epsilon\)-greedy policy does the following:
+An $\epsilon$-greedy policy does the following:
 
-- with probability \(1-\epsilon\), choose the greedy action,
-- with probability \(\epsilon\), choose uniformly among all actions.
+- with probability $1-\epsilon$, choose the greedy action,
+- with probability $\epsilon$, choose uniformly among all actions.
 
 ### What probability the greedy action receives
 
 The greedy action gets
 
-\[
+$$
 1-\epsilon + \frac{\epsilon}{|\mathcal{A}|}.
-\]
+$$
 
 ### What probability each non-greedy action receives
 
 Each non-greedy action gets
 
-\[
+$$
 \frac{\epsilon}{|\mathcal{A}|}.
-\]
+$$
 
 ### What this guarantees
 
-Every action keeps at least some positive probability as long as \(\epsilon > 0\).
+Every action keeps at least some positive probability as long as $\epsilon > 0$.
 
 That matters for exploration.
 
@@ -226,11 +226,11 @@ SARSA is an on-policy action-value TD method.
 
 Its one-step target is
 
-\[
+$$
 R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}),
-\]
+$$
 
-where \(A_{t+1}\) is the actual next action selected by the current behavior policy.
+where $A_{t+1}$ is the actual next action selected by the current behavior policy.
 
 ### What is being sampled
 
@@ -248,9 +248,9 @@ That is why the method is on-policy.
 
 Q-learning uses the target
 
-\[
+$$
 R_{t+1} + \gamma \max_{a'} Q(S_{t+1}, a').
-\]
+$$
 
 ### What changes relative to SARSA
 
