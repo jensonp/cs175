@@ -1,67 +1,77 @@
 # Chapter 3 — States, Histories, MDPs, and the Objective
 
-## What this chapter establishes
+## What this chapter locks in
 
-This chapter answers three central questions.
+This chapter separates four ideas that learners often blur together:
 
-1. What information does the agent actually have?
-2. When is a state representation good enough to support Markov analysis?
-3. What is the exact optimization objective?
+- history,
+- state representation,
+- Markov sufficiency,
+- and the objective being optimized.
 
-By the end, you should know the difference between a history, a representation, a Markov state, an MDP, a return recursion, and the performance objective \(J(\pi)\).
+This is one of the most important chapters in the whole sequence.  
+If the distinction between “a summary” and “a Markov summary” is not firm, the rest of reinforcement learning can become symbolic theater.
 
 ---
 
-## 1. Full interaction history
+## 1. Start with history, not with state
 
-The complete interaction history available up to time \(t\) is
+At time \(t\), a history \(H_t\) records the interaction information available up to the current decision point.
+
+A typical form is
 
 \[
 H_t = (O_0, A_0, R_1, O_1, A_1, R_2, \ldots, O_t).
 \]
 
-### What is included and what is not
+The exact notation can vary, but the structural point does not:
 
-- It includes all observations up to time \(t\).
-- It includes all past actions up to time \(t-1\).
-- It includes all rewards up to time \(t\), which are indexed \(R_1,\ldots,R_t\).
-- It does **not** include \(A_t\), because at the instant the history is available, action \(A_t\) has not yet been chosen.
+- history is the most complete decision-relevant record you are carrying,
+- and any state representation you define later is built from that history.
 
-That boundary matters.
+So the correct logical order is:
+
+1. define interaction,
+2. define history,
+3. define a state representation as a function of history,
+4. then test whether that state representation is Markov.
 
 ---
 
-## 2. State representations
+## 2. A state representation is a function of history
 
-A state representation is any mapping
+A state representation is some summary
 
 \[
 S_t = f(H_t).
 \]
 
-At this point, that is all a state is: a summary of the history.
+That summary may be hand-designed, learned, compact, lossy, exact, or approximate.
 
-### What this does **not** imply
+### What this means
 
-This definition does **not** yet imply that \(S_t\) is Markov.  
-A state representation can throw away information needed for future prediction.
+The name “state” does not yet guarantee anything about predictive sufficiency.
 
-So “state” in the broad representation sense and “Markov state” are not automatically the same thing.
+It only says:
 
-### Why compress the history at all
+- the agent is conditioning on this summary,
+- and this summary is derived from the available past.
 
-The full history grows with time.  
-A fixed-size representation is computationally manageable and often necessary for learning.
-
-But compression is only safe if it preserves the information needed for the control problem.
+A summary can be useful while still failing to be Markov.
 
 ---
 
-## 3. The Markov property
+## 3. What the Markov property actually says
 
-The representation \(S_t\) is Markov if, once \(S_t\) and \(A_t\) are known, the earlier history adds no further predictive information about the next state and reward.
+The Markov property is a statement about conditional laws.
 
-Formally,
+A state representation \(S_t\) is Markov if, once \(S_t\) and the current action \(A_t\) are known, the conditional distribution of the next-step outcome no longer depends on the rest of the past.
+
+In plain language:
+
+> after conditioning on the current state summary and current action, there is no remaining predictive information in the earlier history for the next transition outcome.
+
+A common formal expression is:
 
 \[
 P(S_{t+1}, R_{t+1} \mid H_t, A_t)
@@ -69,237 +79,190 @@ P(S_{t+1}, R_{t+1} \mid H_t, A_t)
 P(S_{t+1}, R_{t+1} \mid S_t, A_t).
 \]
 
-### What this equality means
+### What is being checked
 
-The left side conditions on the whole history and the current action.  
-The right side conditions only on the current state summary and the current action.
+You are checking whether the summary has kept exactly the information needed for one-step prediction and control.
 
-If these are equal for all relevant histories and actions, then the state summary retains everything about the past that matters for one-step prediction of the controlled future.
+### What is **not** being checked
 
-### What conclusion this licenses
+You are not checking whether the summary is intuitive.  
+You are not checking whether it is low-dimensional.  
+You are not checking whether it “feels like the state.”
 
-Once the Markov property holds, future analysis can be written in terms of \(S_t\) and \(A_t\) without loss.
-
-That is what makes Bellman equations possible in the familiar finite-dimensional form.
-
----
-
-## 4. Markov decision process definition
-
-An MDP is the tuple
-
-\[
-(\mathcal{S}, \mathcal{A}, P, \rho, \gamma),
-\]
-
-where
-
-- \(\mathcal{S}\) is the state space,
-- \(\mathcal{A}\) is the action space,
-- \(P(s', r \mid s, a)\) is the transition-reward law,
-- \(\rho\) is the initial-state distribution,
-- \(\gamma\) is the discount factor.
-
-### What the transition-reward law means
-
-For each current state-action pair \((s,a)\), the term
-
-\[
-P(s', r \mid s,a)
-\]
-
-gives the probability of moving to next state \(s'\) and receiving reward \(r\).
-
-This notation keeps reward and transition together.  
-That is often cleaner than separating the dynamics and expected reward prematurely.
-
-### Optional derived quantity: expected immediate reward
-
-If you want a separate expected reward function, define
-
-\[
-\bar r(s,a) = \sum_{s',r} r \, P(s', r \mid s,a).
-\]
-
-This is an expected one-step reward, not a long-run value.
+The test is predictive sufficiency under conditioning.
 
 ---
 
-## 5. Episodic versus continuing tasks
+## 4. The key decision boundary: summary versus Markov state
 
-### Episodic task
+This is the most important fork in the chapter.
 
-An episodic task ends after a finite random number of steps.
+### A summary that is not Markov
 
-There is a terminal condition, and once termination occurs, the episode stops.
+Suppose two different histories produce the same representation \(S_t=s\), but those histories imply different conditional laws for \((S_{t+1}, R_{t+1})\) once action \(A_t=a\) is fixed.
 
-### Continuing task
+Then \(S_t\) is **not** Markov.
 
-A continuing task has no built-in terminal time.
+### A summary that is Markov
 
-In that case, discounted returns are typically used with \(0 \le \gamma < 1\) so that the return stays finite under bounded rewards.
+If any two histories that map to the same \(S_t=s\) induce the same conditional law for the next-step outcome under each action, then the summary is Markov.
 
 ### Why this distinction matters
 
-The same Bellman-style reasoning appears in both settings, but the boundary conditions differ:
+Bellman equations, policy evaluation, and dynamic programming all rely on the current state being sufficient for future prediction in this precise conditional sense.
 
-- episodic tasks can sometimes allow \(\gamma = 1\),
-- continuing tasks generally require discounting or another device to keep the objective well-defined.
-
----
-
-## 6. Return recursion
-
-The discounted return from time \(t\) is
-
-\[
-G_t = \sum_{k=0}^{\infty}\gamma^k R_{t+k+1}.
-\]
-
-Now derive the one-step recursion carefully.
-
-Start by separating the first term, which is the \(k=0\) term:
-
-\[
-G_t = R_{t+1} + \sum_{k=1}^{\infty}\gamma^k R_{t+k+1}.
-\]
-
-Now change the index by setting
-
-\[
-j = k-1.
-\]
-
-### Why that change is valid
-
-- when \(k=1\), the new index is \(j=0\),
-- as \(k \to \infty\), the new index also tends to infinity.
-
-So the remaining sum becomes
-
-\[
-\sum_{k=1}^{\infty}\gamma^k R_{t+k+1}
-=
-\sum_{j=0}^{\infty}\gamma^{j+1} R_{t+j+2}.
-\]
-
-Factor out one power of \(\gamma\):
-
-\[
-\sum_{j=0}^{\infty}\gamma^{j+1} R_{t+j+2}
-=
-\gamma \sum_{j=0}^{\infty}\gamma^j R_{t+j+2}.
-\]
-
-But the remaining series is exactly \(G_{t+1}\). Therefore
-
-\[
-G_t = R_{t+1} + \gamma G_{t+1}.
-\]
-
-### What conclusion this licenses
-
-This recursion is exact.  
-It is not a Bellman equation yet.  
-It is just an identity about the return itself.
-
-Bellman equations arise only after taking conditional expectations of this identity.
+If the representation is not Markov, those equations are no longer exact descriptions of the original process.
 
 ---
 
-## 7. The objective
+## 5. From Markov state to MDP
 
-For a policy \(\pi\), define the performance objective
+Once a state representation is Markov, you can describe the environment using Markov transition laws.
+
+In the finite-state and finite-action setting, an MDP is specified by:
+
+- a state space \(\mathcal{S}\),
+- an action space \(\mathcal{A}\),
+- a transition–reward law \(P(s', r \mid s, a)\),
+- and usually an initial-state distribution.
+
+### What this means
+
+The future one-step law is now described locally:
+
+- current state \(s\),
+- current action \(a\),
+- next state \(s'\),
+- next reward \(r\).
+
+The past no longer needs to be carried explicitly once the current state is known.
+
+### Why that helps
+
+This local structure is what makes Bellman recursions possible.
+
+---
+
+## 6. Policies in an MDP
+
+Once states are Markov, a policy is usually written as a mapping from current state to action probabilities:
+
+\[
+\pi(a \mid s) = P(A_t=a \mid S_t=s).
+\]
+
+### Why this is legitimate now
+
+Earlier, you were not allowed to assume the current summary was enough.  
+Now, under the Markov property, conditioning on \(S_t\) is sufficient for one-step predictive control.
+
+That is why MDP theory speaks naturally in terms of state-based policies.
+
+---
+
+## 7. Return and the objective
+
+The return from time \(t\) is
+
+\[
+G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
+\]
+
+in a continuing discounted setting, under the usual boundedness and discount assumptions.
+
+The broad optimization goal is to choose a policy that makes expected return large.
+
+A common episodic objective is an expectation from the initial distribution, such as
 
 \[
 J(\pi) = \mathbb{E}_\pi[G_0].
 \]
 
-### What the notation \(\mathbb{E}_\pi\) means
+### What this objective checks
 
-The expectation is taken under the probability law induced jointly by:
+The objective is not “maximize the next reward” unless \(\gamma = 0\).  
+It is about the long-run consequences of the policy.
 
-- the initial-state distribution \(\rho\),
-- the environment transition-reward law \(P\),
-- and the policy \(\pi\).
+That is exactly why reinforcement learning can rationally choose a locally bad action that improves downstream outcomes.
 
-### What is being optimized
+---
 
-The control problem is
+## 8. Why the Markov property matters for Bellman structure
+
+Bellman equations depend on a recursive decomposition of return:
 
 \[
-\pi^* \in \arg\max_\pi J(\pi).
+G_t = R_{t+1} + \gamma G_{t+1}.
 \]
 
-So the objective is not to maximize immediate reward greedily at each step.  
-It is to maximize the expected return from the start of interaction.
+That recursion always holds as an algebraic identity.  
+But turning it into a **state-based** recursive equation requires more.
 
-### If a maximizer does not exist
+It requires that, once you condition on \(S_t=s\) and take an action \(a\), the law of the next-step outcome be determined by \(s\) and \(a\), not by hidden leftovers from the past.
 
-More generally one can write \(\sup_\pi J(\pi)\).  
-But in the finite discounted setting emphasized here, optimal policies exist.
+So there are two layers:
 
----
+1. the return recursion is always algebraically true,
+2. the Bellman equation in terms of state value is true under the MDP assumptions.
 
-## 8. Why the state concept matters for the objective
-
-A policy can, in principle, condition on the full history.  
-So why insist on Markov states?
-
-Because once the representation is Markov, long-horizon control can be analyzed locally through recursive objects:
-
-- state values,
-- action values,
-- Bellman operators,
-- dynamic programming,
-- and temporal-difference targets.
-
-Without a Markov representation, those local recursions may no longer be valid in the simple state-based form.
+This distinction matters.
 
 ---
 
-## 9. Common confusions blocked here
+## 9. Boundary conditions
 
-### Confusion 1: a state is whatever the observation happens to be
+### Partial observation
 
-No.
+If the current observation does not preserve enough information from the past, then the observation alone may fail to be Markov.
 
-The observation may be incomplete.  
-A state representation can include memory or latent features derived from the history.
+### Learned representations
 
-### Confusion 2: any compression of history is safe
+A learned latent representation may or may not be Markov.  
+Calling it an “embedding” does not answer the sufficiency question.
 
-False.
+### Non-Markov summaries
 
-A compression is only safe for Markov analysis if it preserves the predictive information needed so that the future depends on the past only through the compressed state and current action.
-
-### Confusion 3: the return recursion is already a Bellman equation
-
-No.
-
-\[
-G_t = R_{t+1} + \gamma G_{t+1}
-\]
-
-is an identity about a random variable.  
-A Bellman equation appears only after conditioning and taking expectations.
-
-### Confusion 4: maximizing expected return is the same as maximizing each immediate reward
-
-Only if the future does not matter, which is the degenerate case \(\gamma=0\).  
-In general, a short-term sacrifice can increase long-run return.
+A non-Markov summary can still be useful for learning in practice.  
+But when you use exact MDP language with it, you are making an approximation.
 
 ---
 
-## 10. Mastery check
+## 10. Common confusions blocked here
 
-You understand this chapter if you can explain all of these precisely.
+### Confusion 1: A state is whatever the agent currently sees
 
-1. What is included in \(H_t\), and why is \(A_t\) not part of it?
-2. What is the difference between a general state representation and a Markov state?
-3. What does \(P(s', r \mid s,a)\) encode?
-4. Why is the return recursion exact before any expectation is taken?
-5. What random mechanisms are included inside \(\mathbb{E}_\pi\) when defining \(J(\pi)\)?
+Not necessarily.  
+What the agent sees is an observation.  
+A state is a summary used for decision making.  
+A Markov state is a summary with a specific conditional sufficiency property.
 
-If any answer is still hand-wavy, fix it now.  
-Every later derivation depends on this chapter.
+### Confusion 2: If a summary works well, it must be Markov
+
+No.  
+Practical usefulness and exact Markov sufficiency are different questions.
+
+### Confusion 3: MDPs are the starting point of the subject
+
+Not conceptually.  
+The interaction process comes first.  
+The MDP description is a later structural simplification earned by the Markov property.
+
+### Confusion 4: The objective is immediate reward maximization
+
+Usually false.  
+The objective is expected return, which includes future rewards through discounting or finite-horizon accumulation.
+
+---
+
+## 11. Mastery check
+
+You understand this chapter if you can answer all of these without drifting into vague language.
+
+1. Why must history be defined before state?
+2. What does the equation \(S_t = f(H_t)\) mean conceptually?
+3. What exact conditional-independence statement is being tested by the Markov property?
+4. What is the difference between a useful summary and a Markov state?
+5. Why does Bellman theory care about Markov sufficiency?
+
+If you cannot answer these cleanly, pause here.  
+This chapter is the conceptual firewall for everything that follows.

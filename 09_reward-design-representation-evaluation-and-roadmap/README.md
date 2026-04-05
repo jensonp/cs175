@@ -1,329 +1,263 @@
 # Chapter 8 — Reward Design, Representation, Evaluation, and Roadmap
 
-## What this chapter establishes
+## What this chapter locks in
 
-This chapter formalizes issues that are often treated too casually:
+This chapter covers topics that are often treated casually even though they shape whether an RL result means anything.
 
-- the difference between reward and value,
-- the precise effect of potential-based reward shaping,
-- how route preferences can change as the living reward changes,
-- how evaluation should be reported,
-- why representation can induce non-Markov aliasing,
-- and where the core material extends next.
+The goal here is not to tack on “practical considerations.”  
+The goal is to make four facts explicit:
+
+- reward, return, and value are different objects,
+- reward shaping has exact conditions under which it preserves optimal behavior,
+- representation can break the Markov property through aliasing,
+- and evaluation is only credible when the reporting protocol is explicit and controlled.
 
 ---
 
-## 1. Reward versus value
+## 1. Reward, return, and value are different
 
-The immediate reward at time \(t+1\) is \(R_{t+1}\).
+### Immediate reward
 
-The action value under policy \(\pi\) is
+The immediate reward is the one-step signal observed after action \(A_t\):
+
+\[
+R_{t+1}.
+\]
+
+### Return
+
+The return from time \(t\) aggregates future rewards:
+
+\[
+G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
+\]
+
+in the continuing discounted case.
+
+### Value
+
+A value function is an expectation of return under specified conditioning and policy assumptions.
+
+For example,
 
 \[
 Q^\pi(s,a) = \mathbb{E}_\pi[G_t \mid S_t=s, A_t=a].
 \]
 
-### Exact distinction
+### Why this distinction matters
 
-- reward is a one-step scalar signal,
-- return is the discounted sum of future rewards,
-- value is the expectation of return under specified conditioning and policy assumptions.
+A learner is usually not trying to maximize the immediate reward in isolation.
 
-### Why this matters
+Only when \(\gamma = 0\) does the problem collapse to one-step reward maximization.
 
-A learner is not usually optimizing the immediate reward term in isolation.  
-It is optimizing expected long-run return.
-
-Only in the special case \(\gamma=0\) does the problem collapse to pure one-step reward maximization.
+In general, reinforcement learning is about long-run consequences.
 
 ---
 
 ## 2. Potential-based reward shaping
 
-Let the original reward be \(r_t\).  
-Choose any potential function \(\Phi : \mathcal{S} \to \mathbb{R}\).  
+Suppose the original reward is \(r_t\), and choose a potential function
+
+\[
+\Phi : \mathcal{S} \to \mathbb{R}.
+\]
+
 Define the shaped reward by
 
 \[
 r_t' = r_t + \gamma \Phi(S_{t+1}) - \Phi(S_t).
 \]
 
-### What must be checked
+### What this adds
 
-To understand the effect on return, compare the original return
+The shaping term rewards movement toward states with higher potential and penalizes movement away from them, in a discount-consistent way.
 
-\[
-G_0 = \sum_{t=0}^{\infty}\gamma^t r_t
-\]
+### Why the telescoping effect matters
 
-with the shaped return
+When you sum the shaping terms across a trajectory, the intermediate potentials cancel in a telescoping pattern.
 
-\[
-G_0' = \sum_{t=0}^{\infty}\gamma^t r_t'.
-\]
+That means the shaped return differs from the original return mainly by boundary terms, not by arbitrary path distortions.
 
-Substitute the definition of \(r_t'\):
+### What conclusion this supports
 
-\[
-G_0'
-=
-G_0
-+
-\sum_{t=0}^{\infty}\gamma^{t+1}\Phi(S_{t+1})
--
-\sum_{t=0}^{\infty}\gamma^t\Phi(S_t).
-\]
+Under the standard conditions, potential-based shaping preserves which policies are optimal.
 
-Now rewrite the first extra sum with index \(j=t+1\). Then
-
-\[
-\sum_{t=0}^{\infty}\gamma^{t+1}\Phi(S_{t+1})
-=
-\sum_{j=1}^{\infty}\gamma^j \Phi(S_j).
-\]
-
-Split the second extra sum into its \(t=0\) term plus the rest:
-
-\[
-\sum_{t=0}^{\infty}\gamma^t\Phi(S_t)
-=
-\Phi(S_0) + \sum_{t=1}^{\infty}\gamma^t\Phi(S_t).
-\]
-
-The two infinite tails cancel, leaving
-
-\[
-G_0' = G_0 - \Phi(S_0).
-\]
-
-### What conclusion this licenses
-
-Potential-based shaping changes the return only by a start-state-dependent constant.  
-So for a fixed start state, relative action preferences and optimal policies are preserved.
-
-### What is **not** guaranteed
-
-A shaping term that is not of potential-based form does not automatically preserve optimal policies.
-
-That point must stay sharp.
+This is the precise sense in which shaping can alter learning dynamics without changing the optimal-control solution.
 
 ---
 
-## 3. Route thresholds in gridworld-style problems
+## 3. Why reward design is not cosmetic
 
-Suppose there are two candidate routes, indexed by \(i \in \{1,2\}\).
+Changing the reward can change which behaviors are preferred.
 
-- route \(i\) lasts \(T_i\) nonterminal steps,
-- it ends with terminal reward \(R_i\),
-- and each nonterminal step contributes living reward \(r\).
+A living reward, step penalty, or sparse terminal bonus changes the tradeoff between:
 
-Then the return of route \(i\) is
+- speed,
+- risk,
+- path length,
+- and delayed payoff.
 
-\[
-G_i(r)
-=
-\sum_{t=0}^{T_i-1}\gamma^t r + \gamma^{T_i}R_i.
-\]
+### What to remember
 
-### If \(\gamma \neq 1\)
+A reward function is not just a scoring scheme layered on top of the same objective.  
+It **is** the objective signal that defines what the learner is optimizing.
 
-The finite geometric sum is
-
-\[
-\sum_{t=0}^{T_i-1}\gamma^t
-=
-\frac{1-\gamma^{T_i}}{1-\gamma}.
-\]
-
-So
-
-\[
-G_i(r)
-=
-r\frac{1-\gamma^{T_i}}{1-\gamma}
-+
-\gamma^{T_i}R_i.
-\]
-
-To find the threshold where the two routes tie, solve
-
-\[
-G_1(r) = G_2(r).
-\]
-
-That yields the living-reward value at which the preferred route changes.
-
-### If \(\gamma = 1\) and the horizon is finite
-
-Then the geometric-sum formula above is not the correct form because its denominator becomes zero.  
-Instead use the finite-horizon undiscounted sum directly:
-
-\[
-G_i(r) = T_i r + R_i.
-\]
-
-Setting the two routes equal gives
-
-\[
-T_1 r + R_1 = T_2 r + R_2,
-\]
-
-so if \(T_1 \ne T_2\),
-
-\[
-r = \frac{R_2 - R_1}{T_1 - T_2}.
-\]
-
-### Why this section matters
-
-It shows concretely that changing a living reward can change the preferred policy region.  
-Reward design is not a cosmetic choice.
+So a reward change is a problem-definition change unless it belongs to a shaping family with a proven invariance property.
 
 ---
 
-## 4. Evaluation methodology
+## 4. Representation and non-Markov aliasing
 
-Suppose an algorithm is run with \(N\) independent random seeds, producing evaluation returns
+A representation may be compact while still failing to preserve the information needed for Markov prediction.
+
+### What aliasing means
+
+Two distinct latent situations may map to the same representation even though they imply different future transition or reward laws under the same action.
+
+If that happens, the representation is not Markov.
+
+### Why this matters
+
+Then a single input representation is being asked to stand for multiple different predictive situations.
+
+That can distort value learning, policy learning, or both.
+
+### What this blocks
+
+Do not confuse compactness with sufficiency.  
+A small representation is not automatically a good state.
+
+---
+
+## 5. Evaluation methodology
+
+Suppose an algorithm is run under multiple independent random seeds, producing evaluation returns
 
 \[
 X_1, X_2, \ldots, X_N.
 \]
 
-The sample mean is
+A sample mean is then
 
 \[
-\widehat \mu_N = \frac{1}{N}\sum_{i=1}^N X_i.
+\widehat\mu_N = \frac{1}{N}\sum_{i=1}^N X_i.
 \]
 
 ### Why multiple seeds matter
 
-RL outcomes can vary substantially across random initializations, environment stochasticity, and exploration trajectories.  
+RL outcomes can vary because of:
+
+- random initialization,
+- stochastic environments,
+- exploration randomness,
+- and training instability.
+
 A single run is not enough evidence.
 
-### What a good evaluation report should specify
+### Minimum information a useful evaluation report should include
 
-At minimum, report:
+A credible report should specify at least:
 
 1. the environment and task definition,
-2. the reward definition,
-3. the state or observation representation,
-4. the number of training steps or episodes,
-5. the evaluation policy used,
-6. the number of random seeds,
-7. the statistic reported across seeds,
-8. any confidence intervals or dispersion summaries,
-9. ablations that isolate major design components.
-
-### What an ablation is
-
-An ablation is a controlled comparison where one component is removed or changed while the rest of the protocol is kept fixed.
-
-If many things change at once, the result is no longer a clean ablation.
+2. the reward specification,
+3. the observation or state representation,
+4. the training budget,
+5. the evaluation policy,
+6. the number of seeds,
+7. the summary statistic across seeds,
+8. measures of spread or uncertainty,
+9. and ablations that isolate major components.
 
 ---
 
-## 5. Representation counts and non-Markov aliasing
+## 6. What an ablation is
 
-A representation may be compact and still fail to be Markov.
+An ablation is a controlled comparison in which one component is removed or changed while the rest of the protocol is kept fixed.
 
-### What aliasing means
+### Why this definition matters
 
-Aliasing occurs when two different underlying histories or latent states map to the same representation, even though they imply different future transition or reward distributions.
+If many ingredients change at once, then the comparison no longer isolates the role of the component you claim to be testing.
 
-Then the learner cannot distinguish situations that require different decisions.
-
-### Why this matters
-
-Once aliasing occurs, state-based Bellman reasoning written on that representation may no longer describe the true controlled process correctly.
-
-That is not just a data-efficiency issue.  
-It is a modeling issue.
-
-### Example intuition
-
-A visual observation might look identical whether or not a key was already collected in the past.  
-If future transitions depend on that hidden fact, the raw observation is not Markov.
+So “we turned off replay and also changed the network and learning rate” is not a clean ablation.
 
 ---
 
-## 6. Roadmap beyond the core
+## 7. Boundary conditions in route or living-reward analyses
 
-The core material supports several nearby extensions.
+In finite-horizon or deterministic route comparisons, changing a living reward can shift which path is optimal.
 
-### Model-based RL
+### What is being compared
 
-Instead of being given the transition law \(P\), the learner estimates or plans with a model.
+You are comparing total returns of different route structures, not merely their one-step rewards.
 
-### Partial observability
+### Why the threshold can move
 
-When observations are not Markov, one can work with belief states, recurrent memory, or other history-dependent representations.
+A path with more steps accumulates the living reward more times.  
+So when that reward changes, the balance between a shorter and longer route can change.
 
-### Multi-step returns and eligibility traces
+### What this teaches
 
-These interpolate between one-step TD and full-return Monte Carlo.
+Reward design can alter the preferred policy region in a mathematically direct way.
 
-### Continuous-control actor-critic methods
-
-These adapt the policy-gradient and critic ideas to continuous action spaces.
-
-### Offline RL
-
-Learning is performed from a fixed dataset rather than continued interaction, which sharpens distribution-shift issues.
-
-### Distributional RL and risk-sensitive RL
-
-These change what is being predicted or optimized beyond expected return alone.
-
-### Why this roadmap belongs here
-
-These topics extend the same formal backbone rather than replacing it.  
-The objects remain:
-
-- policies,
-- returns,
-- value functions,
-- state representations,
-- and optimization objectives.
+That is not philosophy.  
+It is a consequence of the return definition.
 
 ---
 
-## 7. Common confusions blocked here
+## 8. Where the road continues
 
-### Confusion 1: reward shaping just makes learning faster and cannot change the problem
+Once the material in this sequence is stable, the natural next topics include:
 
-False in general.
+- eligibility traces and multi-step methods,
+- partial observability and belief-state ideas,
+- deeper treatment of offline RL,
+- model-based RL,
+- and representation learning for control.
 
-Only specific shaping forms, such as potential-based shaping, preserve optimal policies in the standard sense.
-
-### Confusion 2: reward and value differ only informally
-
-No.
-
-Reward is immediate.  
-Value is an expectation of long-run return.
-
-### Confusion 3: evaluation with one strong run is acceptable evidence
-
-Not in any serious experimental standard.  
-Variation across seeds and design choices must be reported.
-
-### Confusion 4: a small representation is bad and a large representation is good
-
-Neither is true on its own.
-
-The real question is whether the representation preserves the information needed for prediction and control.
+But the purpose of this chapter is not to chase new topics immediately.  
+It is to stabilize the conceptual ground so that later extensions do not rest on fuzzy foundations.
 
 ---
 
-## 8. Mastery check
+## 9. Common confusions blocked here
 
-You understand this chapter if you can explain all of these exactly.
+### Confusion 1: Reward and value are the same thing
 
-1. Why does potential-based shaping preserve policy ordering up to a start-state constant?
-2. Why must the \(\gamma=1\) route-threshold case be handled separately?
-3. What makes an ablation “clean”?
-4. What is non-Markov aliasing?
-5. Why can evaluation not rely on a single random seed?
+No.  
+Reward is one-step.  
+Return aggregates rewards over time.  
+Value is an expectation of return.
 
-This chapter is where the theory connects to design discipline.  
-Treat it with the same rigor as the earlier derivations.
+### Confusion 2: Reward shaping is always harmless
+
+No.  
+Only specific shaping constructions, such as potential-based shaping under the right assumptions, come with preservation guarantees.
+
+### Confusion 3: A compact representation is automatically a good state
+
+No.  
+A compact representation can still alias distinct predictive situations.
+
+### Confusion 4: One strong run is enough to evaluate an RL method
+
+No.  
+RL results can vary materially across seeds and protocols.
+
+### Confusion 5: Any changed-component comparison is an ablation
+
+No.  
+A true ablation isolates one component while holding the rest fixed.
+
+---
+
+## 10. Mastery check
+
+You understand this chapter if you can answer all of these cleanly.
+
+1. What is the exact difference between reward, return, and value?
+2. Why can potential-based shaping preserve optimal policies even though it changes one-step rewards?
+3. What does representation aliasing mean, and why does it threaten the Markov property?
+4. Why are multiple random seeds necessary for credible evaluation?
+5. What makes a comparison a clean ablation rather than a loose variant study?
+
+This chapter is where the course stops being only about algorithms and becomes about whether your formulation and evidence actually mean what you think they mean.

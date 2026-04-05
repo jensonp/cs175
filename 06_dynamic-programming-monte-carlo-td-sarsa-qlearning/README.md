@@ -1,22 +1,26 @@
 # Chapter 5 — Dynamic Programming, Monte Carlo, TD, SARSA, and Q-Learning
 
-## What this chapter establishes
+## What this chapter locks in
 
-This chapter explains how Bellman equations become learning or planning procedures.
+This chapter explains how Bellman equations turn into actual procedures.
 
-By the end, you should know:
+The main risk here is mixing different axes together:
 
-- how dynamic programming uses exact model knowledge,
-- how Monte Carlo uses complete sampled returns,
-- how temporal-difference learning uses one-step bootstrapping,
-- how behavior and target policies differ,
-- and exactly where SARSA and Q-learning diverge.
+- model known versus unknown,
+- exact expectation versus sampled target,
+- full return versus bootstrap,
+- on-policy versus off-policy,
+- sampled next action versus greedy next action.
+
+This rewrite keeps those axes separate on purpose.
 
 ---
 
-## 1. Dynamic programming
+## 1. Dynamic programming: planning with a known model
 
-For a fixed policy \(\pi\), define iterative policy evaluation by
+Suppose the transition–reward law \(P(s',r \mid s,a)\) is known.
+
+Then for a fixed policy \(\pi\), iterative policy evaluation applies the Bellman expectation operator repeatedly:
 
 \[
 V_{k+1} = T^\pi V_k.
@@ -24,108 +28,116 @@ V_{k+1} = T^\pi V_k.
 
 ### What is being updated
 
-- \(V_k\) is the current value estimate after iteration \(k\),
-- \(T^\pi\) is the Bellman expectation operator for the known model and policy.
+- \(V_k\) is the current estimate after iteration \(k\),
+- \(T^\pi\) uses the known model and the fixed policy to compute the next estimate.
 
 ### Why this converges
 
-Because \(T^\pi\) is a \(\gamma\)-contraction, repeated application converges to its unique fixed point, which is \(V^\pi\).
+In the discounted setting, \(T^\pi\) is a contraction.  
+So repeated application converges to the unique fixed point \(V^\pi\).
 
-### What assumptions are required
+### What dynamic programming is
 
-- the model \(P(s',r \mid s,a)\) is known,
-- the state and action spaces are finite or otherwise manageable,
-- \(0 \le \gamma < 1\) in the continuing discounted setting.
+It is **planning** with a known model.
 
-### Value iteration
+### What it is not
 
-Similarly,
+It is not learning directly from raw sampled experience alone.
 
-\[
-V_{k+1} = T^*V_k
-\]
-
-converges to \(V^*\) under the same contraction logic.
-
-### What dynamic programming is and is not
-
-It is **planning with a known model**.  
-It is not a sample-based learning method from raw experience alone.
+That distinction matters because later chapters move to settings where the model is not known.
 
 ---
 
-## 2. Monte Carlo estimation
+## 2. Value iteration
 
-Suppose you follow a policy and wait until the episode terminates.  
-For a state \(s\), every visit gives a complete sampled return \(G_t\) following that visit.
-
-An empirical estimator is the average of those observed returns:
+If the goal is optimal control rather than evaluation of a fixed policy, use the optimality operator:
 
 \[
-\widehat V_N(s) = \frac{1}{N}\sum_{i \in \mathcal{I}(s)} G_t^{(i)},
+V_{k+1} = T^*V_k.
 \]
 
-where \(\mathcal{I}(s)\) indexes the visits to state \(s\).
+### What changes relative to policy evaluation
+
+The continuation action is no longer averaged under a fixed policy.  
+It is chosen by maximization.
+
+### What stays the same
+
+The convergence logic still comes from contraction in the discounted setting.
+
+---
+
+## 3. Monte Carlo estimation
+
+Now move to a setting where you sample experience under a policy and use complete returns from episodes.
+
+Suppose state \(s\) is visited at time \(t\).  
+If you wait until the episode terminates, you can form the realized return \(G_t\) following that visit.
+
+A Monte Carlo estimator averages those complete sampled returns.
 
 ### What Monte Carlo uses
 
-It uses the **full realized return** after the state is visited.
+It uses the **full realized return** after a visit.
 
 ### What Monte Carlo does not use
 
-It does not bootstrap from the current estimate.  
-That is the defining difference from temporal-difference methods.
+It does **not** bootstrap from the current estimate.
 
-### Strength and weakness
+That is the defining distinction.
 
-- strength: the target is directly tied to actual observed long-run outcomes,
-- weakness: you must wait until enough future rewards are observed to form the return target.
+### Strength
+
+The target is tied directly to realized long-run outcomes.
+
+### Cost
+
+You must wait for enough future rewards to observe the complete return.
 
 ---
 
-## 3. Temporal-difference learning
+## 4. Temporal-difference learning
 
-Start from the Bellman expectation equation for the value of a state under policy \(\pi\):
+Start from the Bellman expectation equation for a policy:
 
 \[
-V^\pi(S_t) = \mathbb{E}_\pi[R_{t+1} + \gamma V^\pi(S_{t+1}) \mid S_t].
+V^\pi(S_t)
+=
+\mathbb{E}_\pi[R_{t+1} + \gamma V^\pi(S_{t+1}) \mid S_t].
 \]
 
-Replace the conditional expectation by the one sampled transition that actually occurred.  
-This gives the one-step TD target
+A one-step TD method replaces the exact conditional expectation by the single transition that actually occurred.
+
+That gives the one-step target
 
 \[
 Y_t^{\mathrm{TD}} = R_{t+1} + \gamma V(S_{t+1}).
 \]
 
-Define the TD error
+The corresponding TD error is
 
 \[
-\delta_t = Y_t^{\mathrm{TD}} - V(S_t)
-= R_{t+1} + \gamma V(S_{t+1}) - V(S_t).
-\]
-
-Then update by
-
-\[
-V(S_t) \leftarrow V(S_t) + \alpha \delta_t.
+\delta_t
+=
+R_{t+1} + \gamma V(S_{t+1}) - V(S_t).
 \]
 
 ### What changed relative to the Bellman equation
 
-The Bellman equation is an expectation identity.  
-The TD update uses a single observed transition as a noisy estimator of that expectation.
+The Bellman equation is an exact expectation identity.  
+The TD target is one noisy sample-based surrogate for that expectation.
 
 ### Why this is called bootstrapping
 
-The target includes the current estimate \(V(S_{t+1})\).  
-So the method learns partly from data and partly from its own current predictions.
+The target depends partly on fresh data, \(R_{t+1}\), and partly on the current estimate, \(V(S_{t+1})\).
+
+So the method is learning partly from its own present prediction.
 
 ---
 
-## 4. Monte Carlo versus TD: exact distinction
+## 5. The exact Monte Carlo versus TD distinction
 
-The clean distinction is the target.
+This distinction should become automatic.
 
 ### Monte Carlo target
 
@@ -139,226 +151,219 @@ The target is
 R_{t+1} + \gamma V(S_{t+1}),
 \]
 
-which uses a one-step sample plus a bootstrap term.
+which combines one-step data with a bootstrap term.
 
-### What this means
+### Therefore
 
 - Monte Carlo does **not** bootstrap.
 - TD **does** bootstrap.
 
-That is the exact distinction.  
-Do not blur it with vague statements like “TD is faster” or “Monte Carlo is more accurate.” Those may be context-dependent consequences, not the definition.
+Do not replace that clean distinction with vague slogans like “TD is faster” or “Monte Carlo is more accurate.”  
+Those may be context-dependent consequences, but they are not the definition.
 
 ---
 
-## 5. Behavior policy and target policy
+## 6. Behavior policy and target policy
 
-The behavior policy is the policy that generates the data.  
+These two policies answer different questions.
+
+### Behavior policy
+
+The behavior policy is the policy that generates the data.
+
+### Target policy
+
 The target policy is the policy whose value is being estimated or improved.
 
-These can be the same or different.
+### On-policy case
 
-### Why this distinction matters
+If the same policy both generates the data and appears inside the learning target, the method is on-policy.
 
-On-policy and off-policy methods are classified by this distinction.
+### Off-policy case
 
-- If the same policy both generates the data and appears inside the target, the method is on-policy.
-- If the data come from one policy while the target corresponds to another, the method is off-policy.
+If the data come from one policy while the target corresponds to another, the method is off-policy.
 
-This is one of the most important checks in RL.
+This distinction is one of the central classification checks in RL.
 
 ---
 
-## 6. \(\epsilon\)-greedy exploration
+## 7. \(\epsilon\)-greedy exploration
 
-Assume a finite action set \(\mathcal{A}\) and a unique greedy action \(a_g(s)\).
+Assume a finite action set \(\mathcal{A}\) and a unique greedy action at state \(s\).
 
-Under an \(\epsilon\)-greedy policy:
+An \(\epsilon\)-greedy policy does the following:
 
 - with probability \(1-\epsilon\), choose the greedy action,
-- with probability \(\epsilon\), choose uniformly among all \(|\mathcal{A}|\) actions.
+- with probability \(\epsilon\), choose uniformly among all actions.
 
-So the greedy action receives probability
+### What probability the greedy action receives
 
-\[
-1-\epsilon + \frac{\epsilon}{|\mathcal{A}|},
-\]
-
-and every nongreedy action receives
+The greedy action gets
 
 \[
-\frac{\epsilon}{|\mathcal{A}|}.
+1-\epsilon + \frac{\epsilon}{|\mathcal{A}|}.
 \]
 
-### Exact lower bound
+### What probability each non-greedy action receives
 
-Every action has probability at least
+Each non-greedy action gets
 
 \[
 \frac{\epsilon}{|\mathcal{A}|}.
 \]
 
-### Why ties matter
+### What this guarantees
 
-If multiple actions are greedy, the exact probability assigned to each greedy action depends on the tie-breaking rule.  
-But the lower bound \(\epsilon/|\mathcal{A}|\) still holds when uniform random exploration is used over all actions.
+Every action keeps at least some positive probability as long as \(\epsilon > 0\).
 
----
-
-## 7. SARSA
-
-Start from the Bellman expectation equation for action value under the current policy \(\pi\):
-
-\[
-Q^\pi(s,a)
-=
-\mathbb{E}_\pi[R_{t+1} + \gamma Q^\pi(S_{t+1}, A_{t+1}) \mid S_t=s, A_t=a].
-\]
-
-Replace the conditional expectation by the sampled transition and the sampled next action \(A_{t+1}\).  
-This gives the SARSA target
-
-\[
-Y_t^{\mathrm{SARSA}}
-=
-R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}).
-\]
-
-Define the error
-
-\[
-\delta_t^{\mathrm{SARSA}}
-=
-R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t,A_t).
-\]
-
-Update by
-
-\[
-Q(S_t,A_t)
-\leftarrow
-Q(S_t,A_t) + \alpha \delta_t^{\mathrm{SARSA}}.
-\]
-
-### Why SARSA is on-policy
-
-The target uses the action \(A_{t+1}\) actually sampled from the current behavior policy.  
-So the target is evaluating the same policy that is generating the data.
+That matters for exploration.
 
 ---
 
-## 8. Q-learning
+## 8. SARSA
 
-Start from the Bellman optimality equation for action value:
+SARSA is an on-policy action-value TD method.
 
-\[
-Q^*(s,a)
-=
-\mathbb{E}[R_{t+1} + \gamma \max_{a'}Q^*(S_{t+1},a') \mid S_t=s, A_t=a].
-\]
-
-Replace the conditional expectation by the sampled transition.  
-This gives the Q-learning target
+Its one-step target is
 
 \[
-Y_t^{\mathrm{QL}}
-=
-R_{t+1} + \gamma \max_{a'} Q(S_{t+1},a').
+R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}),
 \]
 
-Define the error
+where \(A_{t+1}\) is the actual next action selected by the current behavior policy.
 
-\[
-\delta_t^{\mathrm{QL}}
-=
-R_{t+1} + \gamma \max_{a'}Q(S_{t+1},a') - Q(S_t,A_t).
-\]
+### What is being sampled
 
-Update by
+The next action is sampled from the current policy.
 
-\[
-Q(S_t,A_t)
-\leftarrow
-Q(S_t,A_t) + \alpha \delta_t^{\mathrm{QL}}.
-\]
+### What this means
 
-### Why Q-learning is off-policy
+The target evaluates the continuation induced by the same policy that is generating behavior.
 
-The next action used in the target is not the action actually sampled by the behavior policy.  
-The target uses the maximizing action instead.
-
-So the behavior policy may explore, but the target corresponds to the greedy policy implied by the current value estimate.
+That is why the method is on-policy.
 
 ---
 
-## 9. Exact comparison: SARSA versus Q-learning
+## 9. Q-learning
 
-The difference is entirely localized in the target.
-
-### SARSA target
+Q-learning uses the target
 
 \[
-R_{t+1} + \gamma Q(S_{t+1}, A_{t+1})
+R_{t+1} + \gamma \max_{a'} Q(S_{t+1}, a').
 \]
 
-The next action \(A_{t+1}\) is the one actually sampled.
+### What changes relative to SARSA
 
-### Q-learning target
+The next action is no longer the action actually sampled from the current behavior policy.
 
-\[
-R_{t+1} + \gamma \max_{a'} Q(S_{t+1},a')
-\]
+Instead, the target inserts a greedy maximization over next actions.
 
-The next action is replaced by the maximizing action, whether or not that action was sampled.
+### Why this matters
 
-### What this means operationally
+That one substitution changes the role of the target:
 
-- SARSA learns the value of the policy actually being followed.
-- Q-learning learns toward the greedy policy implied by current estimates, while data may come from an exploratory behavior policy.
+- SARSA evaluates the policy actually being followed,
+- Q-learning targets the greedy continuation value instead.
 
-That is the precise distinction.  
-Do not replace it with vague intuition.
+This is the exact conceptual fork between them.
 
 ---
 
-## 10. Common confusions blocked here
+## 10. The decisive comparison: SARSA versus Q-learning
 
-### Confusion 1: dynamic programming and TD are the same because both use Bellman equations
+These methods are often presented as two update rules with almost identical notation.  
+That presentation hides the real difference.
 
-No.
+### What SARSA checks
 
-- Dynamic programming uses the exact model and computes expectations directly.
-- TD uses sampled transitions and stochastic approximation.
+At the next state, what action did the current policy actually choose?
 
-### Confusion 2: Monte Carlo is just TD with a bigger horizon
+### What Q-learning checks
 
-No.
+At the next state, what action would maximize the current action-value estimate?
 
-The essential difference is not horizon length.  
-It is whether the target bootstraps from a current estimate.
+### Consequence
 
-### Confusion 3: on-policy means “the policy currently stored in memory”
+SARSA’s target depends on the behavior policy’s sampled continuation.  
+Q-learning’s target depends on a greedy target continuation.
 
-No.
-
-The correct check is whether the policy used inside the target is the same as the policy that generated the data.
-
-### Confusion 4: Q-learning is greedy only when behavior is greedy
-
-False.
-
-Q-learning can behave exploratorily and still be off-policy because the target itself is greedy.
+This is why SARSA is on-policy and Q-learning is typically off-policy.
 
 ---
 
-## 11. Mastery check
+## 11. Comparative map of the chapter
+
+It helps to classify each method by the axes it uses.
+
+### Dynamic programming
+
+- model known,
+- exact expectation under the model,
+- planning rather than direct learning from raw samples.
+
+### Monte Carlo
+
+- model need not be known,
+- complete sampled return,
+- no bootstrap.
+
+### TD prediction
+
+- model need not be known,
+- one-step sampled target,
+- bootstrap from current estimate.
+
+### SARSA
+
+- action-value TD control,
+- sampled next action from the current policy,
+- on-policy.
+
+### Q-learning
+
+- action-value TD control,
+- greedy maximization in the target,
+- typically off-policy.
+
+When learners confuse methods, it is usually because they have lost track of one of these axes.
+
+---
+
+## 12. Common confusions blocked here
+
+### Confusion 1: Dynamic programming and TD are the same idea
+
+They are related structurally, but not the same.
+
+Dynamic programming uses exact model-based expectations.  
+TD uses sampled transitions.
+
+### Confusion 2: Monte Carlo and TD differ because one is “better”
+
+No.  
+They differ first in the target they use.
+
+### Confusion 3: SARSA and Q-learning are almost the same because the formulas look similar
+
+No.  
+The conceptual fork is exactly at the continuation term.
+
+### Confusion 4: On-policy versus off-policy is about whether exploration is used
+
+No.  
+It is about the relation between the policy generating data and the policy appearing inside the target.
+
+---
+
+## 13. Mastery check
 
 You understand this chapter if you can answer all of these precisely.
 
-1. What assumption lets policy evaluation by \(V_{k+1}=T^\pi V_k\) converge?
-2. What makes Monte Carlo “not bootstrapped”?
-3. In TD learning, what part of the target comes from data and what part comes from the current estimate?
-4. Why is SARSA on-policy?
-5. Why is Q-learning off-policy even when data are collected using exploration?
+1. What makes dynamic programming a planning method rather than a sample-based method?
+2. What exact target does Monte Carlo use, and what exact target does one-step TD use?
+3. What does it mean for a method to bootstrap?
+4. What is the difference between a behavior policy and a target policy?
+5. At the next state, what does SARSA condition on that Q-learning replaces by a maximization?
 
-If any answer sounds casual rather than exact, review before moving on.
+If any one of those comparisons is still blurry, tighten it before moving on.  
+This chapter is where learners often start mixing names instead of understanding mechanisms.

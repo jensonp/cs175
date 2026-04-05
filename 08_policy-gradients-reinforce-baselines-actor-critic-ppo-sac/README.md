@@ -1,454 +1,309 @@
-# Chapter 7 — Policy Gradients, REINFORCE, Baselines, Actor-Critic, PPO, and SAC
+# Chapter 7 — Policy Gradients, REINFORCE, Baselines, Actor–Critic, PPO, and SAC
 
-## What this chapter establishes
+## What this chapter locks in
 
-This chapter moves from indirect policy optimization through value functions to direct optimization of a parameterized policy.
+This chapter is conceptually dense because several different families of methods live under the broad heading of “policy optimization.”
 
-By the end, you should know:
+The main danger is thinking they all differ only by implementation tricks.
 
-- how the policy-gradient theorem is derived in finite horizon,
-- why the log probability of a trajectory reduces to a sum of policy log probabilities,
-- why reward-to-go is valid,
-- why a state-dependent baseline does not change the expected gradient,
-- how actor-critic approximates advantage information,
-- what PPO clipping is actually doing,
-- and how SAC changes the objective by adding entropy.
+They do not.
 
----
+They differ in:
 
-## 1. Parameterized policy and objective
+- what objective is being optimized,
+- what estimator is used for the policy update,
+- what is treated as exact and what is estimated,
+- where variance enters,
+- where bias can enter,
+- and what role entropy or clipping plays.
 
-Let \(\pi_\theta(a \mid s)\) be a differentiable stochastic policy with parameter vector \(\theta\).
-
-For a finite-horizon episodic task of horizon \(T\), define the trajectory return
-
-\[
-G_0(\tau) = \sum_{t=0}^{T-1}\gamma^t R_{t+1}.
-\]
-
-The optimization objective is
-
-\[
-J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[G_0(\tau)]
-= \sum_\tau p_\theta(\tau)G_0(\tau).
-\]
-
-### Why finite horizon is used here
-
-Finite horizon keeps the derivation honest.  
-It avoids silently interchanging derivatives, expectations, and infinite sums without justification.
+This rewrite makes those boundaries explicit.
 
 ---
 
-## 2. Policy-gradient derivation
+## 1. Why optimize the policy directly?
 
-Differentiate the objective:
+Value-based methods try to estimate action values and then improve behavior indirectly through greedification or exploration around those values.
+
+Policy-gradient methods instead parameterize the policy itself:
 
 \[
-\nabla_\theta J(\theta)
-=
-\sum_\tau \nabla_\theta p_\theta(\tau) G_0(\tau).
+\pi_\theta(a \mid s).
 \]
 
-Use the log-derivative identity:
+The goal is to adjust \(\theta\) so that the expected return objective increases.
+
+A common finite-horizon objective is
 
 \[
-\nabla_\theta p_\theta(\tau)
-=
+J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[G_0(\tau)].
+\]
+
+### What changes conceptually
+
+The policy is no longer derived as a side effect of a value function.  
+It is the primary optimization object.
+
+---
+
+## 2. The score-function route to REINFORCE
+
+The derivation starts by writing the objective as an expectation over trajectories.
+
+Then differentiate that expectation with respect to \(\theta\).
+
+The derivative first lands on the trajectory probability \(p_\theta(\tau)\).  
+Use the log-derivative identity to rewrite that derivative in the form
+
+\[
 p_\theta(\tau)\nabla_\theta \log p_\theta(\tau).
 \]
 
-So
+Because the trajectory law factorizes over time and only the policy factors depend on \(\theta\), the resulting score term becomes a sum of policy-log-gradient terms across time.
 
-\[
-\nabla_\theta J(\theta)
-=
-\mathbb{E}_{\tau \sim p_\theta}
-\left[
-\nabla_\theta \log p_\theta(\tau) G_0(\tau)
-\right].
-\]
+### What this yields conceptually
 
-### Now expand the trajectory log probability
+The gradient of expected return can be written as an expectation of a trajectory-dependent weight multiplied by policy score terms.
 
-The trajectory probability factorizes into initial-state, policy, and environment terms.  
-Taking logs turns the product into a sum. Only the policy factors depend on \(\theta\), so
-
-\[
-\nabla_\theta \log p_\theta(\tau)
-=
-\sum_{t=0}^{T-1}
-\nabla_\theta \log \pi_\theta(A_t \mid S_t).
-\]
-
-Substituting gives
-
-\[
-\nabla_\theta J(\theta)
-=
-\mathbb{E}
-\left[
-\sum_{t=0}^{T-1}
-\nabla_\theta \log \pi_\theta(A_t \mid S_t)
-\, G_0
-\right].
-\]
-
-### What this proves
-
-This is already a correct policy-gradient expression.  
-No approximation has been used yet.
+That is the heart of REINFORCE.
 
 ---
 
-## 3. Why reward-to-go is valid
+## 3. REINFORCE
 
-The previous formula multiplies every score term by the full return \(G_0\).  
-But rewards obtained before time \(t\) cannot depend on action \(A_t\), because they were observed earlier.
-
-So when you expand \(G_0\), the past-reward portion contributes zero in expectation when multiplied by
+A finite-horizon REINFORCE-style gradient contribution has the form
 
 \[
-\nabla_\theta \log \pi_\theta(A_t \mid S_t).
-\]
-
-What remains is the future-dependent part, namely \(G_t\).  
-Therefore the gradient can be written as
-
-\[
-\nabla_\theta J(\theta)
-=
-\mathbb{E}
-\left[
 \sum_{t=0}^{T-1}
 \gamma^t
-\nabla_\theta \log \pi_\theta(A_t \mid S_t) G_t
-\right].
+\nabla_\theta \log \pi_\theta(A_t \mid S_t)\, G_t
 \]
+
+inside an expectation.
 
 ### What this means
 
-Reward-to-go is not a heuristic convenience.  
-It is algebraically justified because rewards that occurred before the action at time \(t\) cannot carry information about that action’s causal effect.
+At time \(t\), actions that were followed by high return are reinforced in the direction that increases their log probability.
+
+### What makes REINFORCE appealing
+
+It gives a conceptually clean, unbiased policy-gradient estimator under the usual assumptions.
+
+### What makes REINFORCE difficult
+
+The estimator can have high variance because the sampled return can fluctuate a lot.
+
+So the next question is not “is REINFORCE correct?”  
+The next question is “how do we reduce variance without changing the expected gradient?”
 
 ---
 
-## 4. Baseline subtraction
+## 4. Baselines
 
-Let \(b(S_t)\) be any function of the state only.  
-Consider the term
+A baseline is a term subtracted from the return-like weight in the policy update.
 
-\[
-\mathbb{E}
-\left[
-\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)b(S_t)
-\right].
-\]
+A standard safe choice is a state-dependent baseline \(b(S_t)\).
 
-Condition on the state \(S_t=s\). Then the inner expectation becomes
+Then the update weight becomes \(G_t - b(S_t)\).
 
-\[
-\sum_a \pi_\theta(a \mid s)\nabla_\theta \log \pi_\theta(a \mid s)
-=
-\sum_a \nabla_\theta \pi_\theta(a \mid s).
-\]
+### Why this does not change the expected gradient
 
-Because policy probabilities sum to one,
+Condition on the current state \(S_t\).
 
-\[
-\sum_a \pi_\theta(a \mid s) = 1
-\quad \Longrightarrow \quad
-\sum_a \nabla_\theta \pi_\theta(a \mid s)=0.
-\]
+The baseline term is now a factor that does not depend on which action was sampled.
 
-So the baseline term has zero expectation.
+But the action-dependent part of the score has conditional expectation zero under the policy.
 
-Therefore
-
-\[
-\nabla_\theta J(\theta)
-=
-\mathbb{E}
-\left[
-\sum_{t=0}^{T-1}
-\gamma^t
-\nabla_\theta \log \pi_\theta(A_t \mid S_t)
-\left(G_t - b(S_t)\right)
-\right].
-\]
+That is the key zero-mean argument.
 
 ### What this proves
 
-Subtracting a state-dependent baseline does not change the expected gradient.  
-It can, however, reduce variance.
+Subtracting a state-only baseline leaves the expected gradient unchanged.
 
-### Important boundary condition
+### What it improves
 
-The baseline must not depend on the sampled action in a way that breaks the zero-expectation argument.  
-A state-only baseline is safe.
+It can reduce variance.
+
+### Boundary condition
+
+The baseline must not depend on the sampled action in a way that breaks the zero-mean argument.
 
 ---
 
-## 5. Advantage and actor-critic
+## 5. Advantage viewpoint
 
-If the baseline is chosen as the state value \(V^\pi(S_t)\), then
+If the baseline is chosen as the state value \(V^\pi(S_t)\), then the weight
 
 \[
 G_t - V^\pi(S_t)
 \]
 
-is an advantage-style quantity.  
-More formally, the exact policy-gradient contribution at time \(t\) involves
+behaves like an advantage-style quantity.
 
-\[
-\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t) A^\pi(S_t,A_t).
-\]
+More fundamentally, the exact policy-gradient contribution at time \(t\) is associated with the true advantage \(A^\pi(S_t,A_t)\).
 
-But the true advantage is usually unknown, so actor-critic methods replace it with an estimator \(\widehat A_t\).
+### What this says conceptually
 
-Then the stochastic actor update direction is
+The actor should not simply ask whether the total return was high.  
+It should ask whether the sampled action was better or worse than the state’s typical continuation under the current policy.
 
-\[
-\widehat g_t(\theta)
-=
-\gamma^t \nabla_\theta \log \pi_\theta(A_t \mid S_t)\widehat A_t.
-\]
-
-### What must be checked for unbiasedness
-
-If
-
-\[
-\mathbb{E}[\widehat A_t \mid S_t, A_t]
-=
-A^\pi(S_t,A_t),
-\]
-
-then the expected update matches the exact policy-gradient contribution at that time step.
-
-### Common one-step choice
-
-A widely used choice is the TD residual
-
-\[
-\delta_t = R_{t+1} + \gamma V_w(S_{t+1}) - V_w(S_t).
-\]
-
-### Important honesty condition
-
-If the critic \(V_w\) is approximate, then \(\delta_t\) need not be an unbiased estimate of the true advantage.  
-So the actor update may become biased, even though variance may improve.
-
-That tradeoff must be stated explicitly.
+That comparison is what advantage captures.
 
 ---
 
-## 6. Critic update and semi-gradient issue
+## 6. Actor–critic
 
-A critic may be trained by a Bellman-style regression target.  
-Using a frozen target parameter vector \(w^-\), define
+Actor–critic methods combine:
 
-\[
-Y_t^V(w^-)
-=
-R_{t+1} + \gamma V_{w^-}(S_{t+1}).
-\]
+- an actor, which updates the policy,
+- and a critic, which estimates value information used to build lower-variance policy-update weights.
 
-Then define the critic loss
+Typically, the critic provides an estimate \(\widehat A_t\) or related quantity for the actor update.
 
-\[
-L_V(w; w^-)
-=
-\frac{1}{2}
-\mathbb{E}
-\left[
-\left(Y_t^V(w^-) - V_w(S_t)\right)^2
-\right].
-\]
+### What the actor needs
 
-### Why the frozen target matters again
+The actor needs a weight telling it whether the sampled action was better or worse than expected.
 
-While differentiating with respect to \(w\), the target depends on \(w^-\), not on the same variable \(w\).  
-So the target is treated as constant during differentiation.
+### What the critic provides
 
-This gives
+The critic estimates that weight by learning value information.
 
-\[
-\nabla_w L_V(w;w^-)
-=
-\mathbb{E}
-\left[
-\left(V_w(S_t)-Y_t^V(w^-)\right)\nabla_w V_w(S_t)
-\right].
-\]
+### Where bias can enter
 
-### Semi-gradient boundary condition
+If the critic’s estimate is imperfect, then the actor’s update direction may be biased relative to the exact policy gradient.
 
-If one sets \(w^- = w\) inside the target but still suppresses the derivative through \(V_w(S_{t+1})\), one gets the standard semi-gradient TD form.
+That is not a minor footnote.  
+It is one of the central tradeoffs of actor–critic methods:
 
-That is not the full gradient of the naive “same-parameter-on-both-sides” objective.  
-This distinction must stay explicit.
+- lower variance,
+- but possible bias from approximation.
 
 ---
 
 ## 7. PPO
 
-Suppose the data were collected by an older policy \(\pi_{\theta_{\mathrm{old}}}\).  
-Define the probability ratio
+Proximal Policy Optimization introduces a controlled policy update rather than letting the policy ratio move arbitrarily far in one step.
 
-\[
-r_t(\theta)
-=
-\frac{\pi_\theta(A_t \mid S_t)}
-{\pi_{\theta_{\mathrm{old}}}(A_t \mid S_t)}.
-\]
+A key PPO ingredient is the probability ratio between new and old policy probabilities for the sampled action.
 
-Let \(\hat A_t\) be an advantage estimate treated as constant during the update.
+### What PPO is trying to prevent
 
-The unclipped surrogate is
+If one update moves the policy too far, then the data collected under the old policy may become a poor basis for the new update and learning can become unstable.
 
-\[
-L^{\mathrm{PG}}(\theta)
-=
-\mathbb{E}[r_t(\theta)\hat A_t].
-\]
+### What clipping does conceptually
 
-### What the ratio means
+The clipped objective limits how much benefit the optimization can claim from large changes in the policy ratio.
 
-If \(r_t(\theta) > 1\), the new policy assigns more probability to the sampled action than the old policy did.  
-If \(r_t(\theta) < 1\), it assigns less.
+This does not make PPO “exact.”  
+It makes the update more conservative.
 
-### Clipped objective
+### What to keep straight
 
-PPO replaces the unclipped objective by a clipped one that, case by case, prevents the objective from rewarding excessive probability-ratio changes beyond a chosen window \([1-\epsilon,\,1+\epsilon]\).
+PPO is not just “policy gradient with a clip because it works better.”
 
-### What clipping is doing conceptually
-
-- If \(\hat A_t > 0\), increasing the probability of the sampled action is helpful, but only up to the clipping threshold.
-- If \(\hat A_t < 0\), decreasing the probability is helpful, but again only up to the clipping threshold.
-
-So clipping limits how much the objective can improve merely by pushing the ratio farther in the already-helpful direction.
-
-### What conclusion this licenses
-
-PPO is not “taking the policy gradient and then clipping gradients.”  
-The clipping is applied to the **surrogate objective through the probability ratio**, which changes the optimization landscape itself.
-
-That distinction matters.
+It is a method designed to constrain update size so that policy improvement uses data in a more locally trustworthy way.
 
 ---
 
-## 8. Soft Actor-Critic
+## 8. Entropy and stochasticity
 
-SAC modifies the objective by adding an entropy bonus.
+Many actor-style methods include an entropy term in the objective or a temperature-style control.
 
-Let \(\alpha_{\mathrm{ent}} > 0\) be the entropy coefficient.  
-Define the soft return
+### What entropy does
 
-\[
-G_0^{\mathrm{soft}}
-=
-\sum_{t=0}^{\infty}
-\gamma^t
-\left(
-R_{t+1} + \alpha_{\mathrm{ent}}\mathcal{H}(\pi(\cdot \mid S_t))
-\right).
-\]
+Entropy rewards policies for remaining distributed rather than collapsing too early onto one action.
 
-The corresponding objective is
+### Why that matters
 
-\[
-J_{\mathrm{soft}}(\pi)
-=
-\mathbb{E}_\pi[G_0^{\mathrm{soft}}].
-\]
+A too-early collapse can destroy exploration and make optimization brittle.
 
-### Soft value relations
-
-Define
-
-\[
-Q^\pi_{\mathrm{soft}}(s,a)
-=
-\mathbb{E}_\pi
-\left[
-R_{t+1} + \gamma V^\pi_{\mathrm{soft}}(S_{t+1})
-\mid S_t=s, A_t=a
-\right],
-\]
-
-and
-
-\[
-V^\pi_{\mathrm{soft}}(s)
-=
-\mathbb{E}_{A \sim \pi(\cdot \mid s)}
-\left[
-Q^\pi_{\mathrm{soft}}(s,A) - \alpha_{\mathrm{ent}}\log \pi(A \mid s)
-\right].
-\]
-
-### Why the minus sign appears inside the expectation
-
-Entropy is
-
-\[
-\mathcal{H}(\pi(\cdot \mid s))
-=
--
-\mathbb{E}_{A \sim \pi(\cdot \mid s)}
-[\log \pi(A \mid s)].
-\]
-
-So maximizing reward plus entropy becomes equivalent to maximizing a critic term minus \(\alpha_{\mathrm{ent}}\log \pi\) inside the state-wise expectation.
-
-### Conceptual meaning
-
-SAC does not maximize reward alone.  
-It maximizes reward plus a preference for stochastic policies with higher entropy.
+Entropy is not automatically good in unlimited quantity.  
+It is a control on the exploration–exploitation balance.
 
 ---
 
-## 9. Common confusions blocked here
+## 9. Soft Actor–Critic (SAC)
 
-### Confusion 1: policy gradients require differentiating the environment dynamics
+SAC optimizes a maximum-entropy style objective, balancing expected return with policy entropy.
 
-Not in the standard derivation here.  
-The environment terms vanish from \(\nabla_\theta \log p_\theta(\tau)\) because they do not depend on \(\theta\).
+### What changes conceptually relative to plain policy gradient
 
-### Confusion 2: reward-to-go is a biased approximation
+The objective is no longer just expected return.  
+It explicitly includes a preference for stochastic policies through an entropy term.
 
-No.  
-In this finite-horizon derivation, it is algebraically justified.
+### Why that matters
 
-### Confusion 3: any baseline is safe
+The learned policy is not simply trying to maximize reward.  
+It is trying to maximize reward while also maintaining entropy according to the chosen temperature or weighting.
 
-No.  
-The zero-expectation proof relies on the baseline being state-dependent in the required way.
-
-### Confusion 4: actor-critic updates are always exact gradients
-
-False.
-
-The actor update is exact only under the corresponding expectation statement with the true advantage.  
-A learned critic can introduce bias.
-
-### Confusion 5: PPO clipping directly clips parameter updates
-
-No.  
-It clips the probability-ratio contribution inside the surrogate objective.
+So SAC is not just “another actor–critic.”  
+It changes the optimization target itself.
 
 ---
 
-## 10. Mastery check
+## 10. The key boundary questions for this whole chapter
 
-You understand this chapter if you can explain all of these precisely.
+Whenever you read a policy-optimization method, ask these questions in order.
 
-1. Why does \(\nabla_\theta \log p_\theta(\tau)\) reduce to a sum over policy log-probability gradients?
-2. Why can \(G_0\) be replaced by reward-to-go \(G_t\) in the time-\(t\) term?
-3. Why does a state-dependent baseline have zero expected contribution?
-4. Under what condition is an actor-critic update unbiased relative to the exact advantage term?
-5. What exactly is being clipped in PPO?
-6. What changes in SAC relative to ordinary reward maximization?
+### First question: what objective is being optimized?
 
-If any answer is not exact, revisit the section before moving on.
+Is it plain expected return, clipped surrogate return, or a maximum-entropy objective?
+
+### Second question: what estimator drives the actor update?
+
+Is it based on full returns, a baseline-adjusted return, a critic-estimated advantage, or something else?
+
+### Third question: what remains exact and what is approximate?
+
+Is the update unbiased in principle, or is bias introduced by critic approximation, clipping, truncation, or a frozen target?
+
+### Fourth question: what quantity is treated as fixed during differentiation?
+
+This matters whenever targets are built using learned components.
+
+These questions keep the chapter from collapsing into a bag of names.
+
+---
+
+## 11. Common confusions blocked here
+
+### Confusion 1: REINFORCE, actor–critic, PPO, and SAC are all the same algorithm with minor tweaks
+
+No.  
+They differ in objective, estimator, bias–variance profile, and stabilization mechanism.
+
+### Confusion 2: A baseline changes what gradient is being estimated
+
+A state-only baseline does not change the expected gradient.  
+Its role is variance reduction.
+
+### Confusion 3: Actor–critic gives the exact policy gradient but faster
+
+Not necessarily.  
+Approximate critics can bias the actor update.
+
+### Confusion 4: PPO clipping proves safe monotonic improvement automatically
+
+No.  
+It is a heuristic constraint that aims to keep updates more local and stable.
+
+### Confusion 5: SAC is just PPO with entropy
+
+No.  
+SAC is built around a different objective structure.
+
+---
+
+## 12. Mastery check
+
+You understand this chapter if you can answer all of these cleanly.
+
+1. Why do policy-gradient methods optimize a different primary object than value-based methods?
+2. What exact conversion does the log-derivative identity enable in the REINFORCE derivation?
+3. Why can a state-only baseline be subtracted without changing the expected gradient?
+4. What does the critic provide in actor–critic, and where can bias enter?
+5. What problem is PPO clipping trying to control?
+6. In SAC, what is different about the objective itself?
+
+If you cannot answer those cleanly, do not move on yet.  
+This chapter is where modern policy optimization either becomes coherent or becomes a pile of method names.

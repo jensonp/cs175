@@ -1,42 +1,45 @@
 # Chapter 2 — Mathematical Preliminaries
 
-## What this chapter establishes
+## What this chapter locks in
 
-This chapter fixes the probability and convergence facts used later in Bellman equations and policy gradients.
+This chapter fixes the probability facts used later in Bellman equations and policy gradients.
 
-By the end of the chapter, you should know:
+The goal is not to pile up detached formulas.  
+The goal is to make later derivations readable.
 
-- what expectations and conditional expectations mean in the discrete setting,
-- how the law of total expectation is used,
-- why the discounted return is well-defined under bounded rewards and \(0 \le \gamma < 1\),
-- how trajectory probabilities factorize in finite-horizon Markov problems,
-- and why the log-derivative identity is enough to derive REINFORCE.
+By the end of this chapter, you should know:
+
+- what expectation and conditional expectation actually check,
+- how the law of total expectation is used inside Bellman derivations,
+- why discounted return is well-defined under the standard assumptions,
+- how trajectory probabilities factorize in a finite-horizon Markov model,
+- and how the log-derivative identity converts differentiation of a probability law into an expectation.
 
 ---
 
 ## 1. Standing assumptions
 
-Unless a later subsection says otherwise, use these assumptions.
+These are the default assumptions for this chapter unless a subsection says otherwise.
 
-### Assumption 1: finite sums mean finite spaces
+### Finite or countable sums when sums are written
 
-Whenever a formula is written as a sum over states or actions, the chapter is assuming a finite state space or action space, or at least a countable space for which the sum is meaningful.
+If a formula is written as a sum over states, actions, rewards, or trajectories, then the chapter is assuming a finite or countable space for which the sum is meaningful.
 
-If the space is continuous, the sum must be replaced by an integral and probabilities must be replaced by densities where appropriate.
+If the space is continuous, the same logic usually survives, but sums must be replaced by integrals and probabilities by densities when appropriate.
 
-### Assumption 2: rewards are uniformly bounded
+### Bounded rewards
 
-There exists a constant \(R_{\max} \ge 0\) such that
+Assume there is a finite constant \(R_{\max} \ge 0\) such that
 
 \[
 |R_t| \le R_{\max}
 \]
 
-almost surely for every time index \(t\).
+almost surely for every \(t\).
 
-This assumption is what lets discounted returns stay finite in continuing tasks.
+This is what keeps discounted returns under control in continuing tasks.
 
-### Assumption 3: discounting for continuing tasks
+### Discounting in continuing tasks
 
 For continuing tasks, assume
 
@@ -44,95 +47,102 @@ For continuing tasks, assume
 0 \le \gamma < 1.
 \]
 
-If \(\gamma = 1\) in a continuing task, then the return can diverge unless extra structure is imposed.  
-So the default continuing-task theory here does **not** allow \(\gamma = 1\).
+If \(\gamma = 1\) in a genuinely continuing problem, an infinite-horizon return can fail to converge unless extra structure is imposed.
 
-### Assumption 4: finite-horizon policy-gradient derivations
+### Finite-horizon assumptions for policy-gradient derivations
 
-When the text derives policy gradients from sums over trajectories, it assumes:
+When the chapter writes expectations over full trajectories and differentiates them term by term, assume:
 
 - a finite horizon \(T\),
 - a differentiable policy \(\pi_\theta\),
-- and a finite trajectory space or conditions strong enough to justify exchanging derivative and summation.
+- and enough regularity to justify interchanging derivative and summation.
 
 ---
 
 ## 2. Expectation
 
-Let \(X\) be a discrete random variable on a finite or countable set \(\mathcal{X}\). Then
+Let \(X\) be a discrete random variable on a finite or countable set \(\mathcal{X}\).  
+Then
 
 \[
 \mathbb{E}[X] = \sum_{x \in \mathcal{X}} x \, P(X=x),
 \]
 
-provided the sum converges absolutely.
+provided the sum is well-defined.
 
-### What this means
+### What this checks
 
-Expectation is a weighted average of possible values, where the weights are probabilities.
+Expectation is a probability-weighted average of possible values.
 
-### Why this matters in RL
+The possible values of \(X\) are the outcomes.  
+The probabilities are the weights attached to those outcomes.
 
-Every value function later is an expectation of return under some conditioning event, such as \(S_t = s\) or \((S_t=s, A_t=a)\).
+### Why this matters later
 
-So if expectation is not conceptually stable, value functions will not be stable either.
+A value function is an expectation of return.  
+So if expectation itself is slippery, then every value definition later will feel slippery too.
 
 ---
 
 ## 3. Conditional expectation
 
-If \(X\) and \(Y\) are discrete random variables, then the conditional expectation of \(X\) given \(Y=y\) is
+If \(X\) and \(Y\) are random variables, then the conditional expectation of \(X\) given \(Y=y\) is
+
+\[
+\mathbb{E}[X \mid Y=y].
+\]
+
+In a discrete setting, this can be written as
 
 \[
 \mathbb{E}[X \mid Y=y] = \sum_x x \, P(X=x \mid Y=y).
 \]
 
-### What this checks
+### What conditioning changes
 
-Conditioning changes the probability weights.  
-The possible values of \(X\) do not change, but the probability assigned to each value may change once \(Y=y\) is known.
+Conditioning does **not** change the possible values of \(X\).  
+It changes the probability weights assigned to those values after the event \(Y=y\) is known.
 
 ### Why this matters in RL
 
-Bellman equations are conditional expectations.  
-For example, \(V^\pi(s)\) is not the unconditional expectation of return. It is the expectation of return **conditional on** the state being \(s\).
+Bellman equations are conditional expectation statements.
 
-That conditioning is the whole point.
+For example, \(V^\pi(s)\) is not an unconditional average return over the whole process.  
+It is the expected return **conditional on the current state being \(s\)**.
+
+That conditioning event is the whole point.
 
 ---
 
 ## 4. Law of total expectation
 
-The law of total expectation says
+The law of total expectation says that if you split according to the values of another random variable \(Y\), then
 
 \[
-\mathbb{E}[X] = \sum_y P(Y=y)\mathbb{E}[X \mid Y=y].
+\mathbb{E}[X] = \sum_y P(Y=y)\,\mathbb{E}[X \mid Y=y].
 \]
 
-### What the identity means
+### What this means procedurally
 
-To compute the overall expectation of \(X\), you may:
+To compute an overall expectation of \(X\), you may:
 
-1. split according to the possible values of \(Y\),
+1. split the world into cases indexed by \(Y\),
 2. compute the expected value of \(X\) inside each case,
 3. then average those case-specific expectations using the probabilities of the cases.
 
-### Why this matters in RL
+### Why this matters in Bellman derivations
 
-This identity is used constantly in Bellman derivations.  
-You condition on the next state, or the next state and reward, and then average over those outcomes.
+Bellman equations repeatedly use the same move:
 
-### What conclusion this licenses
+- start with an expectation conditional on the current state or state–action pair,
+- split according to the next action or next transition outcome,
+- then average over those possibilities.
 
-Whenever you see a Bellman expectation equation, the formal move behind it is almost always:
-
-- write an expectation conditional on the current state or state-action,
-- condition again on the next transition outcome,
-- then average over those outcomes.
+Once you understand this move, Bellman equations stop looking like magic.
 
 ---
 
-## 5. Discounted return and why it converges
+## 5. Discounted return
 
 Define the return from time \(t\) by
 
@@ -140,17 +150,20 @@ Define the return from time \(t\) by
 G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}.
 \]
 
-### Why the index starts at \(k=0\)
+### Why the first reward term is \(R_{t+1}\)
 
-When \(k=0\), the reward term is \(R_{t+1}\), which is the immediate reward caused by action \(A_t\).
+At time \(t\), action \(A_t\) is chosen.  
+The first reward caused by that action is observed after the transition, so the first term is \(R_{t+1}\), not \(R_t\).
 
 ### Why the reward index is \(t+k+1\)
 
-The reward observed one step after time \(t\) is \(R_{t+1}\).  
-Two steps after time \(t\) it is \(R_{t+2}\), and so on.  
-So the \(k\)-th discounted term must be \(R_{t+k+1}\).
+When \(k=0\), the reward is one step after time \(t\).  
+When \(k=1\), it is two steps after time \(t\).  
+So the \(k\)-th term must be indexed \(t+k+1\).
 
-### Why the infinite sum is well-defined
+---
+
+## 6. Why discounted return is well-defined
 
 Under bounded rewards and \(0 \le \gamma < 1\),
 
@@ -158,23 +171,31 @@ Under bounded rewards and \(0 \le \gamma < 1\),
 |G_t|
 \le \sum_{k=0}^{\infty} \gamma^k |R_{t+k+1}|
 \le \sum_{k=0}^{\infty} \gamma^k R_{\max}
-= R_{\max}\sum_{k=0}^{\infty}\gamma^k
 = \frac{R_{\max}}{1-\gamma}.
 \]
 
-So the series converges absolutely and \(G_t\) is uniformly bounded.
+### What this proves
+
+The infinite series converges absolutely and is uniformly bounded under the standing assumptions.
 
 ### What conclusion this licenses
 
-Once this bound is established, value functions such as \(V^\pi(s)=\mathbb{E}[G_t \mid S_t=s]\) are at least well-defined under the standing assumptions.
+Once this bound is established, quantities like
 
-Without this step, later Bellman derivations would be manipulating an object that might not even exist.
+\[
+V^\pi(s) = \mathbb{E}[G_t \mid S_t=s]
+\]
+
+are at least meaningful mathematical objects under those assumptions.
+
+That matters more than it first appears.  
+A later Bellman derivation is only respectable if the quantity being manipulated is actually well-defined.
 
 ---
 
-## 6. Trajectory distributions in a finite-horizon Markov model
+## 7. Finite-horizon trajectory distributions
 
-For a finite-horizon episodic task with horizon \(T\), define the trajectory
+For a finite-horizon episodic problem with horizon \(T\), define a trajectory by
 
 \[
 \tau = (s_0, a_0, r_1, s_1, a_1, r_2, \ldots, s_{T-1}, a_{T-1}, r_T, s_T).
@@ -187,39 +208,44 @@ If the policy is \(\pi\) and the environment law is \(P(s',r \mid s,a)\), then
 p_\pi(\tau)
 =
 \rho(s_0)\prod_{t=0}^{T-1}
-\pi(a_t \mid s_t)
+\pi(a_t \mid s_t)\,
 P(s_{t+1}, r_{t+1} \mid s_t, a_t).
 \]
 
 ### What this factorization checks
 
-At each time \(t\), exactly two stochastic choices matter:
+At each time index \(t\), exactly two stochastic mechanisms are being applied:
 
-1. the policy chooses \(a_t\) from \(s_t\),
-2. the environment produces \((s_{t+1}, r_{t+1})\) from \((s_t, a_t)\).
+- the policy selects \(a_t\) given \(s_t\),
+- the environment produces \((s_{t+1}, r_{t+1})\) given \((s_t, a_t)\).
 
-Multiplying those factors across time gives the trajectory probability.
+Multiplying these factors across time gives the trajectory probability.
 
 ### Why this matters
 
-Policy-gradient derivations differentiate expectations over trajectories.  
-That is only manageable once the trajectory probability is written as a product of factors.
+Policy-gradient derivations work with expectations over trajectories.  
+Those expectations become manageable only after the trajectory law is written as a product of local factors.
 
 ---
 
-## 7. Gradients of expectations and the log-derivative identity
+## 8. Differentiating expectations
 
-Suppose \(f(\tau)\) does not depend on the parameter vector \(\theta\). Then
+Suppose \(f(\tau)\) does not depend explicitly on the policy parameter vector \(\theta\).  
+Then under the finite-horizon assumptions,
 
 \[
 \nabla_\theta \sum_\tau p_\theta(\tau) f(\tau)
 =
-\sum_\tau \nabla_\theta p_\theta(\tau) f(\tau),
+\sum_\tau \nabla_\theta p_\theta(\tau) f(\tau).
 \]
 
-under the finite-horizon, finite-sum assumptions.
+This still leaves the hard part: how to differentiate \(p_\theta(\tau)\).
 
-Now use the identity
+---
+
+## 9. The log-derivative identity
+
+The key identity is
 
 \[
 \nabla_\theta \log p_\theta(\tau)
@@ -235,72 +261,75 @@ which can be rearranged as
 p_\theta(\tau)\nabla_\theta \log p_\theta(\tau).
 \]
 
-### Why this identity matters
+### What this identity changes
 
-It converts derivatives of probabilities into probabilities multiplied by derivatives of log probabilities.  
-That is exactly what turns a derivative of an expectation into an expectation of a score term.
+It converts a derivative of a probability into:
 
-### What conclusion this licenses
+- the probability itself,
+- multiplied by a derivative of a log probability.
 
-This is the algebraic core of REINFORCE.  
-You do not need deeper calculus machinery to understand the basic policy-gradient derivation once this identity is available.
+That is exactly the shape needed to turn a derivative of an expectation into an expectation of a score term.
 
----
+### Why this is the gateway to REINFORCE
 
-## 8. Boundary conditions that must stay explicit
+Without this identity, policy-gradient derivations stay stuck at “differentiate the trajectory probability.”
 
-### Case 1: \(\gamma = 1\) in continuing tasks
-
-Do not assume the return is finite.  
-It may diverge.
-
-### Case 2: unbounded rewards
-
-The geometric weighting alone does not automatically rescue the return if rewards can grow too quickly.
-
-### Case 3: continuous state or action spaces
-
-Finite sums must be replaced by integrals.  
-The conceptual structure is the same, but the notation changes.
-
-### Case 4: infinite-horizon policy gradients
-
-You need stronger technical conditions to justify interchanging limits, differentiation, and expectation.  
-This chapter avoids that complication by using finite-horizon derivations when differentiating over trajectories.
+With this identity, the derivative moves inside the expectation in a usable form.
 
 ---
 
-## 9. Common confusions blocked here
+## 10. What this chapter unlocks later
 
-### Confusion 1: expectation and conditional expectation are basically the same
+This chapter is not a side note. It is a dependency lock.
 
-No.
+- Bellman equations rely on conditional expectation and the law of total expectation.
+- Value definitions rely on return being well-defined.
+- Policy gradients rely on trajectory factorization and the log-derivative identity.
 
-- \(\mathbb{E}[X]\) averages over all uncertainty.
-- \(\mathbb{E}[X \mid Y=y]\) averages only over the uncertainty left after conditioning on \(Y=y\).
-
-Bellman equations are conditional statements, not unconditional ones.
-
-### Confusion 2: discounting is only a preference convention
-
-Discounting can encode preference, but in this chapter it is also doing mathematical work: it helps ensure the return is finite.
-
-### Confusion 3: a trajectory probability is just a product of policy probabilities
-
-False.  
-It includes the initial-state probability and the environment transition-reward probabilities too.
+If these pieces are unstable, later chapters become symbol pushing instead of reasoning.
 
 ---
 
-## 10. Mastery check
+## 11. Common confusions blocked here
 
-You understand this chapter if you can explain all of these cleanly.
+### Confusion 1: Expectation is just “the average case” in a vague sense
 
-1. Why does bounded reward plus \(0 \le \gamma < 1\) imply the return is finite?
-2. When using the law of total expectation in RL, what random variable are you usually conditioning on?
-3. In the trajectory factorization, which terms come from the policy and which come from the environment?
-4. Why is the log-derivative identity useful in policy gradients?
-5. Under what condition is it unsafe to use the infinite discounted-return formula without further justification?
+No.  
+Expectation is a precisely weighted sum or integral under a specified probability law.
 
-If any answer is fuzzy, stop there.  
-The rest of the theory depends on these preliminaries.
+### Confusion 2: Conditioning adds new outcomes
+
+No.  
+Conditioning changes weights, not the underlying possible values.
+
+### Confusion 3: The discounted return formula is automatically valid in any setting
+
+No.  
+Its infinite-horizon form needs assumptions.  
+Bounded rewards and \(0 \le \gamma < 1\) are doing real work.
+
+### Confusion 4: The policy-gradient trick starts with calculus and ends with luck
+
+No.  
+It depends on a specific chain of reasoning:
+
+1. write the expectation over trajectories,
+2. factorize the trajectory law,
+3. differentiate that law,
+4. use the log-derivative identity,
+5. rewrite the result as an expectation.
+
+---
+
+## 12. Mastery check
+
+You understand this chapter if you can answer all of these cleanly.
+
+1. What does conditioning change in a conditional expectation?
+2. What exact move does the law of total expectation license in a Bellman derivation?
+3. Under what assumptions is the discounted infinite-horizon return guaranteed to be finite?
+4. In the trajectory factorization, what are the two stochastic choices made at each time step?
+5. Why does the log-derivative identity matter for policy gradients?
+
+If any answer is still half-verbal and half-handwave, tighten it now.  
+This chapter is the toolkit for the next five.
