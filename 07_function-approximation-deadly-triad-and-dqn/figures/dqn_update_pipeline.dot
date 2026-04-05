@@ -1,0 +1,18 @@
+digraph DQNUpdatePipeline {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="DQN update pipeline"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  exp [label="Collected transitions"];
+  replay [label="Replay buffer"];
+  batch [label="Minibatch sampled from replay"];
+  target [label="Frozen target network\ncomputes y = r + \u03b3 (1-terminal) max_a Q_target(s',a)"];
+  online [label="Online Q network\nproduces Q_online(s,a)"];
+  loss [label="Semi-gradient update\nfit Q_online(s,a) toward y"];
+
+  exp -> replay -> batch;
+  batch -> target;
+  batch -> online;
+  target -> loss;
+  online -> loss;
+}

@@ -1,0 +1,16 @@
+digraph MethodFamilyMap {
+  rankdir=TB;
+  graph [fontsize=12, labelloc="t", label="How the chapter's methods differ"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  dp [label="Dynamic programming\nknown model\nfull expectation\nbootstraps"];
+  mc [label="Monte Carlo\nunknown model OK\nfull sampled return\nno bootstrapping"];
+  td [label="TD prediction\nunknown model OK\none-step sample target\nbootstraps"];
+  sarsa [label="SARSA\non-policy control\nsamples next action from behavior/target policy"];
+  ql [label="Q-learning\noff-policy control target\nuses max over next actions"];
+
+  dp -> td [label="replace expectation\nwith one sampled transition"];
+  mc -> td [label="replace full return\nwith bootstrap target"];
+  td -> sarsa [label="control by learning Q"];
+  td -> ql [label="control by learning Q"];
+}

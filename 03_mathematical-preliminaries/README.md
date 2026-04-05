@@ -161,6 +161,8 @@ When $k=0$, the reward is one step after time $t$.
 When $k=1$, it is two steps after time $t$.  
 So the $k$-th term must be indexed $t+k+1$.
 
+
+![Discounted return timeline diagram](figures/discounted_return_timeline.svg)
 ---
 
 ## 6. Why discounted return is well-defined
@@ -288,6 +290,8 @@ This chapter is not a side note. It is a dependency lock.
 
 If these pieces are unstable, later chapters become symbol pushing instead of reasoning.
 
+
+![Mathematical dependency graph](figures/math_dependency_graph.svg)
 ---
 
 ## 11. Common confusions blocked here

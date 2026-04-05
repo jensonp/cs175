@@ -1,0 +1,15 @@
+digraph ObservationHistoryState {
+  rankdir=TB;
+  graph [fontsize=12, labelloc="t", label="Observation, history, and state are different objects"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  obs [label="Observation O_t\ncurrent revealed signal only"];
+  hist [label="History H_t\nall information available up to time t"];
+  state [label="State summary S_t = f(H_t)\nwhatever summary the agent conditions on"];
+  policy [label="Policy input\nmay use H_t or S_t\ndepending on modeling choice"];
+
+  obs -> hist [label="is one component of"];
+  hist -> state [label="may be compressed into"];
+  hist -> policy;
+  state -> policy;
+}

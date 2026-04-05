@@ -1,0 +1,18 @@
+digraph MathDependencies {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="What the preliminaries unlock later"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  exp [label="Expectation"];
+  cexp [label="Conditional expectation"];
+  total [label="Law of total expectation"];
+  bellman [label="Bellman derivations"];
+
+  traj [label="Trajectory factorization"];
+  logd [label="Log-derivative identity"];
+  reinforce [label="REINFORCE / policy-gradient derivations"];
+
+  exp -> cexp -> total -> bellman;
+  traj -> logd -> reinforce;
+  exp -> traj [style=dashed, label="probabilistic bookkeeping"];
+}

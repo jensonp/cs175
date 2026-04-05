@@ -274,6 +274,8 @@ This is the exact conceptual fork between them.
 These methods are often presented as two update rules with almost identical notation.  
 That presentation hides the real difference.
 
+
+![SARSA versus Q-learning decision diagram](figures/sarsa_vs_qlearning_branch.svg)
 ### What SARSA checks
 
 At the next state, what action did the current policy actually choose?
@@ -295,6 +297,8 @@ This is why SARSA is on-policy and Q-learning is typically off-policy.
 
 It helps to classify each method by the axes it uses.
 
+
+![Method family map diagram](figures/method_family_map.svg)
 ### Dynamic programming
 
 - model known,

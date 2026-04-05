@@ -1,0 +1,15 @@
+digraph PotentialShapingTelescoping {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Why potential-based shaping telescopes"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  base [label="Original reward r"];
+  shape [label="Shaping term\n\u03b3 \u03a6(s') - \u03a6(s)"];
+  newr [label="Shaped reward\nr' = r + \u03b3 \u03a6(s') - \u03a6(s)"];
+  sum [label="Across a trajectory,\nintermediate potentials cancel"];
+  concl [label="Policy ranking can be preserved\nunder the usual conditions"];
+
+  base -> newr;
+  shape -> newr;
+  newr -> sum -> concl;
+}

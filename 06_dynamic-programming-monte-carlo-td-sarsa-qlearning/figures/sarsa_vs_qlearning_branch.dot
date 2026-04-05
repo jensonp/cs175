@@ -1,0 +1,12 @@
+digraph SarsaVsQLearningBranch {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Shared sample, different continuation choice"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  sample [label="Sample transition\n(S_t, A_t, R_{t+1}, S_{t+1})"];
+  sarsa [label="SARSA target\nR_{t+1} + \u03b3 Q(S_{t+1}, A_{t+1})\nwhere A_{t+1} is sampled from policy"];
+  ql [label="Q-learning target\nR_{t+1} + \u03b3 max_a Q(S_{t+1}, a)"];
+
+  sample -> sarsa;
+  sample -> ql;
+}

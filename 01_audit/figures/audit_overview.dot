@@ -1,0 +1,12 @@
+digraph AuditOverview {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Audit summary"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  strengths [label="What already works\n- correct RL scope\n- formal ambition\n- prerequisite ordering\n- some exact vs sample distinctions"];
+  weakness [label="Main weakness\npedagogical compression"];
+  traps [label="Confusion traps\n- observation vs state\n- reward vs return vs value\n- Bellman identity vs sampled target\n- on-policy vs off-policy\n- exact gradient vs semi-gradient"];
+  rewrite [label="Rewrite goals\n- slower dependency chain\n- explicit statement types\n- explicit assumptions\n- stronger confusion blocking"];
+
+  strengths -> weakness -> traps -> rewrite;
+}

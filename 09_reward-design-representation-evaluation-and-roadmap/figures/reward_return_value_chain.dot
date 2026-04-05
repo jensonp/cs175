@@ -1,0 +1,12 @@
+digraph RewardReturnValueChain {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Reward, return, and value are different quantities"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  reward [label="Reward R_{t+1}\none-step signal"];
+  ret [label="Return G_t\ndiscounted sum from time t onward"];
+  value [label="Value V^\u03c0(s) or Q^\u03c0(s,a)\nexpectation of return under policy \u03c0"];
+
+  reward -> ret [label="one term inside"];
+  ret -> value [label="take expectation\nunder policy and conditioning"];
+}

@@ -36,6 +36,8 @@ At each time $t$, the interaction has a definite order.
 
 That order is not bookkeeping trivia. It is the causal structure of the problem.
 
+
+![Interaction loop diagram](figures/interaction_loop.svg)
 ### Why the reward index is shifted
 
 The reward belongs to the consequence of action $A_t$.  
@@ -147,6 +149,8 @@ That is wrong.
 A state summary is just a summary until the Markov property is checked.  
 The Markov property is not granted by the name “state.”
 
+
+![Observation, history, and state diagram](figures/observation_history_state.svg)
 ---
 
 ## 5. What the environment is

@@ -1,0 +1,17 @@
+digraph DeadlyTriad {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Why the deadly triad can destabilize learning"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  fa [label="Function approximation\nerrors generalize across many states/actions"];
+  boot [label="Bootstrapping\ncurrent predictions appear in future targets"];
+  off [label="Off-policy learning\ndata distribution can differ from target-implied policy"];
+  unstable [label="Potential instability\nor divergence"];
+
+  fa -> unstable;
+  boot -> unstable;
+  off -> unstable;
+  fa -> boot [style=dashed];
+  boot -> off [style=dashed];
+  off -> fa [style=dashed];
+}

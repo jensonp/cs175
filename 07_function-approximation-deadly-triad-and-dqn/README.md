@@ -89,6 +89,8 @@ These three ingredients matter separately, but the danger arises from their inte
 
 ## 4. Why the triad is dangerous
 
+
+![Deadly triad interaction diagram](figures/deadly_triad.svg)
 ### Function approximation
 
 An update at one input changes predictions at many other inputs because all those predictions share parameters.
@@ -141,6 +143,8 @@ $$
 
 Here $w^-$ denotes the frozen target-network parameters.
 
+
+![DQN update pipeline diagram](figures/dqn_update_pipeline.svg)
 ---
 
 ## 6. What each term in the DQN target checks

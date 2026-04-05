@@ -80,6 +80,8 @@ So the state value is an average over those action-conditioned returns.
 $V^\pi(s)$ is not an unrelated object standing next to $Q^\pi(s,a)$.  
 It is the current policy’s weighted average over action values at that state.
 
+
+![Value objects diagram](figures/value_objects.svg)
 ---
 
 ## 3. The algebraic return recursion
@@ -161,6 +163,8 @@ V^\pi(s)
 \bigl[r + \gamma V^\pi(s')\bigr].
 $$
 
+
+![Bellman derivation flow diagram](figures/bellman_derivation_flow.svg)
 ### What this equation is
 
 This is the Bellman expectation equation for the state value under policy $\pi$.
@@ -415,6 +419,8 @@ The important point is structural:
 
 Dynamic programming, TD control, Q-learning, and actor–critic all live inside this broad template.
 
+
+![Generalized policy iteration cycle diagram](figures/gpi_cycle.svg)
 ---
 
 ## 12. Common confusions blocked here

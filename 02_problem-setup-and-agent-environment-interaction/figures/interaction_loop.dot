@@ -1,0 +1,14 @@
+digraph InteractionLoop {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Agent-environment interaction at time t"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  obs [label="Environment reveals\ncurrent observation O_t"];
+  hist [label="Agent information at time t\nforms/updates history H_t"];
+  pol [label="Policy \u03c0 chooses\naction A_t"];
+  env [label="Environment receives A_t"];
+  out [label="Environment emits\nreward R_{t+1}\nand next observation O_{t+1}"];
+  nexth [label="History extends to H_{t+1}"];
+
+  obs -> hist -> pol -> env -> out -> nexth;
+}

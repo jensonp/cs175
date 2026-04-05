@@ -61,6 +61,8 @@ $$
 
 Because the trajectory law factorizes over time and only the policy factors depend on $\theta$, the resulting score term becomes a sum of policy-log-gradient terms across time.
 
+
+![Policy gradient family diagram](figures/policy_gradient_family.svg)
 ### What this yields conceptually
 
 The gradient of expected return can be written as an expectation of a trajectory-dependent weight multiplied by policy score terms.
@@ -245,6 +247,8 @@ It changes the optimization target itself.
 
 Whenever you read a policy-optimization method, ask these questions in order.
 
+
+![Actor-critic boundary questions diagram](figures/actor_critic_boundaries.svg)
 ### First question: what objective is being optimized?
 
 Is it plain expected return, clipped surrogate return, or a maximum-entropy objective?

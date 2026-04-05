@@ -16,6 +16,8 @@ My overall judgment is:
 - **Comprehension support for a first serious learner:** medium
 - **Ambiguity control:** uneven
 
+
+![Audit overview diagram](figures/audit_overview.svg)
 ## What the original does well
 
 ### 1. It begins from definitions instead of folklore

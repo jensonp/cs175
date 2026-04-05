@@ -1,0 +1,17 @@
+digraph DiscountedReturnTimeline {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Why the return starts at R_{t+1}"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  st [label="Time t\ncurrent conditioning point"];
+  at [label="Action A_t\nchosen at time t"];
+  r1 [label="R_{t+1}\nfirst reward caused by A_t"];
+  r2 [label="R_{t+2}\nnext reward"];
+  r3 [label="R_{t+3}\nnext reward"];
+  gt [label="G_t = R_{t+1} + \u03b3 R_{t+2} + \u03b3^2 R_{t+3} + ..."];
+
+  st -> at -> r1 -> r2 -> r3;
+  r1 -> gt;
+  r2 -> gt;
+  r3 -> gt;
+}

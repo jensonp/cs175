@@ -1,0 +1,15 @@
+digraph MarkovToMDPToBellman {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Why Markov structure enables Bellman structure"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  markov [label="Markov state S_t"];
+  action [label="Current action A_t"];
+  kernel [label="Transition-reward law\np(s', r | s, a)"];
+  mdp [label="MDP description\n(state space, action space, kernel, reward law)"];
+  bellman [label="Recursive value equations\nbecome valid over states/actions"];
+
+  markov -> kernel;
+  action -> kernel;
+  kernel -> mdp -> bellman;
+}

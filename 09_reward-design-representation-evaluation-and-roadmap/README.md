@@ -52,6 +52,8 @@ Only when $\gamma = 0$ does the problem collapse to one-step reward maximization
 
 In general, reinforcement learning is about long-run consequences.
 
+
+![Reward, return, and value chain diagram](figures/reward_return_value_chain.svg)
 ---
 
 ## 2. Potential-based reward shaping
@@ -84,6 +86,8 @@ Under the standard conditions, potential-based shaping preserves which policies 
 
 This is the precise sense in which shaping can alter learning dynamics without changing the optimal-control solution.
 
+
+![Potential shaping telescoping diagram](figures/potential_shaping_telescoping.svg)
 ---
 
 ## 3. Why reward design is not cosmetic
@@ -168,6 +172,8 @@ A credible report should specify at least:
 8. measures of spread or uncertainty,
 9. and ablations that isolate major components.
 
+
+![Evaluation protocol diagram](figures/evaluation_protocol.svg)
 ---
 
 ## 6. What an ablation is

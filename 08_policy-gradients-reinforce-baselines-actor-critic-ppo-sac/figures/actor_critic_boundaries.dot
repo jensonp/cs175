@@ -1,0 +1,19 @@
+digraph ActorCriticBoundaries {
+  rankdir=TB;
+  graph [fontsize=12, labelloc="t", label="Boundary questions for actor-critic style methods"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  obj [label="1. What objective is being optimized?"];
+  est [label="2. What estimator drives the actor update?"];
+  exact [label="3. What remains exact\nand what is approximate?"];
+  fixed [label="4. What quantity is treated as fixed\nduring differentiation?"];
+  actor [label="Actor update"];
+  critic [label="Critic / baseline / value estimator"];
+
+  obj -> actor;
+  est -> actor;
+  exact -> actor;
+  fixed -> actor;
+  critic -> est [label="supplies signal"];
+  critic -> exact [label="can introduce bias"];
+}

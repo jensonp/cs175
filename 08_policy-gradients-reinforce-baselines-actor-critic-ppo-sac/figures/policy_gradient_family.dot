@@ -1,0 +1,18 @@
+digraph PolicyGradientFamily {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="How the policy-gradient family branches"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  j [label="Objective J(\u03b8)"];
+  score [label="Score-function identity"];
+  reinf [label="REINFORCE\nuses sampled returns"];
+  base [label="Add baseline\nreduce variance without changing\nexpected gradient"];
+  adv [label="Advantage viewpoint\ncenter actor signal around policy average"];
+  ac [label="Actor-critic\ncritic supplies learned signal"];
+  ppo [label="PPO\nconstrains policy update size by clipping"];
+  sac [label="SAC\noptimizes reward + entropy objective"];
+
+  j -> score -> reinf -> base -> adv -> ac;
+  ac -> ppo;
+  ac -> sac;
+}

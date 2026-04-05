@@ -97,6 +97,8 @@ The test is predictive sufficiency under conditioning.
 
 This is the most important fork in the chapter.
 
+
+![History-to-state Markov check diagram](figures/history_state_markov_check.svg)
 ### A summary that is not Markov
 
 Suppose two different histories produce the same representation $S_t=s$, but those histories imply different conditional laws for $(S_{t+1}, R_{t+1})$ once action $A_t=a$ is fixed.
@@ -207,6 +209,8 @@ So there are two layers:
 
 This distinction matters.
 
+
+![Markov-to-MDP-to-Bellman diagram](figures/markov_to_mdp_to_bellman.svg)
 ---
 
 ## 9. Boundary conditions

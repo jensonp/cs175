@@ -1,0 +1,14 @@
+digraph BellmanDerivationFlow {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Bellman expectation derivation for V^pi"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  g [label="Start from definition\nV^\u03c0(s) = E[G_t | S_t = s]"];
+  rec [label="Substitute\nG_t = R_{t+1} + \u03b3 G_{t+1}"];
+  act [label="Condition on current action\nA_t ~ \u03c0(.|s)"];
+  trans [label="Condition on next outcome\n(S_{t+1}, R_{t+1})"];
+  cont [label="Recognize continuation term\nE[G_{t+1} | S_{t+1}=s'] = V^\u03c0(s')"];
+  bell [label="Bellman expectation equation\nfor V^\u03c0"];
+
+  g -> rec -> act -> trans -> cont -> bell;
+}

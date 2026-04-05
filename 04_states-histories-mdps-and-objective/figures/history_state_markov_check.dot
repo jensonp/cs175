@@ -1,0 +1,15 @@
+digraph HistoryStateMarkovCheck {
+  rankdir=TB;
+  graph [fontsize=12, labelloc="t", label="How to tell whether a summary is a Markov state"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  hist [label="Full history H_t"];
+  summary [label="Candidate summary S_t = f(H_t)"];
+  check [shape=diamond, label="After conditioning on\nS_t and A_t, does earlier history\nstill change the law of\n(R_{t+1}, S_{t+1})?"];
+  notmarkov [label="Yes -> summary is useful maybe,\nbut not Markov"];
+  markov [label="No -> summary is a\nMarkov state"];
+
+  hist -> summary -> check;
+  check -> notmarkov [label="yes"];
+  check -> markov [label="no"];
+}

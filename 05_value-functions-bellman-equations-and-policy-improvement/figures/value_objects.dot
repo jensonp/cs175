@@ -1,0 +1,13 @@
+digraph ValueObjects {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="How V^pi, Q^pi, and A^pi relate"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  v [label="V^\u03c0(s)\nexpected return from state s"];
+  q [label="Q^\u03c0(s,a)\nexpected return from taking a in s\nthen following \u03c0"];
+  a [label="A^\u03c0(s,a) = Q^\u03c0(s,a) - V^\u03c0(s)\nadvantage relative to the policy average"];
+
+  q -> v [label="average over a ~ \u03c0(.|s)"];
+  q -> a;
+  v -> a;
+}

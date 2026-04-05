@@ -1,0 +1,13 @@
+digraph GPICycle {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Generalized policy iteration"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  policy [label="Current policy \u03c0_k"];
+  eval [label="Policy evaluation\ncompute or estimate V^{\u03c0_k} / Q^{\u03c0_k}"];
+  improve [label="Policy improvement\nact greedily or more greedily\nwith respect to current values"];
+  nextp [label="Updated policy \u03c0_{k+1}"];
+
+  policy -> eval -> improve -> nextp;
+  nextp -> eval [label="repeat"];
+}

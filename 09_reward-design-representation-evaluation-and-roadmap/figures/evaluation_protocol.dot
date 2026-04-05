@@ -1,0 +1,13 @@
+digraph EvaluationProtocol {
+  rankdir=LR;
+  graph [fontsize=12, labelloc="t", label="Minimal evaluation protocol"];
+  node [shape=box, style="rounded", fontsize=11];
+
+  train [label="Train with multiple seeds"];
+  eval [label="Evaluate with fixed protocol\nand clearly stated metrics"];
+  stats [label="Report mean, spread,\nand uncertainty"];
+  ablate [label="Run ablations\nchange one factor at a time"];
+  compare [label="Conclusions about method quality\nbecome more trustworthy"];
+
+  train -> eval -> stats -> ablate -> compare;
+}
