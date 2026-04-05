@@ -1,4 +1,4 @@
-# Chapter 6 — Function Approximation, the Deadly Triad, and DQN
+# Chapter 7 — Function Approximation, the Deadly Triad, and DQN
 
 ## What this chapter locks in
 

@@ -1,4 +1,4 @@
-# Chapter 3 — States, Histories, MDPs, and the Objective
+# Chapter 4 — States, Histories, MDPs, and the Objective
 
 ## What this chapter locks in
 

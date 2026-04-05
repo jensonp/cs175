@@ -1,4 +1,4 @@
-# Chapter 2 — Mathematical Preliminaries
+# Chapter 3 — Mathematical Preliminaries
 
 ## What this chapter locks in
 

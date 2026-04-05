@@ -1,4 +1,4 @@
-# Chapter 7 — Policy Gradients, REINFORCE, Baselines, Actor–Critic, PPO, and SAC
+# Chapter 8 — Policy Gradients, REINFORCE, Baselines, Actor–Critic, PPO, and SAC
 
 ## What this chapter locks in
 

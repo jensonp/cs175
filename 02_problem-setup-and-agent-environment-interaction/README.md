@@ -1,4 +1,4 @@
-# Chapter 1 — Problem Setup and Agent–Environment Interaction
+# Chapter 2 — Problem Setup and Agent–Environment Interaction
 
 ## What this chapter locks in
 

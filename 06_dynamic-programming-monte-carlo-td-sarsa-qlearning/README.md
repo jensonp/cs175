@@ -1,4 +1,4 @@
-# Chapter 5 — Dynamic Programming, Monte Carlo, TD, SARSA, and Q-Learning
+# Chapter 6 — Dynamic Programming, Monte Carlo, TD, SARSA, and Q-Learning
 
 ## What this chapter locks in
 

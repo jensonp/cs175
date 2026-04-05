@@ -1,4 +1,4 @@
-# Chapter 8 — Reward Design, Representation, Evaluation, and Roadmap
+# Chapter 9 — Reward Design, Representation, Evaluation, and Roadmap
 
 ## What this chapter locks in
 

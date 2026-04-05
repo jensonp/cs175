@@ -1,4 +1,4 @@
-# Chapter 4 — Value Functions, Bellman Equations, and Policy Improvement
+# Chapter 5 — Value Functions, Bellman Equations, and Policy Improvement
 
 ## What this chapter locks in
 
