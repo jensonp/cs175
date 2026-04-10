@@ -1,460 +1,913 @@
 # Chapter 2 — Problem Setup and Agent–Environment Interaction
 
-## What this chapter locks in
+## Why this chapter exists
 
-This chapter fixes the *interaction contract* of reinforcement learning before any Markov model is introduced.
+Before reinforcement learning can talk about value functions, Bellman equations, optimal control, or policy gradients, it has to answer a more basic question: **what exactly is happening at each time step, and in what order does it happen?** If that question is left vague, later formulas look arbitrary. The reward index starts to feel like a notational trick. Conditional probabilities start to look mystical. Words like *observation*, *history*, and *state* get used as though they were interchangeable, even though they answer different questions.
 
-If this chapter is vague, later chapters become harder than they need to be for three separate reasons.
+This chapter fixes that foundation. Its job is not yet to simplify the world into an MDP. Its job is to describe the interaction process in the most general way that is still precise enough to support later theory. That means three things have to be made explicit from the beginning.
 
-First, the reward index starts looking arbitrary instead of causal.  
-Second, conditioning statements later in Bellman equations start looking magical instead of routine.  
-Third, learners start using words like *observation*, *history*, and *state* as if they were interchangeable.
+First, we must identify the **decision point**: the moment at which the agent chooses an action. Second, we must distinguish the objects that exist before the action from the objects that appear only after the environment reacts. Third, we must avoid granting the word *state* too much power too early. A state representation, if one exists, will later be a summary of the past with a special predictive property. That property has not been assumed yet.
 
-The purpose of this chapter is to prevent that.
-
-By the end of the chapter, you should be able to say precisely:
-
-- what exists at the decision point at time $t$,
-- what happens before and after action $A_t$,
-- why the reward is written $R_{t+1}$,
-- what the difference is between an observation, a history, and a state summary,
-- what information a policy is allowed to act on,
-- what the most general pre-Markov environment law looks like,
-- and what object reinforcement learning is actually trying to optimize.
-
-Nothing in this chapter assumes the Markov property.  
-Nothing in this chapter assumes a finite state space.  
-Nothing in this chapter assumes that the current observation is enough.
+So the point of this chapter is not to compress the problem. It is to describe the interaction contract clearly enough that later compression, when it comes, will be justified rather than hand-waved.
 
 ---
 
-## 1. Time and the decision point
+## 1. Time, decision points, and the order of events
+
+### Why this section exists
+
+The first thing reinforcement learning needs is a precise answer to the question: **when is the agent allowed to act, and what information does it have at that moment?** Without that, it is impossible to tell which quantities are available before the action, which ones are consequences of the action, and why the reward is indexed the way it is. This section exists because every later definition inherits its timing from this one.
+
+### The object being introduced
+
+The key object here is not yet a state or a value function. It is the **decision point at time** <em>t</em>. A decision point is a moment in the interaction process at which the agent is about to choose an action. What is fixed at that moment is the information already revealed from past interaction. What is not yet fixed is the current action <em>A</em><sub>t</sub>, the environment’s response to that action, the next reward, and the next observation.
+
+This object matters because it tells us what can legitimately appear on the right-hand side of a policy definition and what must wait until after the action has been taken.
+
+### Formal definition
 
 Time is discrete:
 
-$$
-t \in \{0,1,2,\ldots\}.
-$$
+<p><em>t</em> ∈ {0, 1, 2, ...}.</p>
 
-At each index $t$, there is a **decision point**.  
-A decision point is the moment just before the agent chooses action $A_t$.
+At each time index <em>t</em>, there is a **decision point**: the moment immediately before the agent chooses action <em>A</em><sub>t</sub>.
 
-That phrase matters because it tells you what information is available *before* the action and what information only appears *after* the environment reacts.
+The causal order at time <em>t</em> is:
 
-For this chapter, keep the following picture in mind.
-
-At the decision point indexed by $t$:
-
-- some information from the past interaction is already available,
-- the agent uses allowed information to choose action $A_t$,
-- the environment reacts,
-- then a new reward and new post-action information are produced.
-
-The entire subject sits on top of that order.
-
----
-
-## 2. The order of events at time $t$
-
-The causal order is:
-
-1. The agent reaches the decision point at time $t$ with some available information.
-2. The agent chooses action $A_t$.
+1. The agent arrives at the decision point with information already available from past interaction.
+2. The agent chooses action <em>A</em><sub>t</sub>.
 3. The environment reacts to that action.
-4. The agent then receives the immediate consequence of that reaction:
-   - reward $R_{t+1}$,
-   - and whatever new observation or information becomes available for the next decision point.
+4. The agent then receives the next reward <em>R</em><sub>t+1</sub> and the next observation <em>O</em><sub>t+1</sub> or other post-action information.
 
-So the first post-action outcome tied to $A_t$ is indexed by $t+1$, not by $t$.
+### Interpretation
 
-This is not cosmetic bookkeeping.
+The most important thing to notice is that **time** <em>t</em> **labels the action choice, not the post-action outcome**. The agent acts at time <em>t</em>, and only after that action does the next reward and next observation appear. So the decision point is not “the whole step.” It is specifically the pre-action moment.
 
-It tells you two things at once:
+This is why the notation later becomes natural rather than annoying. The action at time <em>t</em> is chosen using information available at that time. The reward caused by that action is not yet known at the moment of choice. It belongs to the next post-action outcome.
 
-- **which action caused the reward**, and
-- **when the reward becomes observable**.
+### Boundary conditions, assumptions, and failure modes
 
-If you ignore that order, later recursions may still be memorized, but they stop feeling inevitable.
+This description assumes discrete decision times. In continuous-time control, the mathematical setup is different, but the same causal discipline still matters: one must still distinguish what is available before the control is applied from what is observed afterward.
 
----
+A common failure mode is to talk loosely as though “time <em>t</em>” refers simultaneously to the pre-action and post-action situation. That slippage produces index confusion later. If you let the same time index mean both “before the action” and “after the environment’s reaction,” then return definitions and Bellman recursions become hard to parse for no good reason.
 
-## 3. Why the reward is written $R_{t+1}$
+Another hidden assumption is that the chapter is describing the interaction from the agent’s perspective. The agent experiences an information stream, chooses actions, and then receives consequences. That is the operational viewpoint the rest of the subject uses.
 
-The reward caused by action $A_t$ is observed only after the environment reacts to that action.
+### Fully worked example
 
-So the reward belongs to the next post-action outcome, and the correct symbol is
+Consider a thermostat controller that chooses between two actions at each minute:
 
-$$
-R_{t+1}.
-$$
+<p><em>A</em><sub>t</sub> ∈ {heat on, heat off}.</p>
 
-It is not written $R_t$ because the reward is not available at the instant *before* action $A_t$ is chosen.
+Suppose that at minute <em>t</em>, the controller can read the current measured temperature <em>O</em><sub>t</sub>. That measured temperature is already available at the decision point. The controller then chooses <em>A</em><sub>t</sub>. Only after the heating system and the room dynamics react does the controller observe the next reward <em>R</em><sub>t+1</sub>, where the reward might combine comfort and energy cost, and the next temperature reading <em>O</em><sub>t+1</sub>.
 
-This is exactly why the return later starts from
+Now trace the order carefully.
 
-$$
-G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots
-$$
+At the decision point indexed by <em>t</em>:
 
-and exactly why the recursion later takes the form
+- The current temperature reading <em>O</em><sub>t</sub> is available.
+- The next temperature reading <em>O</em><sub>t+1</sub> is not yet available.
+- The next reward <em>R</em><sub>t+1</sub> is not yet available.
+- The controller chooses <em>A</em><sub>t</sub>.
 
-$$
-G_t = R_{t+1} + \gamma G_{t+1}.
-$$
+After the room responds:
 
-The first term of return from time $t$ is the first reward that happens *after* the decision made at time $t$.
+- The controller sees whether the room moved closer to the desired temperature.
+- The controller also incurs energy cost.
+- Those consequences are summarized in <em>R</em><sub>t+1</sub>.
+- The controller receives a new measurement <em>O</em><sub>t+1</sub>.
 
-That is the whole reason for the shift.
+What conclusion does each step allow?
 
----
+- Because <em>O</em><sub>t</sub> is available before the action, it is legitimate for the policy to condition on <em>O</em><sub>t</sub>.
+- Because <em>R</em><sub>t+1</sub> and <em>O</em><sub>t+1</sub> appear only after the action, they cannot be treated as inputs to the choice of <em>A</em><sub>t</sub>.
+- Therefore the reward associated with <em>A</em><sub>t</sub> must be indexed after the action time, not at the same time.
 
-## 4. The primitive interaction objects
+The general lesson is that the time index on the action marks the decision; the time index on the next reward and next observation marks the first consequences of that decision.
 
-At the most general level, the interaction involves the following primitive random variables.
+### Misconception block
 
-### Observation
+**Do not confuse “the time step” with “the agent’s information at the decision point.”**  
+A time step often informally includes both acting and observing consequences. But the policy is defined only at the pre-action moment. That is the moment whose available information matters.
 
-$$
-O_t
-$$
+**Do not think the order is a bookkeeping choice.**  
+It is a causal choice. The notation is encoding which quantities are known before the action and which ones are produced after the action.
 
-This is information revealed by the environment and available at the decision point indexed by $t$.
+### Connection to later material
 
-An observation may be rich enough to identify the underlying situation exactly.  
-It may also be partial, noisy, delayed, aliased, or incomplete.
+Everything later depends on this timing. The return from time <em>t</em> begins with the first reward observed after choosing <em>A</em><sub>t</sub>. Conditional expectations in Bellman equations are conditioned on variables available at the decision point. Policy definitions only take as input information available before the action. So this section is not preliminary decoration; it is the clock that the rest of the theory runs on.
 
-So an observation is **not automatically a state** and is **not automatically Markov**.
+### Retain / Do not confuse
 
-### Action
+Retain:
 
-$$
-A_t
-$$
+- Time <em>t</em> labels the **decision point** and the chosen action <em>A</em><sub>t</sub>.
+- The environment reacts **after** <em>A</em><sub>t</sub>.
+- The first reward tied to <em>A</em><sub>t</sub> is <em>R</em><sub>t+1</sub>.
 
-This is the action chosen by the agent at decision time $t$.
+Do not confuse:
 
-### Reward
-
-$$
-R_{t+1}
-$$
-
-This is the immediate scalar consequence observed after the environment reacts to action $A_t$.
-
-At this stage, those are the only objects you need to regard as primitive.
+- pre-action information with post-action outcomes,
+- “same step” in informal speech with “same index” in formal notation.
 
 ---
 
-## 5. History comes before state
+## 2. Observation, action, and reward: the primitive interaction objects
 
-Before introducing any state notion, you need the most complete record that is available in principle at the current decision point.
+### Why this section exists
 
-A standard history at time $t$ is
+Once the event order is fixed, we need names for the basic random variables that participate in the interaction. This section exists because later objects—history, state summaries, policies, return, and value functions—are all built out of these primitive ingredients. If these primitives are not interpreted correctly, later derived objects will inherit the confusion.
 
-$$
-H_t = (O_0, A_0, R_1, O_1, A_1, R_2, \ldots, O_t).
-$$
+### The object being introduced
 
-The exact formatting varies a little across books and implementations, but the structural point is always the same:
+There are three primitive objects at this stage:
 
-- $H_t$ contains the interaction up to the current decision point,
-- $H_t$ is available *before* action $A_t$ is chosen,
-- and any later state representation must be built from information available in that history.
+- the **observation** <em>O</em><sub>t</sub>,
+- the **action** <em>A</em><sub>t</sub>,
+- the **reward** <em>R</em><sub>t+1</sub>.
 
-This order matters:
+Each answers a different question. The observation tells us what information is currently revealed. The action records what the agent chooses to do. The reward records the immediate scalar consequence that becomes available after the environment reacts.
 
-1. define the interaction process,
-2. define the history,
-3. define a summary of history,
-4. then ask whether that summary is Markov.
+What is fixed and what varies matters here. At the decision point indexed by <em>t</em>, <em>O</em><sub>t</sub> may already be known, <em>A</em><sub>t</sub> has not yet been chosen, and <em>R</em><sub>t+1</sub> has not yet been observed.
 
-If you skip history and jump straight to “state,” the word *state* starts doing work it has not earned.
+### Formal definitions
 
----
+The primitive variables are:
 
-## 6. Observation, history, and policy input are different objects
+<p><em>O</em><sub>t</sub> = observation available at decision time <em>t</em>,</p>
 
-Three distinct questions are floating around already, and they should not be collapsed.
+<p><em>A</em><sub>t</sub> = action chosen by the agent at time <em>t</em>,</p>
 
-### Observation $O_t$
+<p><em>R</em><sub>t+1</sub> = reward observed after the environment reacts to <em>A</em><sub>t</sub>.</p>
 
-This answers: **what is directly revealed now?**
+### Interpretation
 
-It is the current environmental output at the decision point.
+The word *observation* should be read carefully. An observation is not automatically a complete description of the world. It is simply what the environment reveals to the agent at that moment. It may be complete, partial, noisy, delayed, aliased, or filtered. That is why the chapter uses <em>O</em><sub>t</sub> rather than immediately writing down a state variable and pretending the problem is already Markov.
 
-### History $H_t$
+The action <em>A</em><sub>t</sub> is the agent’s current intervention. The reward <em>R</em><sub>t+1</sub> is a scalar feedback signal, but it is not the whole future objective. It is only the immediate consequence now visible after the action has had its first effect.
 
-This answers: **what interaction record is available in principle up to now?**
+### Boundary conditions, assumptions, and failure modes
 
-It contains accumulated past information up to the current decision point.
+A hidden but important assumption is that reward is scalar. That is standard in RL, but it does not mean the underlying problem is truly one-dimensional. It means the environment or modeling setup has compressed the immediate feedback into a single number.
 
-### Policy input $X_t$
+A major failure mode is to over-interpret the observation. Students often begin using *observation* and *state* as synonyms. That is unsafe. An observation is what is seen now. A state, later, will be a representation used for prediction and control, and a **Markov** state will have a specific sufficiency property. Those are stronger claims.
 
-This answers: **what information is the policy actually allowed to condition on?**
+Another common failure mode is to treat the immediate reward as “the thing being optimized.” It is not. The reward is the local signal; the policy will later be judged by long-run return.
 
-The policy does not have to use the full history.  
-It might use
+### Fully worked example
 
-- the current observation only,
-- the full history,
-- a hand-designed summary of history,
-- or a learned representation constructed from past interaction.
+Imagine a robot navigating a building. At each decision point, its camera image is the observation <em>O</em><sub>t</sub>. It chooses an action <em>A</em><sub>t</sub> from
 
-So $X_t$ is a general placeholder for the information summary the policy uses.
+<p>{forward, left, right, stop}.</p>
 
-Later, one especially important case will be when the policy input is a state summary $S_t = f(H_t)$.
+After the move, the environment returns a reward:
 
-But that has not been assumed yet.
+- +10 if the robot reaches the goal,
+- -1 for taking a normal step,
+- -20 if it collides.
 
----
+Now ask what each object means.
 
-## 7. The most general environment law before any Markov assumption
+At time <em>t</em>, the camera image <em>O</em><sub>t</sub> is available. That image may not reveal the full floor plan, whether a hallway loops back, or whether an unseen obstacle lies around the corner. So <em>O</em><sub>t</sub> is information, but not necessarily a complete world description.
 
-At this point, the environment should be understood in the most general way.
+The robot then chooses <em>A</em><sub>t</sub>. Suppose it chooses “forward.”
 
-It is the stochastic mechanism that maps the current decision context and current action to the next outcome.
+Only after that move does the robot find out what happened. If it collides, the collision penalty is part of <em>R</em><sub>t+1</sub>. If it reaches the goal, the goal reward is part of <em>R</em><sub>t+1</sub>. If neither happens, it may receive -1. It also gets a new image <em>O</em><sub>t+1</sub>.
 
-Before any Markov restriction is imposed, the next outcome may depend on the **entire history**, not just on a compressed state variable.
+What does this example teach?
 
-A generic one-step law is therefore of the form
+- The observation is not the same thing as the underlying world state.
+- The action is selected using currently available information.
+- The reward is the immediate consequence of the chosen action after the environment has responded.
 
-$$
-P(O_{t+1}, R_{t+1} \mid H_t, A_t).
-$$
+### Misconception block
 
-Read that slowly.
+**Observation is not automatically state.**  
+A blurry camera frame can be an observation. It need not contain enough information to predict the future on its own.
 
-It says:
+**Reward is not probability, not value, and not the total objective.**  
+It is an immediate scalar consequence. Later we will aggregate rewards across time to define return.
 
-- fix the current full history $H_t$,
-- fix the action $A_t$,
-- then the environment induces a conditional distribution over the next observation and next reward.
+### Connection to later material
 
-This is the correct pre-Markov object.
+History will be built from observations, actions, and rewards. State summaries will later be functions of history. Return will be a sum of future rewards starting from <em>R</em><sub>t+1</sub>. Value functions will take expectations of that return. So these primitive variables are the atoms from which the rest of the chapter and later theory are assembled.
 
-Why this matters:
+### Retain / Do not confuse
 
-- it is the unrestricted one-step law,
-- it makes clear that the past may matter through more than the current observation,
-- and it gives you the exact object that later chapters will simplify when a Markov state representation is introduced.
+Retain:
 
-That is the missing bridge many learners never get shown explicitly.
+- <em>O</em><sub>t</sub>: what is revealed now.
+- <em>A</em><sub>t</sub>: what the agent chooses now.
+- <em>R</em><sub>t+1</sub>: the immediate scalar consequence observed after the action’s effect begins.
+
+Do not confuse:
+
+- observation with a guaranteed Markov state,
+- immediate reward with long-run objective.
 
 ---
 
-## 8. What the agent is
+## 3. History comes before state
 
-At this level of abstraction, the agent is the decision rule that maps allowed information to actions.
+### Why this section exists
 
-The agent is not the environment.  
-The agent is not the reward process.  
-The agent is not the value function.
+If we do not yet assume the current observation is enough, then what is the most complete decision-relevant record available in principle at time <em>t</em>? That question forces the notion of **history**. This section exists because one cannot responsibly introduce a state summary until one first identifies the larger object that is being summarized.
 
-The agent is the mechanism that selects actions from available information.
+### The object being introduced
 
-That information might be rich or poor, exact or approximate, current or accumulated.  
-The only question for now is what information the policy is allowed to use.
+The object is the **history** <em>H</em><sub>t</sub>. It is the accumulated interaction record up to the current decision point. What is fixed when discussing <em>H</em><sub>t</sub> is the sequence of observations, actions, and rewards that have already occurred. What varies across possible trajectories is which particular sequence occurred.
 
----
+The role of history is conceptual: it is the most information-rich object available before the next action is chosen. Later representations—memory states, features, recurrent hidden states, learned embeddings, or classical MDP states—must all be understood as summaries or functions of this underlying record.
 
-## 9. Policies
+### Formal definition
 
-A **policy** is the object being optimized.
+A standard history at time <em>t</em> is
 
-### Deterministic policy
+<p><em>H</em><sub>t</sub> = (<em>O</em><sub>0</sub>, <em>A</em><sub>0</sub>, <em>R</em><sub>1</sub>, <em>O</em><sub>1</sub>, <em>A</em><sub>1</sub>, <em>R</em><sub>2</sub>, ..., <em>O</em><sub>t</sub>).</p>
 
-A deterministic policy maps an allowed information summary $x$ to a single action:
+This history contains everything observed up to the decision point at which <em>A</em><sub>t</sub> is about to be chosen.
 
-$$
-\pi : x \mapsto a.
-$$
+### Interpretation
 
-### Stochastic policy
+The structure of <em>H</em><sub>t</sub> matters. It ends with <em>O</em><sub>t</sub>, not with <em>A</em><sub>t</sub>, because <em>A</em><sub>t</sub> has not yet been chosen. The history is therefore a **pre-action object**. It records what the agent could in principle know before deciding what to do now.
 
-A stochastic policy assigns probabilities to actions:
+A helpful way to read the definition is this: history is not “the past” in a vague sense. It is the exact decision-time record available for conditioning. That is why it comes before any notion of state. A state summary, if introduced later, should be a function of information available in <em>H</em><sub>t</sub>, not a magical external label that appears without justification.
 
-$$
-\pi(a \mid x) = P(A_t = a \mid X_t = x).
-$$
+### Boundary conditions, assumptions, and failure modes
 
-This notation is intentionally written with $x$ rather than with $s$.
+Different texts format history slightly differently. Some include an initial reward convention, some package post-action observation and reward together, and some use states instead of observations once Markov structure has been assumed. Those formatting choices do not change the conceptual role of history.
 
-That is because, at this stage, we have *not* yet established that the policy input is a Markov state.
+A common failure mode is to jump directly from “current observation” to “current state” without checking whether the observation actually contains enough information. Another failure mode is subtler: some learners call any internal memory vector a *state* and assume that settles the matter. It does not. A memory vector is at most a candidate summary of history. Whether it has the required predictive sufficiency is a separate question.
 
-### Why stochastic policies matter
+### Fully worked example
 
-A stochastic policy is not merely a deterministic policy with accidental noise.
+Consider a maze with two visually identical intersections. At both intersections, the robot’s current observation is the same: a picture showing one corridor to the left and one corridor to the right. So
 
-Stochasticity matters because:
+<p><em>O</em><sub>t</sub> = “left-right intersection”</p>
 
-- exploration may require positive probability on multiple actions,
-- the available information may leave genuine residual uncertainty,
-- and later policy-gradient methods optimize distributions over actions directly.
+in both places.
 
-So stochastic policies are part of the subject itself, not an afterthought.
+But suppose the optimal action differs between the two intersections because one of them was reached by coming from the entrance and the other by coming from a loop. If the robot turns left in the first case, it gets closer to the goal; if it turns left in the second case, it goes into a dead end.
 
----
+Now check what each object is telling us.
 
-## 10. What reinforcement learning is optimizing
+- The current observation <em>O</em><sub>t</sub> is the same in both situations.
+- The histories <em>H</em><sub>t</sub> are different, because the past sequences of turns and observations differ.
+- Therefore the correct action can depend on the history even when the current observation does not distinguish the cases.
 
-At an informal level, reinforcement learning is trying to choose a policy whose long-run interaction with the environment is good.
+What conclusion does this allow?
 
-The environment responds stochastically.  
-The policy influences which actions are taken.  
-The downstream rewards depend on the interaction of both.
+It shows that the observation alone need not be sufficient for decision making. So any valid state representation for control, if one exists, may need to summarize more than the current observation.
 
-So the thing being optimized is **the policy**, not the next reward in isolation and not the environment dynamics.
+The general pattern is important. Whenever two different pasts lead to the same current observation but require different actions or imply different future distributions, the current observation is not enough.
 
-The exact mathematical objective will be written later using return and expectations, but the logical structure is already fixed:
+### Misconception block
 
-- policies generate actions,
-- actions influence future trajectories,
-- trajectories generate rewards,
-- and the goal is to choose the policy with better long-run consequences.
+**Do not confuse history with “everything that ever happened in the universe.”**  
+History here means the interaction record available from the agent–environment process up to the current decision point.
 
----
+**Do not confuse a summary of history with the history itself.**  
+A summary may discard information. That is precisely why one later has to ask whether the discarded information matters.
 
-## 11. Episodic and continuing tasks
+### Connection to later material
 
-This chapter does not yet need the full objective machinery, but it should mark the two main task types.
+This section prepares the ground for state representations, partial observability, belief states, recurrent policies, and the Markov property. The later question “is this representation a Markov state?” only makes sense after history has been identified as the fuller object being summarized.
 
-### Episodic tasks
+### Retain / Do not confuse
 
-Interaction is divided into episodes.  
-An episode starts from some initial condition and eventually terminates.
+Retain:
 
-At termination, there is no further action choice inside that episode.
+- History <em>H</em><sub>t</sub> is the full interaction record available before choosing <em>A</em><sub>t</sub>.
+- It ends at <em>O</em><sub>t</sub>, not at <em>A</em><sub>t</sub>.
+- State, later, must be understood relative to history.
 
-### Continuing tasks
+Do not confuse:
 
-Interaction does not naturally terminate.  
-The process keeps unfolding across decision times.
-
-Later chapters will specify how return is defined in each case.  
-For now, the important point is that the interaction contract from earlier sections applies in both settings.
-
-The event order does not change just because the task type changes.
+- same observation with same history,
+- having a summary with having a sufficient summary.
 
 ---
 
-## 12. Terminal points and index limits
+## 4. Observation, history, policy input, and state summary are different objects
 
-In episodic tasks, there is a last decision time within an episode.
+### Why this section exists
 
-Suppose the final action in an episode is chosen at time $T-1$.
+Once history has been introduced, another question appears immediately: **what information is the policy actually allowed to use?** The answer need not be “the full history.” This section exists to separate four commonly collapsed notions: the currently revealed observation, the full interaction history, the information summary the policy conditions on, and a later state representation with special predictive properties.
 
-Then:
+### The object being introduced
 
-- the last chosen action is $A_{T-1}$,
-- the final immediate reward tied to that action is $R_T$,
-- and after termination there is no next within-episode action $A_T$.
+The new object is the **policy input** <em>X</em><sub>t</sub>. It is whatever information summary the policy actually uses at the decision point. What is fixed is the available information from past interaction. What varies is how much of that information the policy is permitted to keep or process.
 
-This detail matters because later recursions often treat terminal continuation terms specially.
+The role of <em>X</em><sub>t</sub> is to make policy definitions precise without prematurely assuming the input is a Markov state.
 
-So even before value functions appear, it is useful to be clear about the index boundary.
+### Formal definition
+
+We distinguish the following objects:
+
+- **Observation**:  
+  <p><em>O</em><sub>t</sub> = the information directly revealed at decision time <em>t</em>.</p>
+
+- **History**:  
+  <p><em>H</em><sub>t</sub> = (<em>O</em><sub>0</sub>, <em>A</em><sub>0</sub>, <em>R</em><sub>1</sub>, <em>O</em><sub>1</sub>, <em>A</em><sub>1</sub>, <em>R</em><sub>2</sub>, ..., <em>O</em><sub>t</sub>).</p>
+
+- **Policy input**:  
+  <p><em>X</em><sub>t</sub> = the information summary on which the policy conditions at time <em>t</em>.</p>
+
+A later state representation may be written as
+
+<p><em>S</em><sub>t</sub> = <em>f</em>(<em>H</em><sub>t</sub>),</p>
+
+but at this stage no special sufficiency property has yet been assumed for <em>S</em><sub>t</sub>.
+
+### Interpretation
+
+These objects answer different questions.
+
+- <em>O</em><sub>t</sub>: What is directly seen now?
+- <em>H</em><sub>t</sub>: What full interaction record is available in principle now?
+- <em>X</em><sub>t</sub>: What information is the policy actually allowed to use now?
+- <em>S</em><sub>t</sub>: A candidate summary of history that may later be tested for the Markov property.
+
+The key point is that <em>X</em><sub>t</sub> is a neutral symbol. It lets us define policies in a general way. Sometimes <em>X</em><sub>t</sub> = <em>O</em><sub>t</sub>. Sometimes <em>X</em><sub>t</sub> = <em>H</em><sub>t</sub>. Sometimes <em>X</em><sub>t</sub> is a compressed memory vector or engineered feature map. Using <em>x</em> rather than <em>s</em> in policy notation prevents us from smuggling in the Markov assumption by notation alone.
+
+### Boundary conditions, assumptions, and failure modes
+
+There is an important hidden distinction between **available information** and **used information**. The full history may exist conceptually even if the implemented policy discards most of it. If the policy is memoryless, then <em>X</em><sub>t</sub> may equal <em>O</em><sub>t</sub> even though <em>H</em><sub>t</sub> is much richer.
+
+A common failure mode is to say “the policy uses the state” before the word *state* has been earned. Another is to assume that because a neural network maintains a hidden vector, that vector is automatically sufficient. It may be useful; it is not automatically Markov.
+
+### Fully worked example
+
+Return to the maze with visually identical intersections.
+
+Suppose we compare three policies.
+
+**Policy 1: observation-only policy.**  
+It conditions only on the current image:
+
+<p><em>X</em><sub>t</sub> = <em>O</em><sub>t</sub>.</p>
+
+Because both intersections look the same, this policy must choose the same action distribution in both cases.
+
+**Policy 2: history-based policy.**  
+It conditions on the full interaction record:
+
+<p><em>X</em><sub>t</sub> = <em>H</em><sub>t</sub>.</p>
+
+Now the policy can distinguish which intersection it is at by using earlier turns and observations.
+
+**Policy 3: summarized-memory policy.**  
+It uses a hand-designed memory bit that records whether the robot last turned left or right:
+
+<p><em>X</em><sub>t</sub> = memory summary extracted from <em>H</em><sub>t</sub>.</p>
+
+This summary is smaller than the full history but may still be enough for the task if that one bit captures the distinction that matters.
+
+What does this example show?
+
+- Same observation does not imply same available history.
+- Same history does not force the policy to use all of it.
+- A summary can be useful without yet being known to be a Markov state.
+
+The general lesson is that policy input is a design choice or learned representation choice. State, in the stronger sense used later, is a property claim about predictive sufficiency.
+
+### Misconception block
+
+**Do not confuse “what exists” with “what the policy conditions on.”**  
+The history may exist even if the policy ignores it.
+
+**Do not confuse “policy input” with “Markov state.”**  
+Every Markov state can serve as policy input, but not every policy input deserves to be called a Markov state.
+
+### Connection to later material
+
+This distinction is essential for understanding partially observable RL, belief states, recurrent policies, feature learning, and the Markov property. It also matters for proofs. Later Bellman-style recursions become simple only when the policy input has the right sufficiency property. Until then, the safe general input symbol is <em>X</em><sub>t</sub>, not <em>S</em><sub>t</sub>.
+
+### Retain / Do not confuse
+
+Retain:
+
+- <em>O</em><sub>t</sub>: current revealed information.
+- <em>H</em><sub>t</sub>: full available record.
+- <em>X</em><sub>t</sub>: actual policy input.
+- <em>S</em><sub>t</sub>: possible later state summary.
+
+Do not confuse:
+
+- policy input with history,
+- policy input with a Markov state,
+- observation with the whole decision context.
 
 ---
 
-## 13. What has **not** been assumed yet
+## 5. The most general environment law before any Markov assumption
 
-This chapter is intentionally narrow.  
-Several things are still missing on purpose.
+### Why this section exists
 
-### No Markov assumption
+Once we know what information exists at the decision point and what action is taken there, we can ask the next structural question: **what object describes how the environment produces the next outcome?** Before any Markov simplification, the answer cannot be a transition law that depends only on a current state, because no such state has yet been justified. This section exists to write down the correct unrestricted one-step law.
 
-We have **not** assumed that some current summary makes the future independent of the rest of the past.
+### The object being introduced
 
-### No state variable has been granted special status
+The key object is the conditional distribution
 
-A state summary may later be introduced, but no summary has yet been declared sufficient.
+<p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>H</em><sub>t</sub>, <em>A</em><sub>t</sub>).</p>
 
-### No finite-state or finite-action assumption
+This is the most general one-step environment law at the current level of abstraction. What is fixed when reading it are the current history <em>H</em><sub>t</sub> and the chosen action <em>A</em><sub>t</sub>. What varies are the possible next observation–reward outcomes <span>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub>)</span>.
 
-Nothing here requires finite spaces.
+This object answers the question: **given everything the process has revealed so far and the action chosen now, what distribution does the environment induce over the next immediate outcome?**
 
-### No value function yet
+### Formal definition
 
-Value functions are expectations of return under a policy or under optimal control.  
-They come later because the interaction process has to be specified first.
+Before any Markov assumption, a generic one-step environment law is
 
-### No Bellman equation yet
+<p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>H</em><sub>t</sub>, <em>A</em><sub>t</sub>).</p>
 
-The return recursion is not even defined formally yet, so Bellman structure would be premature here.
+### Interpretation
 
-These omissions are not weaknesses.  
-They are scope control.
+Read the formula in the right order.
+
+First, hold fixed a particular history <em>H</em><sub>t</sub> = <em>h</em>. This means you are fixing the entire interaction record up to the current decision point. Next, hold fixed an action <em>A</em><sub>t</sub> = <em>a</em>. Once those are fixed, the environment defines a probability distribution over what comes next: the next observation and the next reward.
+
+The first thing to notice is that the law conditions on **history**, not merely on the current observation. That is deliberate. It expresses the most general possibility that the future can depend on aspects of the past that are not captured by what is currently observed.
+
+The second thing to notice is that reward and next observation appear together. This is useful because both are immediate consequences of the same environment reaction to <em>A</em><sub>t</sub>.
+
+### Boundary conditions, assumptions, and failure modes
+
+The formula does **not** assume a Markov state exists. It does **not** assume finite observation or action spaces. It does **not** require that the current observation be sufficient.
+
+A common overgeneralization is to replace the law too early by something like
+
+<p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>O</em><sub>t</sub>, <em>A</em><sub>t</sub>).</p>
+
+That replacement is only valid if the current observation is actually sufficient. Many problems do not satisfy that.
+
+A second failure mode is to think that once we define some summary <em>S</em><sub>t</sub> = <em>f</em>(<em>H</em><sub>t</sub>), the environment law automatically reduces to
+
+<p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>S</em><sub>t</sub>, <em>A</em><sub>t</sub>).</p>
+
+That is not automatic either. It becomes valid only if <em>S</em><sub>t</sub> retains exactly the predictive information needed for the next-step distribution.
+
+### Fully worked example
+
+Suppose a machine has a hidden internal mode, either Mode 0 or Mode 1. The agent never observes the mode directly. The current observation <em>O</em><sub>t</sub> is always the same display light, so the current observation contains no information about the mode.
+
+The action set is
+
+<p><em>A</em><sub>t</sub> ∈ {toggle, stay}.</p>
+
+The environment works as follows:
+
+- If the agent chooses **toggle**, the hidden mode flips.
+- If the agent chooses **stay**, the hidden mode remains the same.
+- The next reward is +1 if the hidden mode after the action is Mode 1, and 0 otherwise.
+- The next observation is again the same uninformative display light.
+
+Now examine two different histories that end in the same current observation.
+
+- In history <em>h</em>, the agent has toggled an odd number of times.
+- In history <em>h′</em>, the agent has toggled an even number of times.
+
+Suppose the initial hidden mode was Mode 0. Then these two histories imply different current hidden modes, even though the current observation is identical.
+
+Now choose the action <em>A</em><sub>t</sub> = stay.
+
+Given history <em>h</em>, staying keeps the system in Mode 1, so
+
+<p><em>P</em>(<em>R</em><sub>t+1</sub> = 1 | <em>H</em><sub>t</sub> = <em>h</em>, <em>A</em><sub>t</sub> = stay) = 1.</p>
+
+Given history <em>h′</em>, staying keeps the system in Mode 0, so
+
+<p><em>P</em>(<em>R</em><sub>t+1</sub> = 1 | <em>H</em><sub>t</sub> = <em>h′</em>, <em>A</em><sub>t</sub> = stay) = 0.</p>
+
+What was checked here?
+
+- We checked that the current observation is the same under both histories.
+- We checked that the hidden mode differs because the past action sequence differs.
+- We then fixed the same current action in both cases.
+- The resulting next-reward distributions were different.
+
+What conclusion does that allow?
+
+It proves that the next outcome distribution cannot, in general, be written as a function of the current observation alone. The history matters. So the correct unrestricted one-step law is indeed conditioned on <em>H</em><sub>t</sub> and <em>A</em><sub>t</sub>.
+
+The general lesson is this: whenever two different histories lead to the same current observation but induce different future distributions under the same current action, the observation is not Markov.
+
+### Misconception block
+
+**This does not mean the environment must literally store the full history.**  
+The formula is not a statement about internal implementation. It is a statement about the predictive object that is guaranteed to be valid before any compression is justified.
+
+**Do not confuse “we can define a summary” with “the summary is sufficient.”**  
+A compression is easy to write. Predictive sufficiency is the hard part.
+
+### Connection to later material
+
+This formula is the bridge to Markov models. Later, if we can find a representation <em>S</em><sub>t</sub> = <em>f</em>(<em>H</em><sub>t</sub>) such that the future depends on the past only through <em>S</em><sub>t</sub>, then the law simplifies. That is exactly what makes MDPs and Bellman equations possible. But the simplification is meaningful only because we first wrote down the unrestricted object honestly.
+
+### Retain / Do not confuse
+
+Retain:
+
+- The correct pre-Markov one-step law is  
+  <p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>H</em><sub>t</sub>, <em>A</em><sub>t</sub>).</p>
+- It conditions on the full history because the current observation need not be sufficient.
+
+Do not confuse:
+
+- current observation with full predictive context,
+- a chosen summary with a justified Markov representation.
 
 ---
 
-## 14. Common confusions this chapter should block
+## 6. The agent and the policy
 
-### Confusion 1: observation and state are the same thing
+### Why this section exists
 
-Not necessarily.
+Once the interaction law is clear, we can isolate the agent’s role. The agent is not the whole trajectory, not the reward process, and not the environment dynamics. The agent contributes a particular object: a **policy**. This section exists because reinforcement learning optimizes policies, and that claim only becomes precise once we say what a policy maps from and what it maps to.
 
-An observation is what is directly revealed now.  
-A state will later be a summary used for decision making.  
-A Markov state will later be a summary with a particular predictive sufficiency property.
+### The object being introduced
 
-Those are different layers.
+The object is the **policy**. A policy is a decision rule that takes the allowed information summary at the decision point and produces an action or a distribution over actions. What is fixed is the policy input <em>X</em><sub>t</sub>. What varies is the resulting action choice.
 
-### Confusion 2: the reward should share the action’s time index
+The policy answers the question: **given the information the agent is allowed to use now, how does it choose what to do?**
 
-No.
+### Formal definitions
 
-The action is chosen at time $t$.  
-The reward caused by that action is observed after the transition, so it is indexed by $t+1$.
+A deterministic policy is a mapping
 
-### Confusion 3: the environment already has MDP form
+<p><em>π</em>: <em>x</em> ↦ <em>a</em>.</p>
 
-Not yet.
+A stochastic policy is a conditional distribution over actions:
 
-At this chapter’s level of generality, the one-step law may depend on the whole history:
+<p><em>π</em>(<em>a</em> | <em>x</em>) = <em>P</em>(<em>A</em><sub>t</sub> = <em>a</em> | <em>X</em><sub>t</sub> = <em>x</em>).</p>
 
-$$
-P(O_{t+1}, R_{t+1} \mid H_t, A_t).
-$$
+The notation uses <em>x</em>, not <em>s</em>, because we have not yet established that the policy input is a Markov state.
 
-### Confusion 4: the policy must use only the current observation
+### Interpretation
 
-False.
+The deterministic policy says: once the information summary equals <em>x</em>, the action is fixed. The stochastic policy says: once the information summary equals <em>x</em>, the agent randomizes according to a distribution over possible actions.
 
-The policy may use any allowed information summary $X_t$.
+The important thing to notice first is that a policy is defined relative to its **input object**. If the input is poor, the best achievable policy may still perform poorly. If the input is rich enough, the policy may exploit longer-range structure.
 
-### Confusion 5: “state” is whatever name we give the current representation
+The second thing to notice is that stochasticity is not an implementation accident. It is a legitimate modeling object. A stochastic policy is itself the thing being optimized in many RL methods.
 
-Also false.
+### Boundary conditions, assumptions, and failure modes
 
-A summary does not become Markov because we call it a state.  
-That is a later property that has to be checked.
+A hidden assumption is that the policy only depends on information available at the decision point. It cannot depend on future rewards or future observations.
+
+A common failure mode is to write <em>π</em>(<em>a</em> | <em>s</em>) too early and thereby smuggle in a state assumption. Another is to think that stochastic policies are just deterministic policies with added nuisance noise. That is false in general. Randomization can be essential for exploration, for symmetry breaking, for mixed strategies, or because uncertainty remains after conditioning on available information.
+
+### Fully worked example
+
+Consider a two-armed bandit with actions
+
+<p><em>A</em><sub>t</sub> ∈ {left arm, right arm}.</p>
+
+Since bandits have no evolving observation in the usual simple setup, let the policy input be trivial:
+
+<p><em>X</em><sub>t</sub> = <em>x</em><sub>0</sub></p>
+
+for every <em>t</em>.
+
+Now compare two policies.
+
+**Deterministic policy**
+
+<p><em>π</em>(left arm | <em>x</em><sub>0</sub>) = 1.</p>
+
+This policy always chooses the left arm.
+
+**Stochastic policy**
+
+<p><em>π</em>(left arm | <em>x</em><sub>0</sub>) = 0.7,</p>
+<p><em>π</em>(right arm | <em>x</em><sub>0</sub>) = 0.3.</p>
+
+This policy randomizes.
+
+What is being checked here?
+
+- We fix the available information summary <em>x</em><sub>0</sub>.
+- We ask how the policy transforms that input into action choice.
+- In the deterministic case, the action is fixed.
+- In the stochastic case, the action is distributed.
+
+What conclusion does this allow?
+
+It shows that the policy object need not choose a single action pointwise. It can encode a distribution over actions at the same information input.
+
+Now interpret why that matters. Suppose the left arm is believed better but the right arm is still uncertain. A stochastic policy can assign positive probability to both arms, allowing continued exploration. A purely deterministic policy cannot do that unless its input changes.
+
+The general lesson is that the policy is the controllable object. The environment law is not under the agent’s control; the policy is.
+
+### Misconception block
+
+**Reinforcement learning is not optimizing the next action in isolation.**  
+It is choosing a policy whose repeated action choices produce better long-run consequences.
+
+**A stochastic policy is not merely “a deterministic policy plus mistakes.”**  
+The randomness can be deliberate, structural, and essential.
+
+### Connection to later material
+
+Policy evaluation, policy improvement, actor methods, policy gradients, entropy regularization, and exploration strategies all build directly on this section. The distinction between deterministic and stochastic policies will matter not only conceptually but algorithmically.
+
+### Retain / Do not confuse
+
+Retain:
+
+- The agent is the decision rule.
+- A policy maps allowed information to actions or action probabilities.
+- Using <em>x</em> instead of <em>s</em> avoids assuming the input is already a Markov state.
+
+Do not confuse:
+
+- agent with environment,
+- policy with reward function,
+- stochastic policy with accidental noise.
 
 ---
 
-## 15. What this chapter allows you to conclude
+## 7. What reinforcement learning is optimizing
 
-After this chapter, you are allowed to say all of the following.
+### Why this section exists
 
-1. At time $t$, the agent acts *before* the next reward is observed.
-2. The reward tied to action $A_t$ is correctly written $R_{t+1}$.
-3. A history $H_t$ is available conceptually before any state summary is defined.
-4. The policy acts on some allowed information summary $X_t$.
-5. The general pre-Markov environment law can depend on the full history and current action.
-6. Reinforcement learning is optimizing a policy, not merely reacting greedily to the next scalar signal.
+Once the policy has been defined, we can say what RL is trying to improve. Without this section, a student may mistakenly think the goal is to maximize immediate reward at each step. That is not the general objective. This section exists to identify the policy—not the next reward, not the environment dynamics—as the object of optimization.
 
-If any one of those feels fuzzy, you are not ready to compress the problem into an MDP yet.
+### The object being introduced
+
+The relevant object is the **long-run performance of a policy**. The policy shapes the sequence of actions. Those actions influence the trajectory of future observations and rewards. So the quality of a policy cannot be judged by one reward in isolation; it must be judged by the return its induced trajectories tend to produce.
+
+### Formal definition
+
+For an episodic task ending at time <em>T</em>, the return from decision time <em>t</em> is
+
+<p><em>G</em><sub>t</sub> = <em>R</em><sub>t+1</sub> + <em>R</em><sub>t+2</sub> + ... + <em>R</em><sub>T</sub>.</p>
+
+For a continuing task, a discounted return is commonly used:
+
+<p><em>G</em><sub>t</sub> = <em>R</em><sub>t+1</sub> + <em>γ</em><em>R</em><sub>t+2</sub> + <em>γ</em><sup>2</sup><em>R</em><sub>t+3</sub> + ..., with 0 ≤ <em>γ</em> &lt; 1.</p>
+
+Reinforcement learning seeks a policy <em>π</em> that makes the expected return large.
+
+### Interpretation
+
+The first thing to notice is that return starts with <em>R</em><sub>t+1</sub>, not <em>R</em><sub>t</sub>. That is now forced by the event order established earlier. The second thing to notice is that the policy is evaluated through the trajectories it induces. The environment responds stochastically, so performance is usually framed in expectation.
+
+This is the right place to see why “maximize immediate reward” can be wrong. An action with smaller immediate reward may lead to better future states, better information, or better future reward opportunities. Return captures that delayed-consequence structure.
+
+### Boundary conditions, assumptions, and failure modes
+
+Discounted return assumes 0 ≤ <em>γ</em> &lt; 1 so that distant future rewards are geometrically down-weighted and the infinite series is controlled. In episodic tasks, discounting may or may not be used, but termination already bounds the sum.
+
+A common failure mode is to interpret <em>γ</em> merely as a numerical trick. It does control convergence in continuing tasks, but conceptually it also determines how much future reward matters relative to immediate reward.
+
+Another failure mode is to equate reward with return. Reward is a one-step scalar signal. Return is an aggregate across future time.
+
+### Fully worked example
+
+Suppose an agent at time <em>t</em> has two possible actions.
+
+- **Action A** gives immediate reward <em>R</em><sub>t+1</sub> = 5 but leads to poor future outcomes: <em>R</em><sub>t+2</sub> = 0, <em>R</em><sub>t+3</sub> = 0.
+- **Action B** gives immediate reward <em>R</em><sub>t+1</sub> = 1 but leads to better future outcomes: <em>R</em><sub>t+2</sub> = 4, <em>R</em><sub>t+3</sub> = 4.
+
+If the task is episodic and ends at time <em>t</em> + 3, then:
+
+For Action A,
+
+<p><em>G</em><sub>t</sub> = 5 + 0 + 0 = 5.</p>
+
+For Action B,
+
+<p><em>G</em><sub>t</sub> = 1 + 4 + 4 = 9.</p>
+
+Now check what each step means.
+
+- The immediate reward comparison favors Action A.
+- The full return comparison favors Action B.
+- Therefore maximizing one-step reward is not the same as maximizing long-run return.
+
+If instead the task were continuing with discount factor <em>γ</em> = 0.5, then:
+
+For Action A,
+
+<p><em>G</em><sub>t</sub> = 5 + 0.5·0 + 0.5<sup>2</sup>·0 = 5.</p>
+
+For Action B,
+
+<p><em>G</em><sub>t</sub> = 1 + 0.5·4 + 0.5<sup>2</sup>·4 = 1 + 2 + 1 = 4.</p>
+
+Now the ranking reverses.
+
+What does that teach?
+
+It shows that the objective depends on the return definition, and the return definition encodes how future consequences are weighted. The invariant lesson is that RL evaluates policies through multi-step consequences, not only through the next reward.
+
+### Misconception block
+
+**Reward is not return.**  
+Reward is one immediate signal. Return is an aggregate of future rewards.
+
+**A policy is not judged by isolated moves.**  
+It is judged by the trajectories it tends to generate under the environment law.
+
+### Connection to later material
+
+Value functions will soon be defined as expected return conditioned on information at the decision point. Bellman equations will express recursive structure in those expectations. None of that makes sense unless the chapter has already fixed what return is aggregating and why it begins with <em>R</em><sub>t+1</sub>.
+
+### Retain / Do not confuse
+
+Retain:
+
+- RL optimizes a policy through expected return.
+- Return starts at <em>R</em><sub>t+1</sub> because that is the first reward after the decision at time <em>t</em>.
+- Immediate reward and long-run desirability can differ.
+
+Do not confuse:
+
+- reward with return,
+- greedy one-step improvement with optimal long-run control.
 
 ---
 
-## 16. Mastery check
+## 8. Episodic tasks, continuing tasks, and terminal index limits
 
-You understand this chapter if you can answer each question cleanly.
+### Why this section exists
 
-1. What information is available at the decision point indexed by $t$?
-2. Why is the reward caused by action $A_t$ written $R_{t+1}$?
-3. What is the difference between an observation $O_t$ and a history $H_t$?
-4. What does the generic one-step law $P(O_{t+1}, R_{t+1} \mid H_t, A_t)$ say?
-5. What is the difference between the policy input $X_t$ and a future state representation $S_t$?
-6. What exactly has **not** yet been assumed in this chapter?
+Once return is mentioned, the chapter must also clarify what happens when interaction ends or does not end. This section exists because index boundaries matter. If the final decision time and final reward index are not handled carefully, later recursions involving terminal states become confusing.
 
-If you cannot answer those without drifting into vague language, do not move on.  
-Every later chapter will lean on these distinctions.
+### The object being introduced
+
+The key distinction is between **episodic** and **continuing** tasks.
+
+In an episodic task, interaction begins from an initial condition and terminates after a finite number of within-episode decisions. In a continuing task, there is no natural terminal point; the interaction goes on indefinitely.
+
+### Formal definitions
+
+An **episodic task** is one in which interaction is divided into episodes that terminate.
+
+A **continuing task** is one in which interaction does not naturally terminate.
+
+If an episode’s final action is chosen at time <em>T</em> - 1, then:
+
+- the last chosen action is <em>A</em><sub>T-1</sub>,
+- the final immediate reward tied to that action is <em>R</em><sub>T</sub>,
+- there is no within-episode action <em>A</em><sub>T</sub>.
+
+### Interpretation
+
+The index <em>T</em> does not label a final action in that description. It labels the reward that arrives **after** the final action <em>A</em><sub>T-1</sub>. This is the same timing discipline as before, applied at the boundary.
+
+The main thing to notice is that termination removes future continuation from that episode. So later recursions often treat terminal continuation terms as zero or absent, not because something mysterious happened, but because there is no further within-episode decision beyond that boundary.
+
+### Boundary conditions, assumptions, and failure modes
+
+A common mistake is to assume that if the final reward is <em>R</em><sub>T</sub>, then there must also be an action <em>A</em><sub>T</sub> inside the same episode. Not so. The final reward is the consequence of <em>A</em><sub>T-1</sub>.
+
+Another mistake is to think the event order changes in continuing tasks. It does not. The same pre-action and post-action distinction remains. The only difference is whether a terminal boundary exists.
+
+### Fully worked example
+
+Suppose an episode lasts exactly three decisions, at times 0, 1, 2. Then the final action index is
+
+<p><em>T</em> - 1 = 2,</p>
+
+so
+
+<p><em>T</em> = 3.</p>
+
+The sequence is:
+
+- At time 0, choose <em>A</em><sub>0</sub>, then observe <em>R</em><sub>1</sub> and <em>O</em><sub>1</sub>.
+- At time 1, choose <em>A</em><sub>1</sub>, then observe <em>R</em><sub>2</sub> and <em>O</em><sub>2</sub>.
+- At time 2, choose <em>A</em><sub>2</sub>, then observe <em>R</em><sub>3</sub> and termination.
+
+Now check the boundary carefully.
+
+- <em>A</em><sub>2</sub> is the last action.
+- <em>R</em><sub>3</sub> is the last reward caused by that action.
+- There is no next within-episode action <em>A</em><sub>3</sub>.
+
+What conclusion does this allow?
+
+It fixes the exact endpoint of the return:
+
+<p><em>G</em><sub>2</sub> = <em>R</em><sub>3</sub>.</p>
+
+There is no further term because the episode has ended.
+
+The general lesson is that terminal indexing is not special new notation. It is simply the same action-then-consequence order carried all the way to the end of an episode.
+
+### Misconception block
+
+**Do not think termination breaks the indexing scheme.**  
+It confirms it. The final reward still arrives after the final action.
+
+### Connection to later material
+
+Terminal conditions matter in dynamic programming, Monte Carlo estimation, bootstrapping, and Bellman recursions. Clear endpoint indexing prevents later confusion about why terminal continuation terms disappear.
+
+### Retain / Do not confuse
+
+Retain:
+
+- Episodic tasks terminate; continuing tasks do not.
+- If the last action is <em>A</em><sub>T-1</sub>, the final reward is <em>R</em><sub>T</sub>.
+- There is no within-episode <em>A</em><sub>T</sub> after termination.
+
+Do not confuse:
+
+- final reward index with final action index,
+- episodic termination with a change in causal order.
+
+---
+
+## 9. What has not been assumed yet
+
+### Why this section exists
+
+A chapter can be misunderstood not only by what it says, but by what readers mistakenly think it has already granted. This section exists to mark the limits of the current setup. Those limits matter because later chapters will add strong structure, and that added structure should be recognized as a real assumption rather than something that was present all along.
+
+### The object being introduced
+
+The object here is not a new mathematical variable but a set of **scope boundaries**. These boundaries tell us which simplifications are not yet licensed.
+
+### Formal statements
+
+At this stage, the chapter has **not** assumed:
+
+1. the Markov property,
+2. that the current observation is sufficient,
+3. that a special state variable has already been justified,
+4. finite state or action spaces,
+5. value functions,
+6. Bellman equations.
+
+### Interpretation
+
+These omissions are not weaknesses. They are deliberate discipline. The chapter is constructing the most general interaction frame first. Later chapters will become more powerful precisely because they will add new assumptions on top of something already clear.
+
+### Boundary conditions and failure modes
+
+The main failure mode is premature compression. If a learner starts writing <em>P</em>(<em>s</em>′, <em>r</em> | <em>s</em>, <em>a</em>) before showing where <em>s</em> came from and why it is sufficient, they are skipping the most important logical bridge in the subject.
+
+Another failure mode is to think that because many introductory examples use small finite MDPs, the general theory starts there. It does not. The interaction process comes first; finite MDP structure is a later special case.
+
+### Misconception block
+
+**A summary does not become Markov because we name it “state.”**  
+The Markov property is not a naming convention. It is a conditional-independence-style sufficiency claim that must be justified.
+
+### Connection to later material
+
+This section tells you what the next chapters will actually contribute. When a state representation and Markov transition law appear later, you will know that something substantive has been added, not merely re-labeled.
+
+### Retain / Do not confuse
+
+Retain:
+
+- No Markov assumption yet.
+- No privileged state variable yet.
+- No Bellman machinery yet.
+
+Do not confuse:
+
+- early notation convenience with proven structural sufficiency.
+
+---
+
+## 10. Final synthesis: what this chapter now licenses
+
+The chapter has done a specific job. It has fixed the timing of interaction, identified the primitive variables, defined history before state, separated policy input from observation and history, and written the correct pre-Markov one-step environment law.
+
+As a result, you are now entitled to make the following claims precisely.
+
+At decision time <em>t</em>, the agent acts **before** the next reward is observed. The reward tied to <em>A</em><sub>t</sub> is therefore correctly written <em>R</em><sub>t+1</sub>. The most complete available record before choosing <em>A</em><sub>t</sub> is the history
+
+<p><em>H</em><sub>t</sub> = (<em>O</em><sub>0</sub>, <em>A</em><sub>0</sub>, <em>R</em><sub>1</sub>, <em>O</em><sub>1</sub>, <em>A</em><sub>1</sub>, <em>R</em><sub>2</sub>, ..., <em>O</em><sub>t</sub>).</p>
+
+A policy need not use the full history; it may condition on some allowed information summary <em>X</em><sub>t</sub>. Before any Markov assumption, the correct one-step environment law is
+
+<p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>H</em><sub>t</sub>, <em>A</em><sub>t</sub>).</p>
+
+And reinforcement learning is not merely responding to immediate scalar feedback. It is choosing a policy whose repeated interaction with the environment leads to better long-run return.
+
+That is the platform on which later chapters will stand. When the subject later introduces states, returns, value functions, and Bellman recursions, those objects will no longer feel like isolated formulas. They will read as consequences of an interaction process whose timing and information structure are already under control.
+
+---
+
+## Mastery check
+
+You should be able to answer each of the following in complete sentences, not by slogan.
+
+1. What exactly is available at the decision point indexed by <em>t</em>, and what is not yet available?
+2. Why is the reward caused by <em>A</em><sub>t</sub> written <em>R</em><sub>t+1</sub> rather than <em>R</em><sub>t</sub>?
+3. What is the difference between the current observation <em>O</em><sub>t</sub>, the full history <em>H</em><sub>t</sub>, and the policy input <em>X</em><sub>t</sub>?
+4. Why is  
+   <p><em>P</em>(<em>O</em><sub>t+1</sub>, <em>R</em><sub>t+1</sub> | <em>H</em><sub>t</sub>, <em>A</em><sub>t</sub>)</p>
+   the correct pre-Markov one-step law?
+5. In what sense is a state representation a summary of history, and why is naming a summary “state” not enough to make it Markov?
+6. Why is reinforcement learning said to optimize a policy rather than the next reward in isolation?
+7. If an episode’s final action is <em>A</em><sub>T-1</sub>, why is the final immediate reward <em>R</em><sub>T</sub>, and why is there no within-episode action <em>A</em><sub>T</sub>?
+
+If any of those answers still feels vague, the right move is not to rush onward. It is to return to the causal order of the interaction process and rebuild the chapter from there. That order is the spine of the subject.
