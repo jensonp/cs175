@@ -972,7 +972,7 @@ A standard PPO clipped surrogate objective is
 
 $$
 L^{\text{clip}}(\theta)
-= \mathbb{E}\left[\min\Big(r_t(\theta)\widehat A_t,\; \operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\widehat A_t\Big)\right].
+= \mathbb{E}\left[\min\Big(r_t(\theta)\widehat A_t,\; \mathrm{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\widehat A_t\Big)\right].
 $$
 
 A local distinction is needed here. PPO’s clipped objective is a **training surrogate**, not the literal original expected-return objective of the environment. Its job is to constrain how aggressively the new policy can move relative to the old policy along sampled directions suggested by the advantage estimates. So the clip should be read as a conservative update-shaping device. It modifies the optimization landscape used for training in order to reduce destructive large updates. That is different in kind from SAC, where the underlying objective itself is changed by adding entropy.
@@ -1016,7 +1016,7 @@ $$
 Now clip the ratio into the interval $[0.8,1.2]$:
 
 $$
-\operatorname{clip}(1.5,0.8,1.2)=1.2.
+\mathrm{clip}(1.5,0.8,1.2)=1.2.
 $$
 
 So the clipped term is

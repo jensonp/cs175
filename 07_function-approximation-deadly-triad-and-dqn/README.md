@@ -408,7 +408,7 @@ Suppose the learner observes
 
 $$
 R_{t+1}=1,
-qquad
+\qquad
 \gamma = 0.9,
 $$
 

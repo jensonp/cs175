@@ -980,7 +980,7 @@ That expression is a weighted average of the numbers $Q^\pi(s,a)$. A weighted av
 
 ### Plausible wrong answer block: what greedy improvement does and does not give
 
-A common overstatement is: "take the greedy policy with respect to \(Q^\pi\), and now you have solved the control problem." The exact policy-improvement theorem proves something narrower. It compares the original policy \(\pi\) with a policy that is greedy with respect to the relevant value function under the theorem's assumptions. The conclusion is an **improvement or non-degradation statement**, not an automatic proof that the greedy policy is globally optimal after one step in every approximate setting.
+A common overstatement is: "take the greedy policy with respect to $Q^\pi$, and now you have solved the control problem." The exact policy-improvement theorem proves something narrower. It compares the original policy $\pi$ with a policy that is greedy with respect to the relevant value function under the theorem's assumptions. The conclusion is an **improvement or non-degradation statement**, not an automatic proof that the greedy policy is globally optimal after one step in every approximate setting.
 
 Why does this matter? Because in practical algorithms the value estimates are often noisy or approximate. Greedification with respect to an imperfect estimate can still be useful, but the theorem's exact guarantee lives at the level of the exact object it names. The theorem is powerful. It is not a blank permission slip to overclaim what approximate code is doing.
 

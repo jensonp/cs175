@@ -803,11 +803,11 @@ At this point the chapter should say explicitly what kind of statement this is. 
 
 ### "This does not imply" paragraph for score-function reasoning
 
-The log-derivative identity does **not** say that every term in a trajectory factorization contributes a policy-gradient term. It says something narrower: if an expectation is taken under a trajectory law \(p_\theta(\tau)\), then
-\[
+The log-derivative identity does **not** say that every term in a trajectory factorization contributes a policy-gradient term. It says something narrower: if an expectation is taken under a trajectory law $p_\theta(\tau)$, then
+$$
 \nabla_\theta p_\theta(\tau)=p_\theta(\tau)\nabla_\theta \log p_\theta(\tau)
-\]
-for those \(\tau\) in the support of the law where the derivative is well-defined. The next adversarial question is therefore: **which factors inside \(p_\theta(\tau)\) actually depend on \(\theta\)?** If the environment transition law and reward law are not parameterized by \(\theta\), they do not create policy-gradient terms merely because they appear in the factorization. A student who forgets that point can carry the right identity into the wrong differentiation target.
+$$
+for those $\tau$ in the support of the law where the derivative is well-defined. The next adversarial question is therefore: **which factors inside $p_\theta(\tau)$ actually depend on $\theta$?** If the environment transition law and reward law are not parameterized by $\theta$, they do not create policy-gradient terms merely because they appear in the factorization. A student who forgets that point can carry the right identity into the wrong differentiation target.
 
 It is worth stating the dependency in the strongest possible form. The trajectory factorization is a statement about **what probability law is being averaged over**. By itself, it does not yet produce any gradient estimator and does not yet justify replacing a derivative by a sampled score-weighted return. The later log-derivative identity is a separate calculus step that acts on that already specified law. So the logical order is: first define the trajectory distribution; then identify where the parameters enter; then use calculus to rewrite derivatives of that law into an expectation-friendly form. If these three stages are blurred, later policy-gradient derivations can look like a single magical trick rather than a chain of legitimate steps.
 
@@ -1289,9 +1289,8 @@ Retain that these distinctions are not linguistic niceties. They are correctness
 
 Be able to answer the following without writing down a memorized slogan.
 
-When you write \(G_t = R_{t+1} + \gamma G_{t+1}\), you are stating an **algebraic identity** about one random variable defined from a reward sequence. When you write an expectation of return conditioned on a state or history, you are adding a **probability structure**: now the question becomes which random object is being averaged and under what law. When you later use factorized trajectory distributions or the log-derivative identity, you are invoking a **proof tool** that manipulates the chosen probability law. Those are three different levels. If you cannot say which level a given line belongs to, you are still at risk of using the right symbol in the wrong argument.
+When you write $G_t = R_{t+1} + \gamma G_{t+1}$, you are stating an **algebraic identity** about one random variable defined from a reward sequence. When you write an expectation of return conditioned on a state or history, you are adding a **probability structure**: now the question becomes which random object is being averaged and under what law. When you later use factorized trajectory distributions or the log-derivative identity, you are invoking a **proof tool** that manipulates the chosen probability law. Those are three different levels. If you cannot say which level a given line belongs to, you are still at risk of using the right symbol in the wrong argument.
 
-## 16. What this chapter now entitles you to do
 ## 16. What this chapter now entitles you to do
 
 ### Why this section exists

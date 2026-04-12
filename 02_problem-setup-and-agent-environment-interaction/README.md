@@ -32,7 +32,7 @@ A local working definition of **policy** is needed here. In this chapter, a poli
 
 A strong but still unsafe reading would be the following: "if the policy uses some input to choose actions, then that input is already the state." This chapter does **not** license that move. A policy can condition on whatever information is available at the decision point: a raw observation, a full history, or a hand-designed summary. That tells you what the action rule is allowed to read. It does **not** yet tell you that the input is sufficient for one-step prediction, sufficient for Bellman recursion, or sufficient for Markov control reasoning.
 
-The operational test is simple. Ask two separate questions. First: **what information may the action rule legally inspect before choosing \(A_t\)?** Second: **what information is sufficient to determine the next-step law relevant for prediction and control?** In this chapter only the first question is answered. The second is deferred not because it is unimportant, but because it requires a stronger property that has not yet been earned.
+The operational test is simple. Ask two separate questions. First: **what information may the action rule legally inspect before choosing $A_t$?** Second: **what information is sufficient to determine the next-step law relevant for prediction and control?** In this chapter only the first question is answered. The second is deferred not because it is unimportant, but because it requires a stronger property that has not yet been earned.
 
 ### Formal definition
 
@@ -81,9 +81,9 @@ The general lesson is that the action time marks the decision, while the next re
 
 ### Implementation-failure warning: how the right words still become wrong code
 
-A common project mistake is to write an environment loop whose variable names match the chapter while its causal order does not. The unsafe pattern looks like this in words: first advance the environment, then inspect the post-transition observation and reward, and only then compute the action that is labeled \(A_t\). That code is not implementing the chapter's timing with sloppy notation; it is implementing a different decision protocol.
+A common project mistake is to write an environment loop whose variable names match the chapter while its causal order does not. The unsafe pattern looks like this in words: first advance the environment, then inspect the post-transition observation and reward, and only then compute the action that is labeled $A_t$. That code is not implementing the chapter's timing with sloppy notation; it is implementing a different decision protocol.
 
-The diagnostic question is: **at the instant the action is computed, could the program already see \(R_{t+1}\) or \(O_{t+1}\)?** If yes, then the program is no longer modeling a choice made at time \(t\). It is using information produced after the action's causal slot. The notation in this chapter is therefore not just a naming convention. It is a debugging tool for deciding whether the code and the theory describe the same event order.
+The diagnostic question is: **at the instant the action is computed, could the program already see $R_{t+1}$ or $O_{t+1}$?** If yes, then the program is no longer modeling a choice made at time $t$. It is using information produced after the action's causal slot. The notation in this chapter is therefore not just a naming convention. It is a debugging tool for deciding whether the code and the theory describe the same event order.
 
 ### Misconception block
 
@@ -99,7 +99,7 @@ Everything later depends on this timing. The return from time <em>t</em> begins 
 
 ### Recover-the-reasoning checkpoint
 
-Suppose someone says: "at time \(t\), the agent observes \(O_t\), receives reward \(R_t\), and then chooses \(A_t\)." Do not merely say that the indexing is different. State the deeper error in complete sentences. The error is that this description no longer distinguishes the pre-action decision point from the post-action outcome. Once that distinction collapses, it becomes impossible to tell which quantities a policy may condition on, impossible to define return cleanly from the decision time, and impossible to read later Bellman-style conditioning statements without ambiguity.
+Suppose someone says: "at time $t$, the agent observes $O_t$, receives reward $R_t$, and then chooses $A_t$." Do not merely say that the indexing is different. State the deeper error in complete sentences. The error is that this description no longer distinguishes the pre-action decision point from the post-action outcome. Once that distinction collapses, it becomes impossible to tell which quantities a policy may condition on, impossible to define return cleanly from the decision time, and impossible to read later Bellman-style conditioning statements without ambiguity.
 
 ### Retain / Do not confuse
 

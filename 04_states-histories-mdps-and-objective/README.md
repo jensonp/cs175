@@ -123,9 +123,9 @@ $$
 
 ### Adversarial misconception block: representation map is not a certificate of sufficiency
 
-A dangerous but plausible move is to say: "because \(S_t=f(H_t)\), I have now defined the state." What you have certainly defined is a **representation**. What you have **not** yet obtained for free is the stronger predictive claim needed for MDP reasoning. The map \(f\) tells you how histories are collapsed. It does not tell you whether the collapse preserves the conditional law needed for one-step prediction and control.
+A dangerous but plausible move is to say: "because $S_t=f(H_t)$, I have now defined the state." What you have certainly defined is a **representation**. What you have **not** yet obtained for free is the stronger predictive claim needed for MDP reasoning. The map $f$ tells you how histories are collapsed. It does not tell you whether the collapse preserves the conditional law needed for one-step prediction and control.
 
-The hostile test is to imagine two distinct histories \(h_t\) and \(\tilde h_t\) that produce the same summary value \(s\). If those two histories induce different conditional laws for the next reward or next summary under the same action, then the representation is a summary but not a Markov state for the purposes of the later theory. So the chapter's order matters: first define the map, then test the property. Never reverse those two steps in your reasoning.
+The hostile test is to imagine two distinct histories $h_t$ and $\tilde h_t$ that produce the same summary value $s$. If those two histories induce different conditional laws for the next reward or next summary under the same action, then the representation is a summary but not a Markov state for the purposes of the later theory. So the chapter's order matters: first define the map, then test the property. Never reverse those two steps in your reasoning.
 
 ### Interpretation
 
@@ -342,7 +342,7 @@ $$
 
 ### What the Markov property is actually claiming
 
-The Markov property is not the vague statement that the current state "contains all relevant information." In these notes it should be read more sharply: once \(S_t\) and \(A_t\) are fixed, the conditional law of the next relevant one-step outcome does not depend on the fuller past history. That is a statement about **conditional distributions**, not about introspective completeness or human notions of relevance.
+The Markov property is not the vague statement that the current state "contains all relevant information." In these notes it should be read more sharply: once $S_t$ and $A_t$ are fixed, the conditional law of the next relevant one-step outcome does not depend on the fuller past history. That is a statement about **conditional distributions**, not about introspective completeness or human notions of relevance.
 
 This sharper reading matters because it blocks a common oral-exam failure. A student says the right words but cannot say what object the property constrains. The property constrains the law of the next-step variables used by the model, such as the next state and reward. It does not say that the representation is psychologically complete, physically complete, or useful for every possible future statistic. It says something narrower and more usable: it licenses a local one-step description.
 
@@ -836,9 +836,9 @@ The first thing to notice is that the Bellman equation is not just the return re
 ### "This does not imply" paragraph for Bellman licensing
 
 The identity
-\[
+$$
 G_t = R_{t+1} + \gamma G_{t+1}
-\]
+$$
 does **not** by itself produce a Bellman equation. It only says how one return random variable decomposes into an immediate reward and a shifted return random variable. A Bellman equation requires an additional closure step: the continuation term must be expressible as a value of the same type under conditioning information that is sufficient for the next-step law. That closure step is exactly where the Markov property and the chosen value-function definition do real work. If you skip that logic and jump directly from algebraic recursion to Bellman form, you are using familiar notation without its license.
 
 ### Boundary conditions, assumptions, and failure modes
