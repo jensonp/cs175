@@ -164,11 +164,7 @@ The robot then chooses <em>A</em><sub>t</sub>. Suppose it chooses “forward.”
 
 Only after that move does the robot find out what happened. If it collides, the collision penalty is part of <em>R</em><sub>t+1</sub>. If it reaches the goal, the goal reward is part of <em>R</em><sub>t+1</sub>. If neither happens, it may receive -1. It also gets a new image <em>O</em><sub>t+1</sub>.
 
-What does this example teach?
-
-- The observation is not the same thing as the underlying world state.
-- The action is selected using currently available information.
-- The reward is the immediate consequence of the chosen action after the environment has responded.
+What this example teaches is not merely that the symbols are different, but that they occupy different causal positions. The camera image $O_t$ is already present when the robot is deciding, so it is legitimate policy input. The action $A_t$ is the intervention chosen on the basis of that currently available information. The reward $R_{t+1}$ is neither a second observation nor a long-run objective; it is the first scalar consequence that becomes visible only after the environment has responded to the chosen action. The example therefore stabilizes three distinctions at once: observation is an information object, action is a decision object, and reward is a post-action feedback object.
 
 ### Misconception block
 
@@ -353,11 +349,7 @@ It uses a hand-designed memory bit that records whether the robot last turned le
 
 This summary is smaller than the full history but may still be enough for the task if that one bit captures the distinction that matters.
 
-What does this example show?
-
-- Same observation does not imply same available history.
-- Same history does not force the policy to use all of it.
-- A summary can be useful without yet being known to be a Markov state.
+This example shows three different asymmetries that are easy to blur if one moves too quickly. First, identical current observations do not force identical histories; the same visible situation can be reached through materially different pasts. Second, once the full history is available, the policy still need not condition on all of it. The policy may deliberately compress the history into a smaller memory summary if that is enough for its own decision rule. Third, the usefulness of such a summary does not yet prove Markov sufficiency. A summary can improve decision making relative to the raw observation while still failing the stronger test required for Bellman-style state reasoning later.
 
 The general lesson is that policy input is a design choice or learned representation choice. State, in the stronger sense used later, is a property claim about predictive sufficiency.
 
@@ -658,26 +650,15 @@ Another failure mode is to equate reward with return. Reward is a one-step scala
 
 ### Fully worked example
 
-Suppose an agent at time <em>t</em> has two possible actions.
-
-- **Action A** gives immediate reward <em>R</em><sub>t+1</sub> = 5 but leads to poor future outcomes: <em>R</em><sub>t+2</sub> = 0, <em>R</em><sub>t+3</sub> = 0.
-- **Action B** gives immediate reward <em>R</em><sub>t+1</sub> = 1 but leads to better future outcomes: <em>R</em><sub>t+2</sub> = 4, <em>R</em><sub>t+3</sub> = 4.
-
-If the task is episodic and ends at time <em>t</em> + 3, then:
-
-For Action A,
-
-<p><em>G</em><sub>t</sub> = 5 + 0 + 0 = 5.</p>
-
-For Action B,
-
-<p><em>G</em><sub>t</sub> = 1 + 4 + 4 = 9.</p>
-
-Now check what each step means.
-
-- The immediate reward comparison favors Action A.
-- The full return comparison favors Action B.
-- Therefore maximizing one-step reward is not the same as maximizing long-run return.
+Suppose an agent at time $t$ has two available choices. One choice gives an immediate reward of $R_{t+1}=5$ but leads to poor future outcomes, so the subsequent rewards are $R_{t+2}=0$ and $R_{t+3}=0$. The other choice gives only $R_{t+1}=1$ immediately, but changes the later trajectory so that $R_{t+2}=4$ and $R_{t+3}=4$. If the task is episodic and ends at time $t+3$, then the first choice produces
+$$
+G_t = 5 + 0 + 0 = 5,
+$$
+while the second produces
+$$
+G_t = 1 + 4 + 4 = 9.
+$$
+The point is not merely that one sum is larger. The example shows why immediate reward and return answer different questions. Immediate reward tells you what became visible right after the action. Return tells you what that action set in motion across the rest of the episode. A reader who remembers only the local reward will prefer the first action. A reader who tracks the return correctly will see that the second action is better for the objective actually being optimized.
 
 If instead the task were continuing with discount factor <em>γ</em> = 0.5, then:
 

@@ -286,12 +286,7 @@ A common failure mode is to start with $P(s',r\mid s,a)$ as if that were automat
 
 Suppose an agent observes traffic signals, but the hidden environment also depends on how long the signal has already been in its current phase. Two histories may have the same current visible light, say green, but differ in how recently that green phase began.
 
-At time $t$, consider two histories:
-
-- $h$: the light has been green for a long time,
-- $\tilde h$: the light has just turned green.
-
-Suppose the current action is fixed at $a = \text{go cautiously}$. Then the probability of the next observation and reward may differ between these two histories because the hidden phase age affects what is likely to happen next.
+At time $t$, consider two concrete histories. In history $h$, the light has been green for a long time. In history $\tilde h$, the light has only just turned green. The current visible observation is therefore the same in both cases, but the hidden phase age differs. Now fix the current action at $a=\text{go cautiously}$. Because the latent phase age affects what is likely to happen next, the next-step law can still differ across these two histories even though the current observation matches. This is exactly the kind of case in which a compact present observation fails to license Markov reasoning.
 
 So even if the current observation is the same in both cases, one may have
 
@@ -486,15 +481,11 @@ What is fixed is the state space, action space, initial distribution, and one-st
 
 ### Formal definition
 
-In the finite-state, finite-action presentation, an MDP is specified by
-
-- a state space $\mathcal S$,
-- an action space $\mathcal A$,
-- a one-step transition-reward law
-  $$
-  P(s',r\mid s,a),
-  $$
-- and an initial-state distribution.
+In the finite-state, finite-action presentation, an MDP is specified by four ingredients taken together. First, there is a state space $\mathcal S$, the set of possible Markov states in which the process may currently stand. Second, there is an action space $\mathcal A$, the set of actions that may be chosen. Third, there is a one-step transition-reward law
+$$
+P(s',r\mid s,a),
+$$
+which tells us the conditional distribution of the next state and reward once the current state and action have been fixed. Fourth, there is an initial-state distribution, which determines how the process starts before any action has been chosen.
 
 ### Interpretation
 
@@ -520,18 +511,7 @@ $$
 
 After analysis, they determine that once this state and the chosen action are fixed, the next state-reward law does not depend on any earlier history. The representation is therefore Markov.
 
-What local MDP description becomes available?
-
-- The state space $\mathcal S$ is the set of all location-battery-cargo triples.
-- The action space $\mathcal A$ might include move, pick up, drop off, recharge.
-- The one-step law
-  $$
-  P(s',r\mid s,a)
-  $$
-  describes how likely the robot is to land in each next state and receive each reward after taking action $a$ in state $s$.
-- The initial-state distribution describes where and how the robot starts.
-
-What has been checked? First, the representation was identified. Second, its Markov sufficiency was assumed established. Third, only then was the local MDP law written. The conclusion is that the robot’s decision process can be analyzed using state-action local dynamics rather than full-history dynamics.
+Once the representation has been justified as Markov, a local MDP description becomes available. The state space $\mathcal S$ is the set of all location-battery-cargo triples. The action space $\mathcal A$ contains whatever decisions are available at those states, such as move, pick up, drop off, or recharge. The one-step law $P(s',r\mid s,a)$ then describes, for each present triple and chosen action, how likely the robot is to land in each next triple and receive each reward. The initial-state distribution completes the specification by describing where and with what battery and cargo status the robot begins. The conceptual gain is that full-history dynamics have been replaced by local state-action dynamics without losing predictive correctness.
 
 The general lesson is that the MDP is a compact local description earned by Markov sufficiency, not a license to forget that the process originally unfolded over histories.
 

@@ -1108,24 +1108,17 @@ What is fixed is the overall goal of approximate greedy control. What varies are
 
 ### Formal definition
 
-At the system level, DQN combines:
-
-- an online action-value approximator $Q(s,a;w)$,
-- a target network $Q(s,a;w^-)$,
-- replayed transitions $(S_t,A_t,R_{t+1},S_{t+1},\zeta_t)$,
-- the target
-
+At the system level, DQN combines several roles that have to be read together rather than as an inventory. It maintains an online action-value approximator $Q(s,a;w)$, the network whose parameters are actually being updated. It also maintains a target network $Q(s,a;w^-)$, whose slower-moving parameters are used only to construct continuation targets. Training data arrive not as a fresh on-policy stream but as replayed transitions $(S_t,A_t,R_{t+1},S_{t+1},\zeta_t)$ stored from earlier behavior. For each sampled transition, the target is
 $$
 Y_t^{\mathrm{DQN}} = R_{t+1} + \gamma (1-\zeta_t)\max_{a'}Q(S_{t+1},a';w^-),
 $$
-
-- and semi-gradient fitting of $Q(S_t,A_t;w)$ to that target.
+and the online network is then fit to that target by a semi-gradient update. Written in prose, the structure becomes easier to reconstruct: replay supplies the data, the target network supplies the continuation estimate, the terminal mask enforces episodic boundary correctness, and the online network is the object actually differentiated.
 
 ### Interpretation paragraph
 
 Read as a whole, DQN says the following. We still want a greedy one-step control target because Q-learning style control is attractive. We cannot store values in a table, so we use a shared-parameter approximator. Because shared parameters, bootstrapped targets, and off-policy data create instability risk, we slow target drift with a frozen target network and make optimization statistically easier with replayed training batches. Even then, the method is not magically safe. It is stabilized, not purified.
 
-The first thing to notice is that each DQN component has a pressure it is responding to. Approximation addresses scale. Target networks address moving targets. Replay addresses correlation and sample reuse. Terminal masking addresses episodic boundary correctness. Semi-gradient fitting clarifies the update pathway. Representation determines what the model can hope to fit coherently at all.
+The first thing to notice is that each DQN component is a response to a different instability pressure, and the pressures are not interchangeable. Shared-parameter approximation is what makes large problems representable at all, but it also makes each update nonlocal. The target network slows how quickly the continuation estimate moves, so the learner is not chasing a value target that changes at the same rate as the predictor. Replay changes the statistical structure of training by reusing past transitions and weakening short-range correlation in the update stream. The terminal mask enforces the boundary condition that no further continuation value should be added after an absorbing transition. Semi-gradient fitting specifies which object is treated as fixed and which is differentiated during the update. Representation then sits underneath all of these choices: if the input collapses distinctions that matter for return, none of the stabilizers can recover information that the representation never preserved.
 
 ### Boundary conditions / assumptions / failure modes
 

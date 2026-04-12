@@ -1186,12 +1186,7 @@ A common failure mode is to say “SAC is just actor–critic plus entropy.” T
 
 ### Fully worked example
 
-Suppose a one-state problem has two available stationary policies.
-
-- Policy $\pi_A$ is deterministic and always yields reward $5$ with zero entropy.
-- Policy $\pi_B$ is stochastic and yields expected reward $4.4$ with entropy $1.0$.
-
-Let the soft-objective coefficient be $\alpha=1$ and consider one-step evaluation for simplicity.
+Suppose a one-state problem has two available stationary policies. Policy $\pi_A$ is deterministic: it always selects the same action, earns reward $5$, and has zero entropy because there is no action uncertainty. Policy $\pi_B$ is stochastic: it earns a lower expected reward, $4.4$, but it has entropy $1.0$ because it randomizes across actions. Let the soft-objective coefficient be $\alpha=1$ and consider a one-step evaluation so the role of the entropy term is visible without longer-horizon clutter.
 
 For $\pi_A$, the soft objective value is
 
@@ -1269,35 +1264,13 @@ A common failure mode is to compare algorithms by architecture alone. “This on
 
 ### Fully worked example
 
-Apply the checklist to four methods discussed in this chapter.
+Apply the checklist to four methods discussed in this chapter, but do it in prose so that each method reads as a structured commitment rather than as a label set. In **REINFORCE**, the objective is plain expected return, and the estimator is the Monte Carlo score-function estimator in which sampled returns weight the log-policy gradient. Under the standard assumptions, the estimator is unbiased, and during differentiation the sampled trajectory return acts as a scalar weight while the gradient arises from the policy probabilities themselves.
 
-**REINFORCE**
+In **baseline-adjusted REINFORCE**, the objective is still plain expected return; the conceptual change is in the estimator, not in the target of optimization. The return is centered by a valid state-only baseline, so the expected gradient is unchanged even though variance may be reduced. During differentiation, the baseline is treated as fixed once the conditioning state is fixed.
 
-- Objective: plain expected return.
-- Estimator: Monte Carlo returns weighting log-policy gradients.
-- Exactness: unbiased under standard assumptions.
-- Fixed quantities during differentiation: the sampled trajectory return acts as the scalar weight; the gradient arises from policy probabilities.
+In **PPO**, the conceptual center shifts from an exact objective identity to a stabilized training surrogate. The method typically uses advantage estimates, often critic-based, and multiplies them by policy-probability ratios comparing the current policy to a reference old policy. Clipping introduces approximation deliberately: it reshapes the training signal so large policy moves are discouraged, even though the clipped expression is not the true performance objective itself.
 
-**Baseline-adjusted REINFORCE**
-
-- Objective: still plain expected return.
-- Estimator: returns centered by a state-only baseline.
-- Exactness: same expected gradient as REINFORCE if the baseline is valid.
-- Fixed quantities during differentiation: the state-only baseline is treated as a fixed scalar under conditioning on the state.
-
-**PPO**
-
-- Objective: clipped surrogate objective.
-- Estimator: advantage estimates, usually critic-based, multiplied by policy ratios.
-- Exactness: introduces approximation through clipping and estimated advantages.
-- Fixed quantities during differentiation: old-policy probabilities are treated as reference values in the ratio.
-
-**SAC**
-
-- Objective: maximum-entropy objective.
-- Estimator: actor–critic style updates aligned with the soft objective.
-- Exactness: depends on approximation quality, bootstrapping, and implementation details.
-- Fixed quantities during differentiation: depends on the specific update, but the key conceptual feature is that entropy enters the target itself.
+In **SAC**, the objective is no longer plain expected return at all. The optimization target is a maximum-entropy objective in which expected reward and policy entropy are jointly optimized. The estimator and update structure are actor–critic in style, but the critic and actor are both aligned with that soft objective rather than with a reward-only criterion. The key conceptual point is therefore not “SAC has a critic.” It is that SAC changes what the policy is for.
 
 The general lesson is that the checklist forces you to identify the algorithm’s deepest commitments before worrying about implementation details.
 

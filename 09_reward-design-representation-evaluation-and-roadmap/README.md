@@ -488,12 +488,7 @@ A common failure mode is to add “helpful” intermediate rewards while still c
 
 ### Fully worked example
 
-Suppose an agent must choose between two routes to a goal.
-
-- **Route A** reaches the goal in 2 steps and yields terminal reward $10$.
-- **Route B** reaches the goal in 4 steps and yields terminal reward $10$.
-
-Assume discounting is $\gamma = 1$ for simplicity in this finite-horizon example, and consider two reward designs.
+Suppose an agent must choose between two routes to a goal. Route A reaches the goal in two steps and yields terminal reward $10$. Route B reaches the goal in four steps and yields the same terminal reward $10$. Assume $\gamma=1$ for simplicity in this finite-horizon example, and compare two reward designs. The important thing is not merely that there are two routes. It is that the environment dynamics and terminal success condition stay fixed while the reward specification is altered.
 
 #### Reward design 1: terminal reward only
 
@@ -948,12 +943,7 @@ A common failure mode is to reason verbally—“a more negative living reward e
 
 ### Fully worked example
 
-Consider two deterministic routes to a goal with discount factor $\gamma = 1$ for simplicity.
-
-- Route A reaches the goal in 2 steps with terminal reward $8$.
-- Route B reaches the goal in 4 steps with terminal reward $12$.
-
-Let the living reward be $c$ per nonterminal step.
+Consider two deterministic routes to a goal with discount factor $\gamma=1$ for simplicity. Route A reaches the goal in two steps and yields terminal reward $8$. Route B reaches the goal in four steps and yields terminal reward $12$. Let the living reward be $c$ per nonterminal step. The comparison is now exact enough to compute a threshold rather than rely on verbal intuition about “encouraging speed.”
 
 Now write the returns explicitly.
 
@@ -999,11 +989,7 @@ $$
 c < -2.
 $$
 
-Now interpret the threshold.
-
-- If the living reward is less than $-2$, Route A is preferred because the extra steps of Route B are too costly.
-- If the living reward is greater than $-2$, Route B is preferred because its larger terminal reward outweighs the additional step costs.
-- If $c=-2$, the routes are tied.
+Now interpret the threshold carefully. If the living reward satisfies $c<-2$, Route A is preferred, because the extra two nonterminal steps of Route B impose more penalty than its larger terminal reward can recover. If instead $c>-2$, Route B is preferred, because the larger terminal reward dominates the weaker per-step penalty. At the knife-edge value $c=-2$, the two routes tie exactly. The point is not merely that a threshold exists. The point is that living reward changes the preference region in a calculable way, so reward tuning should be treated as objective shaping rather than as harmless encouragement language.
 
 This is a clean mathematical demonstration that changing living reward changes the optimal policy region. Nothing philosophical is happening here. The return definition is doing exactly what it says.
 

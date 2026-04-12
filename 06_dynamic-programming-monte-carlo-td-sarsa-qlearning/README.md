@@ -140,12 +140,7 @@ A common failure mode is to say “dynamic programming uses Bellman equations”
 
 ### Fully worked example
 
-Consider a tiny MDP with two states, $s_1$ and $s_2$, and one action available in each state, so the policy is trivial. Suppose the environment model is known and given by
-
-- from $s_1$: with probability $1$, move to $s_2$ and receive reward $2$,
-- from $s_2$: with probability $1$, stay in $s_2$ and receive reward $1$.
-
-Let the discount factor be $\gamma = 0.5$. Because there is only one action, the Bellman expectation operator reduces to averaging only over next-state and reward outcomes.
+Consider a tiny MDP with two states, $s_1$ and $s_2$, and one action available in each state, so the policy is trivial. Suppose the environment model is known exactly. From $s_1$, the system moves deterministically to $s_2$ and delivers reward $2$. From $s_2$, it stays in $s_2$ and delivers reward $1$. Let the discount factor be $\gamma=0.5$. Because the model is known, every dynamic-programming backup can evaluate the full expected continuation exactly rather than estimating it from sample experience.
 
 We start with initial guess
 
@@ -363,12 +358,9 @@ Another failure mode is to think value iteration literally tests all long-run po
 
 ### Fully worked example
 
-Consider an MDP with one state $s$ and two actions $a_1$ and $a_2$. Suppose the model is
+Consider an MDP with one state $s$ and two actions, $a_1$ and $a_2$. Suppose action $a_1$ yields reward $1$ and returns to state $s$, while action $a_2$ yields reward $3$ and also returns to state $s$. Let $\gamma=0.5$. The Bellman optimality update therefore compares two one-step continuation expressions that differ only in their immediate reward, because the continuation state is the same in both cases. The example is valuable only if that comparison is read as a local maximization embedded inside a recursive value update, not merely as two numbers being placed beside each other.
 
-- action $a_1$: reward $1$, next state $s$ again,
-- action $a_2$: reward $3$, next state $s$ again.
-
-Let $\gamma=0.5$. Then the Bellman optimality update is
+Then the Bellman optimality update is
 
 $$
 V_{k+1}(s)=\max\{1+0.5V_k(s),\; 3+0.5V_k(s)\}.
@@ -1130,11 +1122,7 @@ A common failure mode is to say Q-learning is on-policy because the agent may be
 
 ### Fully worked example
 
-Suppose the agent observes the same transition as in the SARSA example:
-
-- current state-action pair $(s,a)$,
-- reward $R_{t+1}=2$,
-- next state $s'$.
+Suppose the agent observes the same transition as in the SARSA example: it is currently updating the pair $(s,a)$, it receives reward $R_{t+1}=2$, and the transition lands in next state $s'$. The important difference is not the sampled transition itself. The difference lies in what happens next in the target. Q-learning does not ask which action was actually chosen from $s'$. It asks which action currently has the largest estimated value at $s'$, and it uses that greedy continuation in the target whether or not behavior will actually follow it.
 
 Assume the current action values at $s'$ are
 
