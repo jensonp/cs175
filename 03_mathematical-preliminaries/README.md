@@ -6,6 +6,10 @@
 
 Before reinforcement learning can talk about value functions, Bellman equations, trajectory objectives, or policy gradients, it needs a stable language for uncertainty. That language is probability. The purpose of this chapter is not to collect probability formulas as isolated facts. The purpose is to install a small number of mathematical objects so solidly that later derivations stop feeling ceremonial and start feeling inevitable.
 
+### Adversarial reading rule for this chapter
+
+In this chapter, a formula is not yet understood if you can reproduce its symbols but cannot answer three hostile questions. **What is the random object?** **Under which probability law is the expectation taken?** **What is being held fixed when the expression is conditioned or differentiated?** Many later reinforcement-learning mistakes are not algebra mistakes. They are object mistakes: the student averages over the wrong thing, conditions on the wrong sigma-field in informal language, or differentiates with respect to parameters that do not actually appear in the law being used.
+
 There are three recurring questions behind almost everything that follows in reinforcement learning. First, what random quantity are we talking about? Second, with respect to which probability law are we averaging? Third, what information is being held fixed when we condition? If those questions are handled sloppily, later notation becomes unreadable. If they are handled well, value functions become conditional expectations, Bellman equations become repeated applications of expectation identities, and policy-gradient formulas become careful manipulations of trajectory probabilities rather than mysterious tricks.
 
 This chapter therefore does foundational work. It introduces expectation, conditional expectation, and the laws that let expectations be decomposed. It then moves to the return random variable, explains why its indexing is the way it is, and checks the conditions under which infinite discounted return is mathematically meaningful. Finally, it lifts the discussion from single random variables to whole trajectories and shows how trajectory probabilities are written, differentiated, and converted into expectation-friendly forms.
@@ -797,6 +801,14 @@ This factorization says that a full trajectory probability is built by multiplyi
 
 At this point the chapter should say explicitly what kind of statement this is. The factorization is not yet a gradient formula and not yet a policy-optimization result. It is first a **probability-structure statement**: once the horizon, initial distribution, policy, and one-step environment law are fixed, the probability of a complete trajectory is the product of those local terms across time. Only after that law has been written down and the parameter dependence has been identified does the later log-derivative move become licensed. In other words, the trajectory law comes first; the gradient manipulation is downstream of it.
 
+### "This does not imply" paragraph for score-function reasoning
+
+The log-derivative identity does **not** say that every term in a trajectory factorization contributes a policy-gradient term. It says something narrower: if an expectation is taken under a trajectory law \(p_\theta(\tau)\), then
+\[
+\nabla_\theta p_\theta(\tau)=p_\theta(\tau)\nabla_\theta \log p_\theta(\tau)
+\]
+for those \(\tau\) in the support of the law where the derivative is well-defined. The next adversarial question is therefore: **which factors inside \(p_\theta(\tau)\) actually depend on \(\theta\)?** If the environment transition law and reward law are not parameterized by \(\theta\), they do not create policy-gradient terms merely because they appear in the factorization. A student who forgets that point can carry the right identity into the wrong differentiation target.
+
 It is worth stating the dependency in the strongest possible form. The trajectory factorization is a statement about **what probability law is being averaged over**. By itself, it does not yet produce any gradient estimator and does not yet justify replacing a derivative by a sampled score-weighted return. The later log-derivative identity is a separate calculus step that acts on that already specified law. So the logical order is: first define the trajectory distribution; then identify where the parameters enter; then use calculus to rewrite derivatives of that law into an expectation-friendly form. If these three stages are blurred, later policy-gradient derivations can look like a single magical trick rather than a chain of legitimate steps.
 
 The formula has the shape of a chain rule specialized to the sequential structure of the RL interaction. The reader should notice that the global trajectory law is not an opaque monolith. It is assembled from interpretable local mechanisms.
@@ -1273,6 +1285,13 @@ Retain that these distinctions are not linguistic niceties. They are correctness
 
 ---
 
+### Oral-exam checkpoint: notation versus probability structure versus proof tool
+
+Be able to answer the following without writing down a memorized slogan.
+
+When you write \(G_t = R_{t+1} + \gamma G_{t+1}\), you are stating an **algebraic identity** about one random variable defined from a reward sequence. When you write an expectation of return conditioned on a state or history, you are adding a **probability structure**: now the question becomes which random object is being averaged and under what law. When you later use factorized trajectory distributions or the log-derivative identity, you are invoking a **proof tool** that manipulates the chosen probability law. Those are three different levels. If you cannot say which level a given line belongs to, you are still at risk of using the right symbol in the wrong argument.
+
+## 16. What this chapter now entitles you to do
 ## 16. What this chapter now entitles you to do
 
 ### Why this section exists

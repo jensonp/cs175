@@ -54,6 +54,18 @@ First ask where its target comes from: from a known model or from sampled experi
 
 This inspection order matters because many RL methods look similar at the symbol level while differing in exactly one decisive mechanism. The symbols become much easier to parse once the method has been classified before it is memorized.
 
+### Adversarial rule for classifying an update
+
+When you are asked to classify a method, do **not** start from the method's name. Start from the update target and ask five explicit questions in order.
+
+1. What object is being updated: a state value, an action value, a policy parameter, or something else?
+2. Is the target computed from a known model expectation or from sampled experience?
+3. Does the target use a complete sampled return or a bootstrap continuation term?
+4. If there is a continuation term, whose continuation is it: the action actually taken, a greedy choice, or a policy expectation?
+5. Is the policy that generates the data the same as the policy whose continuation the target encodes?
+
+This checklist is deliberately adversarial. It prevents the student from calling a method "on-policy" or "off-policy" by intuition and forces the classification to come from the mechanism.
+
 ### Interpretation paragraph
 
 This map does not replace the methods. It tells us what to ask when any method appears. The first thing to notice is that these axes are logically different. A method can be sample-based and still be on-policy or off-policy. A method can be sample-based and either bootstrap or avoid bootstrapping. A method can use exact expectations only if a model is known. If the reader keeps those checks separate, the chapter becomes much easier to understand.
@@ -1232,6 +1244,12 @@ $$
 
 At the next state, SARSA asks: **which action did the current policy actually choose?** Q-learning asks: **which action would maximize the current action-value estimate?** That is the whole fork. Everything else follows. Because SARSA follows the actual next action chosen by the current policy, its target is policy-consistent with behavior. Because Q-learning overwrites the next action with a greedy maximization, its target generally differs from exploratory behavior.
 
+### Plausible wrong answer block: why exploratory behavior does not settle the classification
+
+A common wrong answer is: "if the agent explores while learning, then the method is off-policy." That answer sounds plausible because off-policy methods often do use exploratory behavior. But exploratory behavior alone does not determine the classification. The decisive question is whether the update target's continuation term corresponds to the same policy that generated the action or to a different policy object.
+
+In SARSA, the continuation term uses the action actually selected next, so the target follows the behavior used on that transition. In Q-learning, the continuation term uses a greedy maximization over next actions, so the target corresponds to a greedy policy object even if the data were collected under exploration. The difference is in the target continuation, not in the mere presence of exploration during data collection.
+
 ### Boundary conditions / assumptions / failure modes
 
 One should not let the near-identical algebra hide the conceptual difference. The methods are not merely cosmetic variants. A change from sampled continuation to greedy continuation changes what policy the update is learning about.
@@ -1482,6 +1500,10 @@ These misconception checks matter beyond this chapter. Many advanced RL methods 
 Retain that most confusion in this topic comes from looking at surface notation instead of target construction and policy role. Do not confuse symbolic resemblance with identical learning semantics.
 
 ---
+
+### Project-transfer checkpoint
+
+Suppose someone hands you a new update rule and refuses to tell you its name. You should still be able to classify it. Read the target first, then the update destination. If the target is a full realized return, you are in Monte Carlo territory. If the target contains a current estimate of the future, you are in bootstrap territory. If the continuation uses the sampled next action, the target follows the sampled policy. If the continuation uses a greedy or expected choice under a different policy object, the method is crossing into off-policy or policy-evaluation distinctions accordingly. If you cannot do this without the algorithm name, your understanding is still more nominal than mechanistic.
 
 ## 18. What this chapter now entitles you to do
 

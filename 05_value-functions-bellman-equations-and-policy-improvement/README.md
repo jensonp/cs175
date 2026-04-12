@@ -563,6 +563,12 @@ A definition introduces a new object by stipulating what the notation means. It 
 
 The first thing the reader should notice is that confusion between these categories produces very different errors. Mistaking a definition for a theorem makes one forget what the object means. Mistaking an identity for an approximation makes one understate what is exact. Mistaking an approximation for an identity makes one overclaim correctness.
 
+### Adversarial checkpoint: the theorem object is not the code object
+
+At this point a strong but still unsafe reader may say: "I understand the Bellman operator, so my update code is just the theorem in incremental form." That is not yet justified. The theorem-level object is an exact map on functions under stated assumptions about the model and return. The code-level object is often a sampled, partial, asynchronous, or approximate update using only one transition or minibatch at a time. Those two objects are related, but they are not identical.
+
+The hostile question is: **which object is your convergence claim about?** If the claim is about a fixed point of an exact operator, then you must name the operator and its assumptions. If the claim is about a learning rule applied to sampled data, then you must also account for noise, step sizes, coverage, approximation, and data dependence. Saying "Bellman" is not enough to bridge that gap.
+
 ### Boundary conditions, assumptions, and failure modes
 
 The exact identities remain exact only under the assumptions under which they were derived, especially the MDP structure and well-defined return. Approximations may later be extremely useful, but they do not inherit the status of exact identities merely because they resemble them algebraically.
@@ -972,6 +978,12 @@ $$
 
 That expression is a weighted average of the numbers $Q^\pi(s,a)$. A weighted average cannot exceed the maximum of the numbers being averaged. So at the current decision point, the greedy action chosen by $\pi'$ is at least as good as the old policy’s average first action. The theorem then extends that one-step insight to all future decisions by applying the same logic recursively.
 
+### Plausible wrong answer block: what greedy improvement does and does not give
+
+A common overstatement is: "take the greedy policy with respect to \(Q^\pi\), and now you have solved the control problem." The exact policy-improvement theorem proves something narrower. It compares the original policy \(\pi\) with a policy that is greedy with respect to the relevant value function under the theorem's assumptions. The conclusion is an **improvement or non-degradation statement**, not an automatic proof that the greedy policy is globally optimal after one step in every approximate setting.
+
+Why does this matter? Because in practical algorithms the value estimates are often noisy or approximate. Greedification with respect to an imperfect estimate can still be useful, but the theorem's exact guarantee lives at the level of the exact object it names. The theorem is powerful. It is not a blank permission slip to overclaim what approximate code is doing.
+
 ### Boundary conditions, assumptions, and failure modes
 
 The theorem assumes exact evaluation of $Q^\pi$ in the underlying MDP setting. In approximate settings, greedy improvement based on imperfect value estimates may fail to be monotone without additional conditions.
@@ -1162,6 +1174,14 @@ These capabilities are the foundation for dynamic programming algorithms, tempor
 Retain that the point of the chapter is not to memorize Bellman equations in isolation, but to understand the chain of reasoning that makes them exact, interpretable, and useful. Do not move on while the difference between definition, exact identity, and approximation remains blurry.
 
 ---
+
+### Recover-the-reasoning checkpoint
+
+Be able to explain the following chain in complete sentences.
+
+The return identity is a statement about one random variable. A Bellman expectation equation is obtained when a value function is defined as a conditional expectation of that return under suitable Markov structure and policy conditioning. A Bellman operator is a map that takes a candidate function and returns a new function by applying the right-hand side of the Bellman equation. An algorithmic update is a computational procedure that tries, exactly or approximately, to move a representation toward a fixed point of such a relation.
+
+If you answer an exam question about any one of those four levels using the language of another, you may sound advanced while still being wrong.
 
 ## 14. Mastery check
 

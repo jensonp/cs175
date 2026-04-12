@@ -72,6 +72,16 @@ Value is one level more abstract still. It is not a realized total. It is an exp
 
 The first thing to notice is that these objects answer different questions. Reward answers what happened now. Return answers what eventually accumulates. Value answers what should be expected on average under stated conditions.
 
+### Adversarial checkpoint: three different questions
+
+When a reader collapses reward, return, and value, the mistake is not merely notational. It is a question error.
+
+- Reward answers: **what scalar feedback was observed on this step?**
+- Return answers: **what accumulated future signal follows from this time onward along one realized trajectory?**
+- Value answers: **what expected return is associated with a conditioning object such as a state, state-action pair, history, or policy?**
+
+A useful hostile test is to ask whether the sentence refers to one step, one realized future, or an expectation over futures. If the answer is not explicit, the sentence is not yet safe.
+
 ### Boundary conditions / assumptions / failure modes
 
 The return formula shown above is the standard continuing discounted definition. For it to be well-defined in the infinite-horizon setting, one typically assumes bounded rewards and $0 \le \gamma < 1$.
@@ -584,6 +594,12 @@ A Markov representation is one that tells the learner everything it needs, at le
 
 The first thing to notice is that compactness and sufficiency are different properties. A small representation may be desirable computationally, but if it merges situations that matter for future evolution, it is not a valid state representation for Markov RL reasoning.
 
+### Implementation-failure warning: optimization success is not a certificate of representation sufficiency
+
+A tempting project inference is: "the agent trained better after we changed the representation, so the representation is now a good state." That conclusion is too strong. Better optimization can come from many things: easier function approximation, better inductive bias, lower variance, changed reward shaping, or dataset quirks. None of those by themselves prove that the representation has become Markov or that it preserves the one-step law needed for the later theory.
+
+So when evaluating representations, separate two questions. First: **does this representation improve learning or performance under the current setup?** Second: **what theoretical property does it actually support?** Practical improvement is valuable. It is not the same thing as a proof of state sufficiency.
+
 ### Boundary conditions / assumptions / failure modes
 
 A representation can be useful without being perfectly Markov, but then the clean MDP theory no longer applies exactly. One must be honest about the approximation.
@@ -808,6 +824,12 @@ The final interpretation is that “average return 250” is not a self-containe
 This point should be made even stricter. The evaluation protocol is not an appendix to the claim. It is part of the claim’s meaning. A reported return number without environment specification, reward definition, observation regime, seed protocol, evaluation policy, and ablation structure is not a fully formed empirical statement waiting only for cosmetic details. It is an incomplete statement whose evidential content cannot yet be determined.
 
 That sentence can be made even stricter. A reported return number is not a self-contained fact waiting for contextual decoration. It is a statistic produced under a task definition, a reward specification, an observation regime, a training budget, an evaluation policy, and a seed protocol. Change those, and the meaning of the number changes. So in reinforcement learning, the empirical claim is not “the score was 250” with protocol attached later. The real claim is “under this fully specified experimental contract, the method produced this distribution of outcomes.” The protocol is part of the proposition.
+
+### Plausible wrong answer block: why a score without protocol is not a scientific claim
+
+A student may now repeat the sentence "the protocol is part of the proposition" and still make the exact mistake the sentence warns about. So make the adversarial point explicit. The number 250 is not a self-interpreting achievement. It is not even a stable object until the task definition, reward specification, observation regime, evaluation policy, horizon, seed protocol, and reporting convention are fixed.
+
+Two experiments can each report 250 and still be making different claims, because the meaning of the number depends on the experimental contract that produced it. This is why empirical RL evaluation is not bookkeeping attached after the result. The protocol determines what the reported quantity is a measurement **of**.
 
 The general lesson is that evaluation numbers are never self-explanatory. They derive meaning from the experimental contract around them.
 

@@ -180,6 +180,17 @@ That is the heart of the score-function route. It turns a gradient of an expecta
 
 The reader should notice the exact role of the score term $\nabla_\theta \log p_\theta(\tau)$. It measures how sensitive the log probability of the trajectory is to the policy parameters. A trajectory with high return contributes to the gradient in the direction that would increase the log-probability of similar trajectories.
 
+### Adversarial object ladder: do not blur the objective, the identity, the estimator, and the surrogate
+
+This chapter becomes unsafe the moment these four objects are spoken of as though they were the same thing.
+
+1. The **objective** is the mathematical quantity the policy is intended to optimize, such as expected return or a maximum-entropy variant of it.
+2. The **gradient identity** is the exact analytical statement that rewrites the derivative of that objective under stated assumptions.
+3. The **estimator** is the sampled quantity used in practice to approximate that gradient.
+4. The **surrogate** is a training objective chosen because it is more stable or convenient to optimize than directly using the raw objective structure.
+
+A hostile question should always be nearby: **which of those four objects are you talking about right now?** If the answer is "all of them," then the reasoning is probably about to become wrong.
+
 ### Boundary conditions / assumptions / failure modes
 
 Several hidden assumptions matter.
@@ -557,6 +568,12 @@ The proof should also be heard in words, not just in symbols. At a given state $
 The idea is simple but subtle. A state-only baseline shifts the return weight by an amount that is the same for every action considered at that state. Because the policy score term has conditional expectation zero under the policy, subtracting such a state-only reference does not change the expected gradient. It only changes the variance of the sampled estimator.
 
 The first thing to notice is that the baseline is not meant to change which objective is being optimized. Its role is variance control, not objective redesign.
+
+### Plausible wrong answer block: why a baseline is not reward shaping
+
+A baseline can change the numerical update signal without changing the expected policy gradient, provided it has the right dependence structure described in the chapter. That makes it tempting to say "the baseline changes the reward to make learning easier." That sentence is dangerous because it blurs two very different operations.
+
+Reward shaping changes the task-level signal and can change which policies are optimal unless it has a special structure. A variance-reduction baseline, by contrast, is introduced inside the gradient estimator so that the expected gradient remains the same while the variance is reduced. The baseline therefore belongs to the **estimation machinery**, not to the underlying control objective. Confusing those two levels can produce both wrong theory statements and wrong implementations.
 
 ### Boundary conditions / assumptions / failure modes
 
@@ -1175,6 +1192,14 @@ where $\alpha$ controls the importance of entropy relative to reward.
 This objective changes the target itself. The policy is no longer trying merely to maximize expected reward. It is trying to maximize reward while remaining stochastic according to the entropy weighting. That means the best policy under the soft objective need not be the same as the best policy under plain expected-return optimization.
 
 The first thing to notice is that this is a conceptual difference from PPO or from adding a baseline. Baselines do not change what gradient is being estimated in expectation. Clipping constrains how aggressively a surrogate objective can be improved. SAC changes what counts as improvement in the first place.
+
+### Oral-defense checkpoint: PPO versus SAC
+
+Be able to answer the following without slogans.
+
+PPO does not change the underlying expected-return objective into a clipped objective that the environment "really cares about." The clipping device is a conservative **training surrogate** used to keep the optimization step from moving too far under noisy gradient information. SAC is different in kind. It changes the optimization target itself by embedding entropy into the control objective, so the critic, the target, and the policy update are all shaped by that softer objective structure.
+
+If you say "both are just actor-critic methods with stabilization tricks," you have erased the single most important difference between them.
 
 ### Boundary conditions / assumptions / failure modes
 

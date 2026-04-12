@@ -28,6 +28,12 @@ This object matters because it tells us what can legitimately appear on the righ
 
 A local working definition of **policy** is needed here. In this chapter, a policy should be read as a rule that maps whatever information is legitimately available at the decision point into a distribution over actions. At this stage, that information may be an observation, a full history, or some chosen summary of history. What must **not** be assumed yet is that this input already has the stronger status of a Markov state. That stronger claim belongs later.
 
+### Adversarial checkpoint: policy input is not yet a license for "state"
+
+A strong but still unsafe reading would be the following: "if the policy uses some input to choose actions, then that input is already the state." This chapter does **not** license that move. A policy can condition on whatever information is available at the decision point: a raw observation, a full history, or a hand-designed summary. That tells you what the action rule is allowed to read. It does **not** yet tell you that the input is sufficient for one-step prediction, sufficient for Bellman recursion, or sufficient for Markov control reasoning.
+
+The operational test is simple. Ask two separate questions. First: **what information may the action rule legally inspect before choosing \(A_t\)?** Second: **what information is sufficient to determine the next-step law relevant for prediction and control?** In this chapter only the first question is answered. The second is deferred not because it is unimportant, but because it requires a stronger property that has not yet been earned.
+
 ### Formal definition
 
 Time is discrete:
@@ -73,6 +79,12 @@ Now ask what the sequence licenses. Because $O_t$ is present before the action, 
 
 The general lesson is that the action time marks the decision, while the next reward and next observation mark the earliest visible consequences of that decision.
 
+### Implementation-failure warning: how the right words still become wrong code
+
+A common project mistake is to write an environment loop whose variable names match the chapter while its causal order does not. The unsafe pattern looks like this in words: first advance the environment, then inspect the post-transition observation and reward, and only then compute the action that is labeled \(A_t\). That code is not implementing the chapter's timing with sloppy notation; it is implementing a different decision protocol.
+
+The diagnostic question is: **at the instant the action is computed, could the program already see \(R_{t+1}\) or \(O_{t+1}\)?** If yes, then the program is no longer modeling a choice made at time \(t\). It is using information produced after the action's causal slot. The notation in this chapter is therefore not just a naming convention. It is a debugging tool for deciding whether the code and the theory describe the same event order.
+
 ### Misconception block
 
 **Do not confuse “the time step” with “the agent’s information at the decision point.”**  
@@ -84,6 +96,10 @@ It is a causal choice. The notation is encoding which quantities are known befor
 ### Connection to later material
 
 Everything later depends on this timing. The return from time <em>t</em> begins with the first reward observed after choosing <em>A</em><sub>t</sub>. Conditional expectations in Bellman equations are conditioned on variables available at the decision point. Policy definitions only take as input information available before the action. So this section is not preliminary decoration; it is the clock that the rest of the theory runs on.
+
+### Recover-the-reasoning checkpoint
+
+Suppose someone says: "at time \(t\), the agent observes \(O_t\), receives reward \(R_t\), and then chooses \(A_t\)." Do not merely say that the indexing is different. State the deeper error in complete sentences. The error is that this description no longer distinguishes the pre-action decision point from the post-action outcome. Once that distinction collapses, it becomes impossible to tell which quantities a policy may condition on, impossible to define return cleanly from the decision time, and impossible to read later Bellman-style conditioning statements without ambiguity.
 
 ### Retain / Do not confuse
 

@@ -388,6 +388,12 @@ Bootstrapping means that the learner is using part of its own current belief str
 
 The first thing to notice is that the target is partly empirical and partly estimated. The reward term comes from observed experience. The continuation term comes from the model’s current estimate of the future.
 
+### Adversarial misconception block: why the supervised-learning analogy is dangerous if left unqualified
+
+It is helpful to notice the superficial resemblance to supervised learning: there is an input, a prediction, a target-like quantity, and a squared-error loss. But a hostile reading asks what makes the target trustworthy. In ordinary supervised learning, the label is usually treated as an externally given outcome for the current example. In approximate reinforcement learning, the target often contains the system's own current or recent estimate of future value. That difference is not cosmetic. It means that changing the predictor can change future targets, so the learning problem is partly self-referential.
+
+This is why the supervised analogy is useful only up to a boundary. It helps explain the optimization shape. It does not justify importing all the stability intuitions of fixed-label regression.
+
 ### Boundary conditions / assumptions / failure modes
 
 Bootstrapping is not “bad” in itself. It is one of the central reasons temporal-difference methods are efficient. The important issue is that bootstrapping creates feedback: current predictions influence future targets.
@@ -605,6 +611,12 @@ DQN is the first major algorithm in this chapter that should be read against the
 Retain that the deadly triad is the interaction of approximation, bootstrapping, and off-policy learning. Do not confuse “risk structure” with “guaranteed failure” or with “mere folklore.”
 
 ---
+
+### "This does not imply" paragraph for the deadly triad
+
+The deadly triad does **not** say that the presence of function approximation, bootstrapping, and off-policy learning guarantees divergence in every case. Its point is more adversarial and more useful: when all three are active, the system contains a mechanism by which approximation error, target drift, and distribution mismatch can reinforce one another rather than cancel. That is an instability pressure claim, not a universal impossibility theorem.
+
+Why make this explicit? Because a student who treats the triad as a slogan will either overpanic or underthink. The mature reading is: when these three ingredients coexist, one should demand a stability story rather than assuming tabular intuitions transfer unchanged.
 
 ## 7. DQN as approximate Q-learning
 
@@ -947,6 +959,12 @@ acts only through the prediction term $Q(S_t,A_t;w)$.
 The phrase “semi-gradient” means we are not differentiating through every pathway by which the eventual learning signal depends on learnable quantities. Instead, for the current update, we freeze the target side and take the gradient only of the online prediction. This is mathematically simpler and algorithmically more stable than trying to chase a fully moving target through all dependencies.
 
 The first thing to notice is that this is not a trivial bookkeeping detail. In RL, one should always ask: which object is being optimized, and which parts of the update are being treated as external input for the present step? DQN’s answer is: the target is treated as given, the online prediction is differentiated.
+
+### Implementation-failure warning: what "freeze the target" means operationally
+
+A common project bug is to say "we use a semi-gradient loss" while still letting gradients flow through the target computation graph. The phrase "treat the target as fixed" is not metaphorical. It is an operational instruction about differentiation. During the current update, the target side is used as a numeric reference value. The gradient is taken only with respect to how the current prediction changes with the online parameters.
+
+If code accidentally differentiates through the target path, then the implemented update is no longer the one the chapter is analyzing. That mistake matters because the conceptual point of the semi-gradient description is precisely to separate the role of the prediction path from the role of the target path during one update.
 
 ### Boundary conditions / assumptions / failure modes
 
