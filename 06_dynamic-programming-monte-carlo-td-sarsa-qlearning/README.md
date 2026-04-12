@@ -12,6 +12,8 @@ To make that promise operational, the chapter should fix one reusable classifica
 
 The chapter is organized around a progression. Dynamic programming comes first because it solves Bellman equations when the environment model is known. Monte Carlo comes next because it removes the need for a model, but pays for that by waiting for complete returns. Temporal-difference learning then appears as the compromise: it also learns from raw experience, but it replaces full returns with a one-step bootstrap target. Finally, SARSA and Q-learning specialize the temporal-difference idea to action values and control, with the distinction between them resting entirely on what they do at the next state.
 
+That difference should be stated in the sharpest possible way. In SARSA, the next action inside the target is the action that the behavior policy actually takes, so the continuation term is policy-following. In Q-learning, the next action inside the target is the maximizing action under the current estimate, whether or not the behavior policy actually took it, so the continuation term is policy-replacing. The difference is not cosmetic. It determines whether the target is evaluating the behavior actually experienced or imposing a more aggressive control choice inside the bootstrap.
+
 If this chapter works, the reader should stop seeing these methods as a bag of famous names and start seeing them as clean answers to a precise design question: **given what information is available, what target can we construct for learning value?**
 
 ---
@@ -45,6 +47,12 @@ The main axes of comparison in this chapter are the following.
 4. **On-policy vs off-policy**
    - On-policy: the policy generating data is the same policy whose continuation appears in the target.
    - Off-policy: the policy generating data and the policy inside the learning target differ.
+
+These axes should now be read as a fixed inspection order rather than as a chapter-specific list. When a new method appears, do not begin by memorizing its equation. Begin by interrogating it in sequence.
+
+First ask where its target comes from: from a known model or from sampled experience. Then ask what kind of target it is: an exact expectation, a sampled return, or a sampled bootstrap target. Then ask whether the continuation inside that target comes from the same policy that generated the data or from a different policy inserted for control. Then ask what object the update is actually trying to improve: a state value, an action value, or a policy-improvement mechanism built on top of one of those. Only after those questions are stable should the reader worry about the exact algebraic form of the update.
+
+This inspection order matters because many RL methods look similar at the symbol level while differing in exactly one decisive mechanism. The symbols become much easier to parse once the method has been classified before it is memorized.
 
 ### Interpretation paragraph
 
@@ -615,6 +623,8 @@ $$
 This update uses two kinds of information. The first term, $R_{t+1}$, is fresh data from the environment. The second term, $V(S_{t+1})$, is not newly observed long-run outcome data. It is the learner’s own current estimate of future value at the next state. That is exactly why TD is called a bootstrap method: it learns partly from its own current prediction.
 
 The first thing to notice is what has been traded away. Relative to Monte Carlo, TD gives up the complete realized future. In return, it gets immediacy. The update can be performed after a single transition.
+
+The trade can be stated more mechanically. Monte Carlo waits until later so that its target contains realized continuation instead of estimated continuation. TD refuses to wait; it inserts the learner’s current continuation estimate immediately. That single replacement changes three things at once. It allows online updates after one transition. It introduces self-reference because the target depends on a current estimate. And it changes the error profile from purely return-sampling noise to a mixture of sampling noise and bootstrap error. When the reader asks what TD “is,” this replacement is the right answer.
 
 ### Boundary conditions / assumptions / failure modes
 

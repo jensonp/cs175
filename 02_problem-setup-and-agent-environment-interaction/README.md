@@ -10,6 +10,8 @@ First, we must identify the **decision point**: the moment at which the agent ch
 
 So the point of this chapter is not to compress the problem. It is to describe the interaction contract clearly enough that later compression, when it comes, will be justified rather than hand-waved.
 
+Before the formal sections begin, one local status distinction should be frozen. A **policy** can be defined before a Markov state has been justified, but at that stage it must be read as a rule over whatever information object is actually available at the decision point. Early in the chapter, that object may be the current observation or the full history. Only later, if a state representation is shown to preserve the right predictive information, may the policy be treated as a policy over that state in the exact MDP sense. So the reader should not infer “policy over states” merely from the appearance of action-selection notation. The policy concept comes early. The state-sufficiency license comes later.
+
 ---
 
 ## 1. Time, decision points, and the order of events
@@ -58,12 +60,18 @@ Another hidden assumption is that the chapter is describing the interaction from
 ### Fully worked example
 
 Consider a thermostat controller that chooses between two actions at each minute:
+$$
+A_t \in \{\text{heat on}, \text{heat off}\}.
+$$
+At minute $t$, the controller can already read the current measured temperature $O_t$. That reading belongs to the decision point. The controller has it **before** it chooses the action. The next temperature reading $O_{t+1}$ does not yet exist for the controller, because the room has not yet responded to the current action. The reward $R_{t+1}$ also does not yet exist for the controller at the instant of choice, because that reward is meant to summarize the consequences of what is about to be done.
 
-<p><em>A</em><sub>t</sub> ∈ {heat on, heat off}.</p>
+Now follow the order as a causal chain rather than as a checklist.
 
-Suppose that at minute <em>t</em>, the controller can read the current measured temperature <em>O</em><sub>t</sub>. That measured temperature is already available at the decision point. The controller then chooses <em>A</em><sub>t</sub>. Only after the heating system and the room dynamics react does the controller observe the next reward <em>R</em><sub>t+1</sub>, where the reward might combine comfort and energy cost, and the next temperature reading <em>O</em><sub>t+1</sub>.
+At the decision point indexed by $t$, the controller knows the current temperature reading $O_t$ and any other previously accumulated information. Using that already available information, it chooses $A_t$, for example “heat on.” Once that choice is made, the environment side of the interaction takes over: the heater affects the room, the room temperature changes according to its thermal dynamics, energy is consumed, and only after those physical consequences occur does the controller receive the next post-action information. That post-action information has two parts. One part is the new observation $O_{t+1}$, the next measured temperature. The other part is the reward $R_{t+1}$, which may combine comfort and energy cost into a single scalar signal.
 
-Now trace the order in full sentences rather than as a checklist. At the decision point indexed by $t$, the controller already has access to the current measurement $O_t$. That measurement is therefore a legitimate input to the decision rule. What the controller does **not** yet have is the next temperature reading $O_{t+1}$ or the next reward $R_{t+1}$, because neither exists until after the action has been chosen and the room has responded. The controller then selects $A_t$. Only after that choice does the environment-side evolution occur: the heater either changes the room trajectory or it does not, energy is consumed or saved, and the room moves closer to or farther from the target temperature. Those consequences are then summarized in the post-action quantities $R_{t+1}$ and $O_{t+1}$. The first conclusion licensed by this order is that a policy may condition on $O_t$, because $O_t$ is available before the action. The second is that $R_{t+1}$ and $O_{t+1}$ cannot be inputs to the choice of $A_t$, because they are produced only after the action has already been taken. The third is that the reward tied to $A_t$ must be indexed after the action time. The general lesson is that the action index marks the decision point, while the next reward and next observation mark the first visible consequences of that decision.
+Now ask what the sequence licenses. Because $O_t$ is present before the action, it is legitimate for the policy to condition on $O_t$. Because $O_{t+1}$ and $R_{t+1}$ are produced only after the action and the environment’s response, they are not legitimate inputs to the choice of $A_t$. That is the exact reason the first reward tied to action $A_t$ is written as $R_{t+1}$ rather than $R_t$. The index is not decorative. It marks the first consequence that becomes visible only after the action’s effect begins.
+
+The general lesson is that the action time marks the decision, while the next reward and next observation mark the earliest visible consequences of that decision.
 
 ### Misconception block
 
@@ -133,6 +141,8 @@ A hidden but important assumption is that reward is scalar. That is standard in 
 A major failure mode is to over-interpret the observation. Students often begin using *observation* and *state* as synonyms. That is unsafe. An observation is what is seen now. A state, later, will be a representation used for prediction and control, and a **Markov** state will have a specific sufficiency property. Those are stronger claims.
 
 Another common failure mode is to treat the immediate reward as “the thing being optimized.” It is not. The reward is the local signal; the policy will later be judged by long-run return.
+
+A second local distinction should be made explicit here. A one-step reward is part of the interaction stream. A policy criterion is a long-run object built from that stream. So even in this early chapter, the reward should be read as the immediate post-action signal, not as the full standard by which a policy is judged. That later criterion will be an expectation of return. The reason to say this now is preventive: many later confusions begin when a reader silently upgrades “the reward I just observed” into “the objective the policy is optimizing.” The latter is downstream of the former, not identical to it.
 
 ### Fully worked example
 

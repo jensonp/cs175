@@ -12,6 +12,8 @@ This chapter therefore does foundational work. It introduces expectation, condit
 
 The chapter is written in a discrete finite-or-countable setting whenever sums are shown explicitly. That choice is made for transparency. The ideas themselves are not confined to discrete spaces, but the discrete setting lets the reader see exactly what is being averaged and exactly where each factor in a formula comes from.
 
+One three-way distinction should be fixed before the formal sections begin. Some expressions in this chapter are **notation choices**: they tell you how an already defined object is indexed or written. Some expressions are **probability-structure statements**: they tell you what law governs a random object, such as a return, a conditional distribution, or a trajectory. Some later expressions are **proof tools or transformations**: they do not introduce a new object, but change the form of an expression in a way justified by calculus or expectation identities. These three categories should not be collapsed. Writing $R_{t+1}$ instead of $R_t$ is not the same kind of act as factorizing a trajectory probability, and factorizing a trajectory probability is not the same kind of act as applying the log-derivative identity to that factorized law.
+
 Before the chapter begins its formal sections, lock one three-part distinction that will matter repeatedly later.
 
 First, some expressions in this chapter are **notation choices**. They tell you how an object is indexed or written. Second, some expressions are **probability-structure claims**. They say what random variable exists, what law it is distributed under, or what conditioning event is being held fixed. Third, some expressions are **proof tools**. They are legal manipulations that follow from the previous probability structure once the relevant assumptions hold.
@@ -811,6 +813,8 @@ This factorization says that a full trajectory probability is built by multiplyi
 
 At this point the chapter should say explicitly what kind of statement this is. The factorization is not yet a gradient formula and not yet a policy-optimization result. It is first a **probability-structure statement**: once the horizon, initial distribution, policy, and one-step environment law are fixed, the probability of a complete trajectory is the product of those local terms across time. Only after that law has been written down and the parameter dependence has been identified does the later log-derivative move become licensed. In other words, the trajectory law comes first; the gradient manipulation is downstream of it.
 
+It is worth stating the dependency in the strongest possible form. The trajectory factorization is a statement about **what probability law is being averaged over**. By itself, it does not yet produce any gradient estimator and does not yet justify replacing a derivative by a sampled score-weighted return. The later log-derivative identity is a separate calculus step that acts on that already specified law. So the logical order is: first define the trajectory distribution; then identify where the parameters enter; then use calculus to rewrite derivatives of that law into an expectation-friendly form. If these three stages are blurred, later policy-gradient derivations can look like a single magical trick rather than a chain of legitimate steps.
+
 The formula has the shape of a chain rule specialized to the sequential structure of the RL interaction. The reader should notice that the global trajectory law is not an opaque monolith. It is assembled from interpretable local mechanisms.
 
 ### Boundary conditions, assumptions, and failure modes
@@ -1102,6 +1106,8 @@ This identity is easy to misuse if its scope is not stated. By itself, it is an 
 ### Interpretation
 
 This identity is simple calculus, but its effect is profound. The derivative of the log probability measures the local sensitivity of the log-likelihood of the trajectory to the policy parameters. Multiplying by the probability recovers the derivative of the probability itself. The crucial advantage is structural: once a factor of $p_\theta(\tau)$ appears explicitly, it can sit inside a sum as the weighting term of an expectation.
+
+A useful boundary statement belongs here. The log-derivative identity does **not** say that optimization is finished, and it does **not** say that one sampled trajectory reveals the true gradient. What it gives is a change of algebraic form: a derivative of a probability law becomes that same law multiplied by a score term. That matters because expectations are taken with respect to the law itself. The identity therefore licenses a later estimator construction. It does not by itself choose the weighting signal, prove low variance, or eliminate the need for assumptions about where the parameter dependence lives.
 
 The first thing to notice is that the log is not introduced for aesthetic reasons. It is introduced because differentiating a log converts multiplicative structure into additive structure and makes expectations possible.
 

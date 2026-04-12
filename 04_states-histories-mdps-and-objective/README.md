@@ -12,6 +12,8 @@ First there is the actual interaction process between agent and environment. Fro
 
 The most important local warning for this chapter is the following: a representation map is not yet a sufficiency theorem. If a chapter writes something like $S_t = f(H_t)$, that statement means only that some summary has been defined from history. It does **not** yet mean that the summary preserves all the predictive information required for exact state-based recursion. The whole burden of the Markov test later in the chapter is to decide whether that stronger claim is actually true. This warning should be kept explicit because many later RL texts silently move from “we have a representation” to “we have a state” without paying that conceptual cost.
 
+A second warning should be attached immediately to that one. Passing the Markov test does not mean “the state contains every conceivable fact about the world.” It means something narrower and more useful: for the purposes of one-step prediction and control under the chapter’s setup, conditioning on the current state and current action is as informative as conditioning on the whole history and current action. The license gained is therefore exact **state-based local recursion**, not omniscience. That is the exact amount of simplification the chapter is trying to earn.
+
 This chapter therefore separates four things that are often blurred together:
 
 - the full decision-relevant history,
@@ -336,6 +338,12 @@ A state representation $S_t$ is Markov if
 $$
 P(S_{t+1}, R_{t+1} \mid H_t, A_t) = P(S_{t+1}, R_{t+1} \mid S_t, A_t).
 $$
+
+### What the Markov property now licenses
+
+Once the Markov condition holds for the chosen representation, a new compression becomes legal. Future one-step laws may be written in terms of the current state and action alone, rather than in terms of the entire history. That means the learner may define state-indexed reward and transition descriptions, state-conditioned value functions, and Bellman-style recursive equations without silently dropping information that still matters. This is the exact reason the Markov property is load-bearing. It does not merely rename the summary as a “state.” It changes what forms of reasoning are now exact.
+
+Just as important is what it does **not** license automatically. It does not guarantee that the representation is minimal. It does not guarantee that learning with function approximation will be easy. It does not guarantee that the policy class can exploit the representation well. The license is exactness of the local probabilistic reduction, not a blanket promise of practical tractability.
 
 ### Interpretation
 

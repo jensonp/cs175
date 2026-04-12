@@ -10,6 +10,18 @@ This chapter introduces the local objects that make long-run reasoning tractable
 
 That conceptual shift is so important that students often absorb the symbols without absorbing the ladder of reasoning that produces them. They see $V^\pi$, $Q^\pi$, Bellman operators, and greedy improvement rules written down correctly, but they do not fully own which statements are definitions, which are algebraic identities, which require the Markov property, and which belong to approximation methods that come later. This chapter slows the ladder down on purpose.
 
+Before the formal sections begin, freeze a four-level ladder that the entire chapter will reuse.
+
+First, a **value definition** names an object such as $V^\pi(s)$ or $Q^\pi(s,a)$ as a conditional expectation of return. At this level, nothing recursive has happened yet.
+
+Second, an **exact Bellman equation** is a true identity satisfied by the genuine value object once the return recursion is inserted into the definition and the Markov structure licenses state-based conditioning.
+
+Third, a **Bellman operator** is a transformation that can be applied to any candidate function, whether or not that function is already the true value function. At this level the question is no longer “what is the value?” but “what does one Bellman-style backup do to an arbitrary guess?”
+
+Fourth, an **algorithmic update rule** is a numerical procedure that uses samples or repeated backups to move an estimate toward a fixed point or control solution. At this level one is no longer stating a property of the exact value object. One is constructing an iterative approximation mechanism.
+
+If these four levels are kept separate, the chapter’s logic is stable. If they are fused, the reader starts treating definitions as updates, operators as theorems, and Bellman identities as if they were already algorithms.
+
 Before the chapter enters the formal sections, it should lock four different levels that will recur throughout.
 
 First, a **value definition** says what quantity is being averaged. For example, $V^\pi(s)$ is an expectation of return under a fixed policy and state condition.
@@ -695,6 +707,8 @@ What has this example shown? First, the operator takes a whole function as input
 
 **Do not confuse “apply the Bellman operator once” with “solve for the value function.”** One application generally produces a better-informed one-step lookahead value, but only the fixed point gives the exact value function.
 
+A short status reminder belongs here. Applying the Bellman operator once is an operation on a **candidate function**. Writing the Bellman expectation equation for $V^\pi$ is a statement about the **true value function**. Those are related because the true value is a fixed point of the operator, but they are not the same statement. The operator view is what later turns a theorem about exact values into an iterative route toward those values.
+
 ### Connection to later material
 
 This operator viewpoint is the doorway to contraction theory, iterative policy evaluation, value iteration, and many approximate methods. It is also one of the cleanest examples in reinforcement learning of how an optimization or evaluation problem can be reframed as finding a fixed point of a map.
@@ -950,6 +964,8 @@ V^{\pi'}(s) \ge V^\pi(s) \qquad \text{for every state } s.
 $$
 
 The theorem should be read with the right strength. It proves a **comparison statement**: if a new policy is chosen greedily with respect to the old policy’s action values, then the new policy is at least as good as the old one in the value sense guaranteed by the theorem’s assumptions. What it does **not** prove all by itself is that one greedy step solves the whole control problem in arbitrary approximate settings, or that any empirical improvement heuristic inherits the same guarantee. The theorem is exact, but it is exact under the same clean MDP assumptions that made the Bellman identities exact.
+
+It proves a **statewise monotone improvement guarantee** under the exact assumptions of the theorem. It does not prove that the improved policy is globally optimal after one step unless the old action values already coincide with the optimal ones. It also does not by itself say how $Q^\pi$ was obtained, whether it is exact or approximate, or whether a sample-based learning algorithm using noisy estimates will preserve the same guarantee. Those later algorithmic questions are downstream. The theorem itself is exact, but its scope is exact too.
 
 ### Interpretation paragraph
 

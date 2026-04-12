@@ -812,6 +812,8 @@ The final interpretation is that “average return 250” is not a self-containe
 
 This point should be made even stricter. The evaluation protocol is not an appendix to the claim. It is part of the claim’s meaning. A reported return number without environment specification, reward definition, observation regime, seed protocol, evaluation policy, and ablation structure is not a fully formed empirical statement waiting only for cosmetic details. It is an incomplete statement whose evidential content cannot yet be determined.
 
+That sentence can be made even stricter. A reported return number is not a self-contained fact waiting for contextual decoration. It is a statistic produced under a task definition, a reward specification, an observation regime, a training budget, an evaluation policy, and a seed protocol. Change those, and the meaning of the number changes. So in reinforcement learning, the empirical claim is not “the score was 250” with protocol attached later. The real claim is “under this fully specified experimental contract, the method produced this distribution of outcomes.” The protocol is part of the proposition.
+
 The general lesson is that evaluation numbers are never self-explanatory. They derive meaning from the experimental contract around them.
 
 ### Misconception or counterexample block
@@ -833,6 +835,10 @@ Protocol discipline becomes even more central when comparing offline RL datasets
 Retain that credible evaluation is a protocol, not just a score. Do not confuse a headline number with a well-defined scientific claim.
 
 ---
+
+### Reasoning synthesis: from reward design to credible evidence
+
+At this point the chapter should make its larger logic explicit. Reward design determines what local signal the learner is pushed to optimize. Representation determines what information the learner is actually allowed to use when making predictions and decisions. Evaluation determines whether the resulting empirical evidence can support the claim being made. These are not three disconnected “practical topics.” They are three different places where the meaning of the learning problem can drift. A bad reward can redefine the problem. A bad representation can hide the information required for exact control reasoning. A bad evaluation protocol can make even a correct implementation look more convincing or less convincing than it should. The chapter’s unifying lesson is that reinforcement learning failures often come from mismatched meaning before they come from wrong algebra.
 
 ## 8. What an ablation is and what it is not
 

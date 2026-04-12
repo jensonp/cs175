@@ -14,6 +14,8 @@ The aim here is not to memorize method names. The aim is to make it impossible t
 
 Before the formal machinery begins, the chapter should freeze one foundational distinction. In value-based control chapters, the main learned object was a predictor of long-run return. In this chapter, the primary learned object is the **policy itself**. The objective is therefore a function of the trajectory law induced by that policy. The parameter $\theta$ matters because it changes action probabilities, those changed action probabilities change the distribution over trajectories, and the objective is an expectation under that $\theta$-dependent law. If the reader loses track of which probability law depends on $\theta$, policy gradients immediately become symbolic rather than conceptual.
 
+A second three-level distinction should be fixed here because the whole chapter depends on it. The **objective** is the performance quantity the method is trying to optimize. The **policy-gradient identity** is the exact mathematical rewriting that expresses the derivative of that objective in expectation form under stated assumptions. The **estimator** is the sampled update rule actually used in computation. These are not interchangeable. REINFORCE, actor–critic, PPO, and SAC differ not only in how they estimate updates, but sometimes in what objective they optimize and in what identity or surrogate structure justifies the update form.
+
 ---
 
 ## 1. Why optimize the policy directly?
@@ -623,6 +625,12 @@ What did each step accomplish? Conditioning on state made the baseline fixed. Ex
 
 The conclusion is exact: a state-only baseline can be subtracted without changing the expected policy gradient.
 
+The zero-mean argument should also be readable in words. Once the current state $S_t$ is fixed, the baseline $b(S_t)$ is just a scalar with respect to the action distribution at that time step. The only random object left in the score term is the sampled action. The expected score
+$$
+\mathbb E_{A_t \sim \pi_\theta(\cdot \mid S_t)}[\nabla_\theta \log \pi_\theta(A_t \mid S_t)]
+$$
+is zero because it is the gradient of the total probability mass of the policy, which is always one. So multiplying that zero-mean score by a state-only scalar baseline still gives zero in expectation. The baseline changes the fluctuation of the estimator, not the target gradient being estimated.
+
 ### Misconception or counterexample block
 
 **Do not confuse “baseline reduces variance” with “baseline is harmless no matter how chosen.”**
@@ -951,6 +959,8 @@ L^{\text{clip}}(\theta)
 $$
 
 A local distinction is needed here. PPO’s clipped objective is a **training surrogate**, not the literal original expected-return objective of the environment. Its job is to constrain how aggressively the new policy can move relative to the old policy along sampled directions suggested by the advantage estimates. So the clip should be read as a conservative update-shaping device. It modifies the optimization landscape used for training in order to reduce destructive large updates. That is different in kind from SAC, where the underlying objective itself is changed by adding entropy.
+
+This is the clean category boundary between the two methods. PPO says: keep the underlying reward-centered objective in view, but train against a conservative surrogate so old-policy data is not allowed to justify overly aggressive movement. SAC says: alter the objective itself so that entropy is part of what counts as a better policy. So PPO is mainly a **stabilized-update story**, whereas SAC is an **objective-change story**. Both may use actor–critic machinery, but they are answering different design questions.
 
 ### Interpretation paragraph
 
