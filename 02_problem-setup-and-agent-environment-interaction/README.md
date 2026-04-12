@@ -24,6 +24,8 @@ The key object here is not yet a state or a value function. It is the **decision
 
 This object matters because it tells us what can legitimately appear on the right-hand side of a policy definition and what must wait until after the action has been taken.
 
+A local working definition of **policy** is needed here. In this chapter, a policy should be read as a rule that maps whatever information is legitimately available at the decision point into a distribution over actions. At this stage, that information may be an observation, a full history, or some chosen summary of history. What must **not** be assumed yet is that this input already has the stronger status of a Markov state. That stronger claim belongs later.
+
 ### Formal definition
 
 Time is discrete:
@@ -61,29 +63,7 @@ Consider a thermostat controller that chooses between two actions at each minute
 
 Suppose that at minute <em>t</em>, the controller can read the current measured temperature <em>O</em><sub>t</sub>. That measured temperature is already available at the decision point. The controller then chooses <em>A</em><sub>t</sub>. Only after the heating system and the room dynamics react does the controller observe the next reward <em>R</em><sub>t+1</sub>, where the reward might combine comfort and energy cost, and the next temperature reading <em>O</em><sub>t+1</sub>.
 
-Now trace the order carefully.
-
-At the decision point indexed by <em>t</em>:
-
-- The current temperature reading <em>O</em><sub>t</sub> is available.
-- The next temperature reading <em>O</em><sub>t+1</sub> is not yet available.
-- The next reward <em>R</em><sub>t+1</sub> is not yet available.
-- The controller chooses <em>A</em><sub>t</sub>.
-
-After the room responds:
-
-- The controller sees whether the room moved closer to the desired temperature.
-- The controller also incurs energy cost.
-- Those consequences are summarized in <em>R</em><sub>t+1</sub>.
-- The controller receives a new measurement <em>O</em><sub>t+1</sub>.
-
-What conclusion does each step allow?
-
-- Because <em>O</em><sub>t</sub> is available before the action, it is legitimate for the policy to condition on <em>O</em><sub>t</sub>.
-- Because <em>R</em><sub>t+1</sub> and <em>O</em><sub>t+1</sub> appear only after the action, they cannot be treated as inputs to the choice of <em>A</em><sub>t</sub>.
-- Therefore the reward associated with <em>A</em><sub>t</sub> must be indexed after the action time, not at the same time.
-
-The general lesson is that the time index on the action marks the decision; the time index on the next reward and next observation marks the first consequences of that decision.
+Now trace the order in full sentences rather than as a checklist. At the decision point indexed by $t$, the controller already has access to the current measurement $O_t$. That measurement is therefore a legitimate input to the decision rule. What the controller does **not** yet have is the next temperature reading $O_{t+1}$ or the next reward $R_{t+1}$, because neither exists until after the action has been chosen and the room has responded. The controller then selects $A_t$. Only after that choice does the environment-side evolution occur: the heater either changes the room trajectory or it does not, energy is consumed or saved, and the room moves closer to or farther from the target temperature. Those consequences are then summarized in the post-action quantities $R_{t+1}$ and $O_{t+1}$. The first conclusion licensed by this order is that a policy may condition on $O_t$, because $O_t$ is available before the action. The second is that $R_{t+1}$ and $O_{t+1}$ cannot be inputs to the choice of $A_t$, because they are produced only after the action has already been taken. The third is that the reward tied to $A_t$ must be indexed after the action time. The general lesson is that the action index marks the decision point, while the next reward and next observation mark the first visible consequences of that decision.
 
 ### Misconception block
 
@@ -649,6 +629,8 @@ For a continuing task, a discounted return is commonly used:
 <p><em>G</em><sub>t</sub> = <em>R</em><sub>t+1</sub> + <em>γ</em><em>R</em><sub>t+2</sub> + <em>γ</em><sup>2</sup><em>R</em><sub>t+3</sub> + ..., with 0 ≤ <em>γ</em> &lt; 1.</p>
 
 Reinforcement learning seeks a policy <em>π</em> that makes the expected return large.
+
+That sentence should be read with full structural precision. The policy is not being judged by one reward in isolation, and it is not being judged by a static score attached to an action label. It is being judged through the trajectory law that it induces jointly with the environment. In other words, a policy changes action probabilities; those changed action probabilities alter which histories and future observations occur; those altered histories change which rewards are later seen; and the return aggregates those rewards across time. The policy-level criterion therefore lives at the level of induced trajectories, not at the level of one isolated step.
 
 ### Interpretation
 

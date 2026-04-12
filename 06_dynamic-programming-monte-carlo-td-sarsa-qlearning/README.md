@@ -8,6 +8,8 @@ The previous chapters introduce value functions and Bellman equations as mathema
 
 There are several axes that students often blur together. Does the method assume the transition-reward model is known, or does it learn directly from sampled experience? Does it use an exact expectation under the model, or a sampled target from one observed transition or one complete episode? Does the target use the full realized return, or does it bootstrap from the current estimate? If the method updates action values, is the continuation determined by the same policy that generated the data, or by a different policy inserted into the target? This chapter keeps those axes separate on purpose, because each method in the chapter is best understood not by memorizing a formula, but by identifying exactly where it lands on each of those dimensions.
 
+To make that promise operational, the chapter should fix one reusable classification order now. For every method introduced later, ask the same six questions in the same sequence. First, does the method assume a known model, or does it learn from sampled experience? Second, is its target an exact expectation or a sampled quantity? Third, does it use a complete realized return or a bootstrap estimate of continuation? Fourth, if action values are being updated, what policy determines the continuation inside the target? Fifth, what object is actually being updated: a state value, an action value, or a policy-improvement surrogate built from one of those? Sixth, what is the method trying to compute exactly, and what is it using only as an intermediate estimate? Once these six questions are fixed, the later methods stop looking like a bag of formulas and start looking like structured variations on a common template.
+
 The chapter is organized around a progression. Dynamic programming comes first because it solves Bellman equations when the environment model is known. Monte Carlo comes next because it removes the need for a model, but pays for that by waiting for complete returns. Temporal-difference learning then appears as the compromise: it also learns from raw experience, but it replaces full returns with a one-step bootstrap target. Finally, SARSA and Q-learning specialize the temporal-difference idea to action values and control, with the distinction between them resting entirely on what they do at the next state.
 
 If this chapter works, the reader should stop seeing these methods as a bag of famous names and start seeing them as clean answers to a precise design question: **given what information is available, what target can we construct for learning value?**
@@ -848,6 +850,8 @@ A method is
 
 This distinction is about roles, not about which policy is “better.” The behavior policy determines what data appear in the replay of experience. The target policy determines what continuation the update is actually trying to represent. In some algorithms those roles coincide. In others, the learner explores using one policy but updates toward the value of another.
 
+One more axis should be made explicit here. Two methods can share the same one-step sampled transition structure and still differ in what object they update. A state-value predictor, an action-value predictor, and a control rule derived from those predictors are not interchangeable objects. That difference matters because the continuation term, the improvement step, and the final output of the algorithm all depend on what kind of object is being estimated.
+
 The first thing to notice is that “on-policy versus off-policy” is not a statement about whether the agent explores. Exploration can occur in either case. The question is whether the target uses the same policy that generated the action choices in the data.
 
 ### Boundary conditions / assumptions / failure modes
@@ -1365,38 +1369,21 @@ The object is a comparative method map. It answers the question: where does each
 
 ### Formal definition
 
-The core family map is:
+The chapter’s method family can be summarized as a structured comparison rather than as a slogan list.
 
-- **Dynamic programming**
-  - model known,
-  - exact expectation under the model,
-  - planning rather than direct sample-based learning.
+Dynamic programming assumes the transition-reward model is available and therefore computes Bellman-style expectations exactly under that model. Its distinguishing feature is not merely that it is “iterative,” but that the expectation inside the backup is evaluated from known dynamics rather than estimated from samples.
 
-- **Monte Carlo prediction**
-  - model need not be known,
-  - target is the complete sampled return,
-  - no bootstrap.
+Monte Carlo prediction removes model access and instead waits until a full sampled return is available. Its target is therefore an actually realized return, not a bootstrap estimate. That is why it is model-free and non-bootstrap at the same time.
 
-- **One-step TD prediction**
-  - model need not be known,
-  - target uses one sampled transition,
-  - bootstrap from current estimate.
+One-step temporal-difference prediction also removes model access, but it does not wait for the full future to unfold. It uses one sampled transition and then bootstraps from the current value estimate of the next situation. Its identity therefore comes from combining sample-based learning with a bootstrap target.
 
-- **SARSA**
-  - action-value TD control,
-  - sampled next action from current policy,
-  - on-policy.
+SARSA inherits the one-step TD control structure but uses the next action actually sampled from the current behavior/target policy inside the continuation term. That is why it is on-policy: the same policy that generates the continuation action is the policy whose action values are being learned.
 
-- **Q-learning**
-  - action-value TD control,
-  - greedy maximization in target,
-  - typically off-policy.
+Q-learning keeps the sampled-transition-plus-bootstrap structure but replaces the actually sampled continuation action by a maximizing action inside the target. That is why its target policy can differ from the behavior policy, which is the conceptual core of its usual off-policy classification.
 
 ### Interpretation paragraph
 
-This map should now be readable rather than merely memorable. Dynamic programming is the exact-model method. Monte Carlo is the full-return sample method. TD is the one-step bootstrap sample method. SARSA and Q-learning both inherit TD’s one-step bootstrap structure, but they split according to how the continuation action is chosen.
-
-The first thing to notice is that these methods do not form a single linear spectrum. Some distinctions are about model access, others about target construction, others about policy role. That is why the chapter started with multiple axes rather than one headline comparison.
+This family map should now be read as a classification by mechanisms, not as a list to memorize. Dynamic programming is defined by exact model-based expectation. Monte Carlo is defined by full-return sampled targets. TD prediction is defined by one-step sample targets plus bootstrap. SARSA and Q-learning both sit inside the TD-control family, but they divide according to what policy appears in the continuation term. The point of the map is not that these methods lie on one simple line. The point is that different comparison axes answer different questions: where the target comes from, whether continuation is bootstrapped, what policy the continuation corresponds to, and what object is being updated.
 
 ### Boundary conditions / assumptions / failure modes
 

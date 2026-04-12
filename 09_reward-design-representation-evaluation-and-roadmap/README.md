@@ -10,6 +10,8 @@ The topics here are often mislabeled as “practical considerations,” as thoug
 
 This chapter therefore stabilizes four distinctions that later work depends on. First, reward, return, and value are different mathematical objects, and confusing them leads to wrong reasoning about what an RL agent is maximizing. Second, reward shaping is not automatically harmless; only particular shaping constructions come with provable invariance guarantees. Third, a compact representation is not automatically a sufficient state representation; aliasing can silently destroy the Markov property. Fourth, evaluation in RL is intrinsically noisy and protocol-sensitive, so a result is only as meaningful as the reporting discipline behind it.
 
+The local hierarchy should be stated once with maximal sharpness. A **reward** is the one-step scalar signal produced by the environment at a particular time. A **return** is an aggregate of future rewards across time from a specified decision point onward. A **value** is an expectation of return under stated conditioning and under the trajectory law induced by a policy and environment. These are not three names for “how good things are.” They answer three different questions: what happened now, what accumulates from now onward, and what expected long-run quantity is associated with a condition such as a state, state-action pair, or policy.
+
 The chapter closes with a roadmap because these issues also define how the subject naturally grows. Once reward specification, state sufficiency, and evaluation discipline are understood, the next questions are no longer “which update rule do I memorize?” but “what problem am I actually solving, with what information, and how do I know the evidence supports the claim?”
 
 ---
@@ -808,6 +810,8 @@ Ninth, **what ablations were run?** If the method includes a new loss, a new arc
 
 The final interpretation is that “average return 250” is not a self-contained scientific result. It becomes meaningful only when embedded inside a disciplined reporting protocol.
 
+This point should be made even stricter. The evaluation protocol is not an appendix to the claim. It is part of the claim’s meaning. A reported return number without environment specification, reward definition, observation regime, seed protocol, evaluation policy, and ablation structure is not a fully formed empirical statement waiting only for cosmetic details. It is an incomplete statement whose evidential content cannot yet be determined.
+
 The general lesson is that evaluation numbers are never self-explanatory. They derive meaning from the experimental contract around them.
 
 ### Misconception or counterexample block
@@ -1163,58 +1167,19 @@ The object is a set of disciplined conclusions that follow from the chapter. Wha
 
 ### Formal definition
 
-After mastering this chapter, you should be able to state and defend the following claims precisely:
+After mastering this chapter, the reader should be able to make several precise claims and defend them in full sentences.
 
-- reward, return, and value are distinct objects with different roles,
-- potential-based shaping can preserve optimal policies because its contribution to return telescopes into boundary terms,
-- reward modifications outside an invariance family generally redefine the task,
-- a representation can be compact yet non-Markov because of aliasing,
-- evaluation requires multiple seeds and explicit protocol reporting,
-- and a clean ablation isolates one component while the rest of the setup stays fixed.
+The first is that reward, return, and value are different mathematical objects with different roles in reinforcement learning. A one-step reward is not yet a long-run objective, and a value is not merely a reward with more notation attached to it.
 
-### Interpretation paragraph
+The second is that potential-based shaping can preserve optimal-policy structure because its contribution to discounted return telescopes into boundary terms rather than accumulating arbitrary pathwise distortion through the interior of the trajectory.
 
-These are not just chapter summaries. They are reasoning tools. They let you inspect an RL setup and ask the right questions: what exactly is being optimized, what information is available, what theorem—if any—protects a reward modification, what hidden stochasticity affects the evidence, and whether a component-level claim is experimentally justified.
+The third is that ordinary reward modifications outside a theorem-backed invariance family usually redefine the task rather than merely speeding up learning on the same task.
 
-### Boundary conditions / assumptions / failure modes
+The fourth is that a representation can be compact and still fail to be Markov, because aliasing can force distinct latent situations into the same visible input.
 
-The main failure mode after finishing this chapter is to remember the slogans but forget the conditions. For example, “shaping is fine” is too loose; one must remember which shaping family and under what assumptions. “Multiple seeds matter” is also too loose unless the protocol itself is specified. “Representation is important” is not enough unless one can state what predictive sufficiency is being demanded.
+The fifth is that an evaluation claim becomes interpretable only when the protocol that gives the number meaning is made explicit: seeds, budgets, policy at evaluation time, reward specification, environment variant, and ablations are part of the scientific content, not ornamental reporting.
 
-### Fully worked example
-
-Suppose you are asked to evaluate the following proposal:
-
-> We added an exploration bonus to the reward, compressed the observation into a low-dimensional embedding, trained for longer than the baseline, and obtained better average return on two runs.
-
-A reader who has mastered this chapter should evaluate the proposal in order.
-
-First, ask whether the exploration bonus is potential-based shaping or a genuine reward redesign. If it is not theorem-backed shaping, then the optimization objective may have changed.
-
-Second, ask whether the low-dimensional embedding preserves Markov-relevant information. If not, apparent learning difficulties or successes may reflect aliasing effects rather than pure algorithmic merit.
-
-Third, note that training longer than the baseline changes the budget and therefore complicates comparison.
-
-Fourth, two runs provide weak evidence in a stochastic RL setting; more seeds and uncertainty reporting are needed.
-
-Fifth, because several components changed at once, the result is not a clean ablation of any one component.
-
-The conclusion is not simply “the proposal is bad.” The conclusion is that the current evidence does not support the claims cleanly because the chapter’s distinctions reveal multiple unresolved confounds.
-
-The general lesson is that this chapter equips you not only to derive formulas, but to interrogate formulations and empirical claims with mathematical discipline.
-
-### Misconception or counterexample block
-
-**Do not think conceptual rigor is separate from practical RL.**
-
-In RL, practical failure often begins as conceptual sloppiness.
-
-### Connection to later material
-
-Everything after this chapter benefits from the ability to distinguish objective design, information structure, and empirical evidence. Those three lenses remain useful all the way through advanced RL.
-
-### Retain / Do not confuse
-
-Retain that this chapter gives you a framework for specifying, analyzing, and critiquing RL problems and evidence. Do not confuse strong implementation with strong problem formulation or strong evaluation.
+The sixth is that clean ablation logic requires isolating one causal change at a time while holding the rest of the system fixed enough that attribution remains possible.
 
 ---
 

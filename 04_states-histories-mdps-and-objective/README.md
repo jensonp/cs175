@@ -10,6 +10,8 @@ That gap is the reason this chapter must exist. Reinforcement learning literatur
 
 First there is the actual interaction process between agent and environment. From that process there is a complete record of what has happened so far. That record is the history. Then there may be a summary of that history used for decision making. Only after that summary is tested for the relevant sufficiency property does it deserve to support exact MDP-style recursion. If that order is skipped, students can repeat the symbols of dynamic programming while silently losing track of what justifies them.
 
+The most important local warning for this chapter is the following: a representation map is not yet a sufficiency theorem. If a chapter writes something like $S_t = f(H_t)$, that statement means only that some summary has been defined from history. It does **not** yet mean that the summary preserves all the predictive information required for exact state-based recursion. The whole burden of the Markov test later in the chapter is to decide whether that stronger claim is actually true. This warning should be kept explicit because many later RL texts silently move from “we have a representation” to “we have a state” without paying that conceptual cost.
+
 This chapter therefore separates four things that are often blurred together:
 
 - the full decision-relevant history,
@@ -306,6 +308,8 @@ The general lesson is that the unrestricted one-step law is allowed to depend on
 ### Connection to later material
 
 The Markov property will now be stated as the claim that a chosen summary preserves exactly this one-step law. That comparison is the mathematical heart of the chapter.
+
+That wording should be made even sharper. The Markov claim is not merely that the summary is convenient, compact, or useful for control. It is that once the current summary $S_t$ and action $A_t$ are fixed, the conditional distribution of the next-step outcome no longer depends on which full history produced that summary. The constrained object is therefore a **distributional law**, not a qualitative feeling that “the summary seems informative enough.” This is why the chapter must keep comparing summaries back to histories instead of treating representation quality as a purely informal matter.
 
 ### Retain / Do not confuse
 
@@ -794,6 +798,8 @@ $$
 G_t = R_{t+1} + \gamma G_{t+1}.
 $$
 
+A local distinction is needed here to prevent a later category error. Any return random variable can be decomposed algebraically into an immediate reward term plus a discounted continuation return. That statement is true before any Markov assumption is made, because it is only a decomposition of a sum. What it does **not** yet give you is a Bellman equation indexed only by state. Bellman-style state recursion requires an additional step: the future distribution must depend on the past only through a state variable that is Markov in the relevant sense. So the reader should separate two claims. The first is a generic algebraic identity for returns. The second is an exact state-based expectation identity. The first does not automatically license the second.
+
 That identity is always true whenever return is defined. But many students then slide too quickly into believing that Bellman equations are automatic. This section exists to stop that slide. Bellman equations require not just return recursion, but the right conditioning structure.
 
 ### The object being introduced
@@ -999,11 +1005,7 @@ Empirically, the agent performs well. But does that prove $Z_t$ is Markov?
 
 No. To establish exact Markovity, one would need to check that for any two histories producing the same latent vector and for every current action, the next-step state-reward law is identical. In practice, such exact verification is rarely available.
 
-What can be concluded instead? The learned representation may be a very good approximation to a Markov state, or at least a useful control summary. That justifies using MDP-based machinery as an approximation, not automatically as an exact statement about the original process.
-
-What was checked? First, practical success was separated from exact structural proof. Second, the same conditional-law test remained the relevant criterion. Third, the outcome was interpreted honestly: usefulness can coexist with imperfect sufficiency.
-
-The general lesson is that learning a representation does not remove the need for conceptual discipline. It changes how the representation is obtained, not what exact Markov sufficiency means.
+What can be concluded instead is narrower and more honest. If a learned representation $Z_t$ supports strong empirical control, then it has shown itself to be a useful summary for the tasks and distributions encountered during training and evaluation. That is a practical success claim. It is not yet an exact structural claim. The exact structural claim would require the same test as before: for every pair of histories mapped to the same $Z_t$, and for every current action, the induced next-step law would have to agree. If that exact equality is unavailable, then the chapter should describe the learned representation as an approximate or task-useful state summary rather than as an already-certified Markov state. The conceptual discipline remains unchanged: learning the representation changes how the summary is obtained, but it does not weaken the criterion for exact sufficiency.
 
 ### Misconception block
 

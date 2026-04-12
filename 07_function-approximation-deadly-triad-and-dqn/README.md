@@ -10,6 +10,8 @@ This chapter explains what changes when the value function is no longer stored e
 
 Once function approximation is introduced, several ideas that were relatively safe in the tabular setting become much more delicate. Bootstrapping can propagate approximation errors. Off-policy data can emphasize parts of the state-action space in a way that conflicts with the target being learned. Shared parameters can make a local update have broad, unintended consequences elsewhere. The interaction of these effects is what later becomes known as the **deadly triad**.
 
+That phrase should be unpacked as an interaction claim, not left as a slogan. The three components are: function approximation, which couples updates across inputs through shared parameters; bootstrapping, which uses current estimates inside future targets; and off-policy learning, which allows the data distribution to differ from the target policy’s induced distribution. Each component alone is already intelligible. The structural instability pressure appears when all three operate together, because target construction, distribution mismatch, and cross-input interference can reinforce one another rather than cancel.
+
 This chapter therefore has a double job. First, it must explain function approximation in a way that makes clear what problem it solves and what new risks it creates. Second, it must explain Deep Q-Networks (DQN) not as “Q-learning plus a neural net,” which is too shallow, but as a carefully stabilized approximate control method built in response to those risks.
 
 If the chapter succeeds, you should finish with five stable insights. First, you should know exactly why tabular methods stop scaling. Second, you should understand why approximation turns value learning into a regression-like problem, but not an ordinary supervised learning problem with fixed labels. Third, you should see why the deadly triad is a structural instability pattern rather than a slogan. Fourth, you should be able to read every term in the DQN target and explain why it is there. Fifth, you should understand why target networks, replay buffers, and representation choices are not implementation decorations but part of the mathematical and algorithmic story.
@@ -27,6 +29,8 @@ Earlier chapters can afford to treat a value function as a table because that se
 The object being introduced here is the contrast between a **tabular value function** and a **parameterized approximator**. A tabular value function is a lookup object: give it a state or state-action pair and it returns the stored number associated with exactly that entry. A parameterized approximator, by contrast, is a function with shared parameters. It takes an input and produces a predicted value through a rule controlled by parameters $w$.
 
 The question this contrast answers is: what kind of object should replace a table when exact enumeration is impossible or wasteful? What is fixed is the learning goal—we still want to estimate something like a state value or action value. What varies is the representation used to store and update that estimate. The conclusion this section allows is that scaling forces a change in representation, and that change is conceptually significant.
+
+A second bridge is needed before the chapter moves on. Once the value function becomes parameterized, the learner still writes down something that looks like prediction fitting, but the meaning of the target changes. In ordinary supervised learning, one often imagines a dataset of inputs paired with fixed labels. In approximate reinforcement learning, the target is often assembled from rewards plus estimated continuation values. So the chapter should lock this distinction early: approximate RL may have a regression-shaped loss, but it does not automatically have fixed-label supervision.
 
 ### Formal definition
 
@@ -125,6 +129,8 @@ A common per-sample squared prediction loss is
 $$
 \mathcal L_t(w) = \bigl(Y_t - \widehat Q(S_t,A_t;w)\bigr)^2.
 $$
+
+A local term should be fixed here because later chapters and implementations rely on it. A **semi-gradient update** is an update in which the target is treated as fixed for the purpose of differentiating the loss at the current step, even if that target was itself constructed from learned predictions and may be recomputed later. This is the standard move in many approximate RL algorithms. It matters because it keeps the update simple, but it also means the optimization is not identical to full differentiation through every dependency inside the target.
 
 More generally, one can consider expected losses such as
 
@@ -647,6 +653,8 @@ The first thing to notice is that DQN keeps the control logic of Q-learning. It 
 The terminal mask is not optional. If the next state is terminal, the continuation term must be excluded; otherwise the algorithm would incorrectly add value beyond episode end.
 
 The target is still bootstrapped and still off-policy in the sense discussed earlier. DQN does not escape the deadly triad by deleting those ingredients. It instead tries to control their interaction.
+
+That sentence should be made more operational. Replay buffers address one part of the problem by reducing short-range temporal correlation and improving data reuse across updates. Target networks address another part by slowing the movement of the bootstrap target so the predictor is not chasing a target generated by its own immediately changing parameters. Neither device eliminates approximation, bootstrapping, or off-policy learning. Each one instead reduces how violently those ingredients interact over short training windows.
 
 A common hidden assumption is that the max operator always provides a good control target. In practice, the max can also amplify overestimation bias, which motivates later variants such as Double DQN. That issue is beyond the main purpose of this chapter, but it is worth noticing that even the target structure itself can create additional approximation difficulties.
 

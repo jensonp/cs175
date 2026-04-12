@@ -12,6 +12,12 @@ This chapter therefore does foundational work. It introduces expectation, condit
 
 The chapter is written in a discrete finite-or-countable setting whenever sums are shown explicitly. That choice is made for transparency. The ideas themselves are not confined to discrete spaces, but the discrete setting lets the reader see exactly what is being averaged and exactly where each factor in a formula comes from.
 
+Before the chapter begins its formal sections, lock one three-part distinction that will matter repeatedly later.
+
+First, some expressions in this chapter are **notation choices**. They tell you how an object is indexed or written. Second, some expressions are **probability-structure claims**. They say what random variable exists, what law it is distributed under, or what conditioning event is being held fixed. Third, some expressions are **proof tools**. They are legal manipulations that follow from the previous probability structure once the relevant assumptions hold.
+
+These layers must not be collapsed. A notational convention such as writing $R_{t+1}$ instead of $R_t$ is not merely aesthetic; it reflects the event order from the previous chapter. A conditional expectation is not merely notation; it changes the probability law under which the average is taken. A move such as applying the law of total expectation or differentiating a log-factorized trajectory law is not “just rewriting”; it is a justified transformation that depends on assumptions already being in place. If the reader keeps those three layers separate, the later derivations become much harder to misread.
+
 ---
 
 ## 1. Standing assumptions
@@ -442,6 +448,8 @@ Reinforcement learning is centered on future cumulative reward. The object that 
 
 The object is the discounted return from time $t$, denoted $G_t$. It is a random variable built from future rewards. What is fixed is the starting decision time $t$. What varies are the future step offsets $k=0,1,2,\dots$. The role of $G_t$ is to summarize the entire future reward stream beginning immediately *after* the decision at time $t$.
 
+The indexing here is not arbitrary. The return from time $t$ starts with $R_{t+1}$ because Chapter 2 already fixed the event order: the decision at time $t$ chooses $A_t$, and only after the environment reacts does the next reward become available. So the return notation is carrying causal structure forward, not inventing a fresh convention inside probability notation.
+
 ### Formal definition
 
 For a continuing task,
@@ -801,6 +809,8 @@ $$
 
 This factorization says that a full trajectory probability is built by multiplying local contributions across time. The initial distribution picks the starting state. At each time step, the policy contributes the probability of the chosen action given the current state, and the environment contributes the probability of producing the next state-reward pair given the current state and action.
 
+At this point the chapter should say explicitly what kind of statement this is. The factorization is not yet a gradient formula and not yet a policy-optimization result. It is first a **probability-structure statement**: once the horizon, initial distribution, policy, and one-step environment law are fixed, the probability of a complete trajectory is the product of those local terms across time. Only after that law has been written down and the parameter dependence has been identified does the later log-derivative move become licensed. In other words, the trajectory law comes first; the gradient manipulation is downstream of it.
+
 The formula has the shape of a chain rule specialized to the sequential structure of the RL interaction. The reader should notice that the global trajectory law is not an opaque monolith. It is assembled from interpretable local mechanisms.
 
 ### Boundary conditions, assumptions, and failure modes
@@ -1086,6 +1096,8 @@ Rearranging,
 $$
 \nabla_\theta p_\theta(\tau) = p_\theta(\tau)\,\nabla_\theta \log p_\theta(\tau).
 $$
+
+This identity is easy to misuse if its scope is not stated. By itself, it is an algebraic identity about differentiable positive functions. In this chapter, it becomes useful because the object to which it is applied is a **factorized trajectory probability law**. Once that law is factorized and once the parameter $\theta$ is assumed to enter only through the policy, the log turns products into sums and the derivative terms associated with the environment disappear. So the later policy-gradient interpretation depends on two distinct things: the general log-derivative identity and the specific parameter-dependence structure of the RL trajectory law.
 
 ### Interpretation
 
