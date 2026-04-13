@@ -36,6 +36,12 @@ These are related, but they are not interchangeable. A definition is not yet a r
 
 By the end of the chapter, the reader should be able to explain not only what the value functions are, but why they must be introduced now, what exact problem they solve, how the Bellman expectation equations are derived line by line, why the operator viewpoint matters, what contraction contributes mathematically, how optimality equations differ from evaluation equations, and what the policy-improvement theorem really proves—and just as importantly, what it does not prove.
 
+### Scope and notation lock
+
+Unless time dependence is written explicitly, this chapter uses stationary shorthand $V^\pi(s)$ and $Q^\pi(s,a)$. For finite-horizon nonstationary settings, use $V_t^\pi$, $Q_t^\pi$, and optionally time-augmented state $(S_t,t)$.
+
+Objective scope note: this chapter's exact fixed-point and improvement statements are developed in discounted or finite-horizon settings. Average-reward optimality equations are a different objective class and are out of scope unless explicitly introduced.
+
 ---
 
 ## 1. Why value functions must appear now
@@ -734,7 +740,7 @@ What is fixed is the discounted setting and the norm used to measure function di
 
 ### Formal definition
 
-Under bounded value functions and $0\le \gamma <1$,
+Work on the function space of bounded real-valued functions on $\mathcal S$, equipped with the supremum norm $\|\cdot\|_\infty$. Under $0\le \gamma <1$,
 
 $$
 \|T^\pi V - T^\pi W\|_\infty \le \gamma \|V-W\|_\infty.
@@ -885,6 +891,7 @@ The first thing to notice is that the two equation families solve different prob
 ### Boundary conditions, assumptions, and failure modes
 
 These equations are again exact under the discounted MDP assumptions. However, the move from expectation to maximization changes both the interpretation and the computational challenge. The optimality operator is nonlinear because of the max, even if the expectation operator for a fixed policy is linear in the candidate function.
+For the displayed $\max$ form, assume finite nonempty action sets in each state (or replace $\max$ by $\sup$ in more general spaces).
 
 A frequent failure mode is to think that one can replace the policy average by a max at any time without changing the problem. That would silently turn policy evaluation into control. The distinction must remain sharp.
 
@@ -962,6 +969,8 @@ $$
 V^{\pi'}(s) \ge V^\pi(s) \qquad \text{for every state } s.
 $$
 
+Assumptions used by this exact statement should be kept explicit: discounted or appropriately time-augmented MDP structure, well-defined return and value functions, nonempty finite action sets (or an attained argmax under the chosen model class), exact $Q^\pi$, and exact greedy improvement with respect to that $Q^\pi$.
+
 The theorem should be read with the right strength. It proves a **comparison statement**: if a new policy is chosen greedily with respect to the old policy’s action values, then the new policy is at least as good as the old one in the value sense guaranteed by the theorem’s assumptions. What it does **not** prove all by itself is that one greedy step solves the whole control problem in arbitrary approximate settings, or that any empirical improvement heuristic inherits the same guarantee. The theorem is exact, but it is exact under the same clean MDP assumptions that made the Bellman identities exact.
 
 It proves a **statewise monotone improvement guarantee** under the exact assumptions of the theorem. It does not prove that the improved policy is globally optimal after one step unless the old action values already coincide with the optimal ones. It also does not by itself say how $Q^\pi$ was obtained, whether it is exact or approximate, or whether a sample-based learning algorithm using noisy estimates will preserve the same guarantee. Those later algorithmic questions are downstream. The theorem itself is exact, but its scope is exact too.
@@ -969,6 +978,7 @@ It proves a **statewise monotone improvement guarantee** under the exact assumpt
 ### Interpretation paragraph
 
 The theorem says that if you start from a policy $\pi$, evaluate it, and then build a new policy that always takes an action that looks best according to $Q^\pi$, the new policy cannot be worse than the old one at any state. This is a powerful monotonicity result. It does not claim immediate optimality. It claims safe improvement.
+It also does not claim strict improvement at every state; ties can produce equality on subsets of states.
 
 The first thing to notice is where the theorem begins. It begins with the relation
 
@@ -991,6 +1001,7 @@ The theorem assumes exact evaluation of $Q^\pi$ in the underlying MDP setting. I
 Another important boundary line is that the theorem does not say the greedy policy is optimal after one step. It says only that it is no worse than the current policy. Equality can occur; strict improvement is not guaranteed everywhere.
 
 A common failure mode is to assume that if one greedy step helps, then greedy behavior with respect to any rough estimate must also help. That is not what the exact theorem says.
+Scope line: Bellman optimality equations and policy-improvement guarantees are exact characterization statements; how approximate solvers or noisy greedy steps behave is a separate algorithmic question.
 
 ### Fully worked example
 

@@ -1,11 +1,10 @@
 # CS175 Lesson Rewrite Pack — Mastery-Focused Edition
 
 This repository is organized so GitHub renders each chapter folder automatically.
-The mastery-focused rewrite currently covers Chapters 2 through 9, and the original audit is preserved as a separate reference chapter.
+The mastery-focused rewrite currently covers Chapters 2 through 9.
 
-## Chapter map
+## Chapter Map
 
-- [01_audit/](01_audit/) - audit of the original document and what needed improvement
 - [02_problem-setup-and-agent-environment-interaction/](02_problem-setup-and-agent-environment-interaction/) - start here
 - [03_mathematical-preliminaries/](03_mathematical-preliminaries/)
 - [04_states-histories-mdps-and-objective/](04_states-histories-mdps-and-objective/)
@@ -15,7 +14,7 @@ The mastery-focused rewrite currently covers Chapters 2 through 9, and the origi
 - [08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/](08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/)
 - [09_reward-design-representation-evaluation-and-roadmap/](09_reward-design-representation-evaluation-and-roadmap/)
 
-## What changed
+## What Changed
 
 The original sequence already had a strong mathematical spine. These rewrites preserve that seriousness, but slow down the points where learners usually lose the thread:
 
@@ -27,7 +26,7 @@ The original sequence already had a strong mathematical spine. These rewrites pr
 - common confusion points are called out at the moment they first matter,
 - each chapter ends with a mastery check that tests whether the key distinctions are actually stable.
 
-## Reading order
+## Reading Order
 
 Read the chapters in order. The dependency chain matters.
 
@@ -40,18 +39,21 @@ Read the chapters in order. The dependency chain matters.
 7. [08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/](08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/)
 8. [09_reward-design-representation-evaluation-and-roadmap/](09_reward-design-representation-evaluation-and-roadmap/)
 
-Read [01_audit/](01_audit/) separately if you want the critique of the original source and the rationale for the rewrite.
-
-## Conventions used throughout
+## Conventions Used Throughout
 
 - Time is discrete, with index $t \in \{0,1,2,\ldots\}$.
+- Initial interaction convention: the episode starts with $O_0$ available, the first decision is $A_0$, and $H_0=(O_0)$.
 - The action chosen at time $t$ is $A_t$.
 - The reward caused by that action is observed after the transition and is written $R_{t+1}$.
+- Terminal convention for a horizon-$T$ episode: the last in-episode action is $A_{T-1}$, the last in-episode reward is $R_T$, optional terminal observation is $O_T$, and there is no in-episode $A_T$.
+- Bootstrapping convention at terminal transitions: continuation value is set to $0$ after terminal.
+- Stationarity shorthand: $\pi(a\mid s)$, $V^\pi(s)$, and $Q^\pi(s,a)$ default to stationary form; finite-horizon nonstationary forms are written explicitly as $\pi_t$, $V_t^\pi$, and $Q_t^\pi$ (or with time-augmented state $(S_t,t)$).
 - A value function is always an expectation of return under stated conditioning.
 - Sums over states or actions assume finite or countable spaces unless the text explicitly switches to integrals.
 - For continuing discounted tasks, the default assumption is $0 \le \gamma < 1$ and bounded rewards.
 - For finite-horizon episodic tasks, some formulas may allow $\gamma = 1$ if the horizon is finite and rewards are bounded.
+- Average-reward objectives are treated as out of scope unless explicitly stated in a chapter.
 
-## File contents
+## File Contents
 
 Each chapter is still a single `README.md` inside its folder so it renders cleanly on GitHub.

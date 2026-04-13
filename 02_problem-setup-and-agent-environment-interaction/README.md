@@ -12,6 +12,16 @@ So the point of this chapter is not to compress the problem. It is to describe t
 
 Before the formal sections begin, one local status distinction should be frozen. A **policy** can be defined before a Markov state has been justified, but at that stage it must be read as a rule over whatever information object is actually available at the decision point. Early in the chapter, that object may be the current observation or the full history. Only later, if a state representation is shown to preserve the right predictive information, may the policy be treated as a policy over that state in the exact MDP sense. So the reader should not infer “policy over states” merely from the appearance of action-selection notation. The policy concept comes early. The state-sufficiency license comes later.
 
+### Chapter-level notation and scope lock
+
+To keep the rest of this chapter unambiguous, fix five conventions now.
+
+1. Initial-interaction convention: interaction starts with an initial observation $O_0$, the first decision is $A_0$, and the initial history is $H_0=(O_0)$.
+2. Terminal-transition convention: if an episode ends at horizon index $T$, the last in-episode action is $A_{T-1}$ and the last in-episode reward is $R_T$; some environments also emit a terminal observation $O_T$; there is no in-episode action $A_T$.
+3. Bootstrapping convention at terminal transitions: continuation terms after terminal are set to $0$.
+4. Policy-time convention: write $\pi(a\mid x)$ as stationary shorthand unless time dependence is explicit; finite-horizon nonstationary forms are written as $\pi_t(a\mid x)$.
+5. State-language convention: keep three objects distinct throughout this chapter. Observation $O_t$ is what is revealed now. Agent-side summary $S_t=f(H_t)$ is what the learner keeps. A latent world state (if introduced later) is environment-side and is not automatically the same as either $O_t$ or $S_t$.
+
 ---
 
 ## 1. Time, decision points, and the order of events
@@ -427,6 +437,7 @@ Read the formula in the right order.
 First, hold fixed a particular history <em>H</em><sub>t</sub> = <em>h</em>. This means you are fixing the entire interaction record up to the current decision point. Next, hold fixed an action <em>A</em><sub>t</sub> = <em>a</em>. Once those are fixed, the environment defines a probability distribution over what comes next: the next observation and the next reward.
 
 The first thing to notice is that the law conditions on **history**, not merely on the current observation. That is deliberate. It expresses the most general possibility that the future can depend on aspects of the past that are not captured by what is currently observed.
+This should be read as a predictive-conditioning statement, not as a claim that the environment literally stores the full history as its internal memory object.
 
 The second thing to notice is that reward and next observation appear together. This is useful because both are immediate consequences of the same environment reaction to <em>A</em><sub>t</sub>.
 
@@ -541,6 +552,7 @@ A stochastic policy is a conditional distribution over actions:
 <p><em>π</em>(<em>a</em> | <em>x</em>) = <em>P</em>(<em>A</em><sub>t</sub> = <em>a</em> | <em>X</em><sub>t</sub> = <em>x</em>).</p>
 
 The notation uses <em>x</em>, not <em>s</em>, because we have not yet established that the policy input is a Markov state.
+Unless a time index is written explicitly, this chapter reads <em>π</em>(<em>a</em> | <em>x</em>) as stationary shorthand; finite-horizon nonstationary cases should be written as <em>π</em><sub>t</sub>(<em>a</em> | <em>x</em>).
 
 ### Interpretation
 
@@ -741,6 +753,7 @@ If an episode’s final action is chosen at time <em>T</em> - 1, then:
 
 - the last chosen action is <em>A</em><sub>T-1</sub>,
 - the final immediate reward tied to that action is <em>R</em><sub>T</sub>,
+- an optional terminal observation may be revealed as <em>O</em><sub>T</sub>,
 - there is no within-episode action <em>A</em><sub>T</sub>.
 
 ### Interpretation

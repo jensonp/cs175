@@ -24,6 +24,12 @@ First, some expressions in this chapter are **notation choices**. They tell you 
 
 These layers must not be collapsed. A notational convention such as writing $R_{t+1}$ instead of $R_t$ is not merely aesthetic; it reflects the event order from the previous chapter. A conditional expectation is not merely notation; it changes the probability law under which the average is taken. A move such as applying the law of total expectation or differentiating a log-factorized trajectory law is not “just rewriting”; it is a justified transformation that depends on assumptions already being in place. If the reader keeps those three layers separate, the later derivations become much harder to misread.
 
+### Scope lock for this chapter
+
+This chapter works in two regimes: discounted continuing tasks and finite-horizon episodic tasks used for trajectory calculus. Unless stated otherwise, average-reward formulations are out of scope here and are treated as a separate objective class.
+
+For Sections 10–14, state-based finite-horizon trajectory factorizations are introduced as modeling assumptions used to derive score-function identities. The full structural justification for when state-based conditioning is exact is developed in Chapter 4; here the role is derivational, not a new proof of state sufficiency.
+
 ---
 
 ## 1. Standing assumptions
@@ -219,6 +225,7 @@ $$
 Conditioning does not create new possible values of $X$. It changes the probability weights attached to the existing values of $X$ after the event $Y=y$ has been declared true. That distinction is essential. The numerical outcomes available to $X$ are the same kind of outcomes as before. What changes is the distribution because some worlds are no longer compatible with the information being held fixed.
 
 When reading $\mathbb{E}[X \mid Y=y]$, the right way to hear it is: “average the values of $X$, but do so inside the smaller universe in which $Y=y$ has happened.”
+This chapter uses the event-conditioned notation $\mathbb{E}[X\mid Y=y]$ for pedagogy; this does not deny the equivalent sigma-algebra view $\mathbb{E}[X\mid \sigma(Y)]$.
 
 ### Boundary conditions, assumptions, and failure modes
 
@@ -775,6 +782,8 @@ Retain that the last included reward in a horizon-$T$ episode is $R_T$. Do not c
 
 So far the chapter has discussed scalar random variables such as rewards and returns. Policy-gradient methods, however, reason about complete trajectories. To differentiate expected return over entire episodes, one must know what the probability of a whole trajectory is. This section exists to make that probability law explicit.
 
+Forward-reference note: the state-based trajectory factorization written here is used as a finite-horizon modeling assumption for gradient calculus. Chapter 4 supplies the full Markov-sufficiency discussion that licenses when state-based conditioning is exact.
+
 ### The object being introduced
 
 The object is a trajectory $\tau$ and its probability under a policy and environment. A trajectory is a whole time-ordered sequence of states, actions, rewards, and terminal state information across an episode. What is fixed is the horizon $T$, the initial-state distribution $\rho$, the policy $\pi$, and the environment transition-reward law $P(s',r\mid s,a)$. What varies is the particular realized sequence making up $\tau$.
@@ -1019,7 +1028,13 @@ The reader should notice the exact source of parameter dependence. Under the pre
 
 The interchange of derivative and summation is not automatically valid in every setting. This chapter assumes a finite horizon and enough regularity for the move to be legal.
 
-Another failure mode is to forget the assumption that $f(\tau)$ does not explicitly depend on $\theta$. If it does, then an additional derivative term appears by the product rule.
+Another failure mode is to forget the assumption that $f(\tau)$ does not explicitly depend on $\theta$. If it does, then the objective derivative splits as
+$$
+\nabla_\theta \sum_\tau p_\theta(\tau)f_\theta(\tau)
+= \sum_\tau \nabla_\theta p_\theta(\tau)\,f_\theta(\tau)
+ + \sum_\tau p_\theta(\tau)\,\nabla_\theta f_\theta(\tau),
+$$
+so an extra explicit-dependence term must be carried.
 
 ### Fully worked example
 
@@ -1110,6 +1125,7 @@ The first thing to notice is that the log is not introduced for aesthetic reason
 ### Boundary conditions, assumptions, and failure modes
 
 The expression $\log p_\theta(\tau)$ and the ratio formula require $p_\theta(\tau)>0$ for the trajectory under discussion. In practice, gradient formulas are interpreted on the support of the policy-induced trajectory distribution.
+Outside that support, $\log p_\theta(\tau)$ is not part of the estimator construction, and differentiability conditions must be checked on the support where probability mass is actually assigned.
 
 A common overstatement is to treat the identity itself as the policy-gradient theorem. It is not. It is a tool used inside the theorem’s derivation.
 

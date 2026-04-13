@@ -25,6 +25,16 @@ That separation is one of the conceptual load-bearing walls of the subject. With
 
 By the end of this chapter, the reader should be able to answer all of the following without vagueness. What exactly does history contain at a decision point? In what sense is a state representation merely a function of history? What does the Markov property actually compare? What changes once a representation is Markov? What does the performance objective optimize? And why does Bellman structure depend not just on having a summary, but on having the *right kind* of summary?
 
+### Scope and terminology lock
+
+Three meanings of "state" must stay separated throughout this chapter: observed input ($O_t$), agent-side summary used for control ($S_t=f(H_t)$), and latent environment/world state (hidden process variable). Only the second object is the chapter's candidate for Markov-state testing.
+
+When stationary notation is used, it is shorthand. In finite-horizon nonstationary settings, use time-indexed objects such as $\pi_t$, $V_t^\pi$, $Q_t^\pi$, or time-augmented state $(S_t,t)$.
+
+Markov claims in this chapter are process-level conditional-law statements, not heuristics about which states happen to be visited often under one policy. If current observations are insufficient, belief-state or memory-based constructions are the standard repair route developed in later material.
+
+Objective scope note: formulas here default to discounted continuing or finite-horizon episodic objectives. Average-reward formulations are outside this chapter's main scope unless explicitly stated.
+
 ---
 
 ## 1. History comes first
@@ -840,6 +850,7 @@ $$
 G_t = R_{t+1} + \gamma G_{t+1}
 $$
 does **not** by itself produce a Bellman equation. It only says how one return random variable decomposes into an immediate reward and a shifted return random variable. A Bellman equation requires an additional closure step: the continuation term must be expressible as a value of the same type under conditioning information that is sufficient for the next-step law. That closure step is exactly where the Markov property and the chosen value-function definition do real work. If you skip that logic and jump directly from algebraic recursion to Bellman form, you are using familiar notation without its license.
+So the missing step is probabilistic closure under the conditioning structure, not additional algebra on the return sum itself.
 
 ### Boundary conditions, assumptions, and failure modes
 

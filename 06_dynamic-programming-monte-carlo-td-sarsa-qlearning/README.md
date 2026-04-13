@@ -16,6 +16,16 @@ That difference should be stated in the sharpest possible way. In SARSA, the nex
 
 If this chapter works, the reader should stop seeing these methods as a bag of famous names and start seeing them as clean answers to a precise design question: **given what information is available, what target can we construct for learning value?**
 
+### Scope and omission lock
+
+This chapter intentionally centers the core tabular line: dynamic programming, Monte Carlo prediction/control intuition, one-step TD, SARSA, and Q-learning. Two standard extensions are intentionally omitted for focus: off-policy Monte Carlo with importance sampling and Expected SARSA.
+
+Terminal convention used throughout: when the sampled next state is terminal, bootstrap continuation is set to $0$.
+
+Convergence-scope note for tabular stochastic-approximation updates: exact asymptotic guarantees rely on finite MDP assumptions, sufficient recurring visitation of updated pairs, and Robbins-Monro-type step-size conditions.
+
+Definition guardrail: off-policy means a mismatch between behavior policy and target policy in the update target; replay, data age, or staleness alone do not define off-policy.
+
 ---
 
 ## 1. The organizing map of the chapter
@@ -950,6 +960,7 @@ The first thing to notice is the guarantee this creates: every action has positi
 ### Boundary conditions / assumptions / failure modes
 
 The formulas above assume a unique greedy action. If there are ties, the probability assignment among greedy actions depends on the tie-breaking convention.
+Common convention: define the maximizing set $\mathcal G(s)=\arg\max_a Q(s,a)$ and split the greedy mass uniformly over $\mathcal G(s)$, then add the uniform exploration mass over all actions.
 
 A common failure mode is to say that the greedy action gets probability $1-\epsilon$. That misses the fact that the exploratory branch can also pick the greedy action.
 

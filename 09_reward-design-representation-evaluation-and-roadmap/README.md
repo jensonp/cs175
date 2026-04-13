@@ -14,6 +14,12 @@ The local hierarchy should be stated once with maximal sharpness. A **reward** i
 
 The chapter closes with a roadmap because these issues also define how the subject naturally grows. Once reward specification, state sufficiency, and evaluation discipline are understood, the next questions are no longer “which update rule do I memorize?” but “what problem am I actually solving, with what information, and how do I know the evidence supports the claim?”
 
+### Scope and theorem lock
+
+For potential-based shaping claims, keep theorem conditions explicit: use the same discount factor in base and shaped returns, apply shaping consistently to the same state representation used by control/evaluation, and handle terminal boundary terms explicitly (for example by setting terminal potential to zero when using that convention).
+
+Policy-invariance under theorem conditions does not imply identical learning dynamics. Two reward specifications can share the same optimal-policy set yet produce very different optimization speed, exploration behavior, and instability profile.
+
 ---
 
 ## 1. Reward, return, and value are different objects
@@ -651,7 +657,7 @@ Compression is good when it preserves decision-relevant predictive structure. Th
 
 ### Connection to later material
 
-This section points directly toward partial observability, belief states, recurrent policies, predictive state representations, and representation learning for control. It also clarifies why some function approximation failures in RL are not merely optimization failures but information failures.
+This section points directly toward memory-augmented policies, recurrent models, belief-state filtering, predictive state representations, and representation learning for control. It also clarifies why some function approximation failures in RL are not merely optimization failures but information failures.
 
 ### Retain / Do not confuse
 
@@ -689,7 +695,7 @@ $$
 \widehat\mu_N = \frac{1}{N}\sum_{i=1}^N X_i.
 $$
 
-One may also report sample variance, standard deviation, confidence intervals, interquartile range, or other uncertainty summaries, depending on the protocol.
+One may also report sample variance, standard deviation, confidence intervals, bootstrap intervals, interquartile range, and median performance, depending on the protocol.
 
 ### Interpretation paragraph
 
@@ -700,8 +706,9 @@ The first thing to notice is that stochasticity enters at many levels: parameter
 ### Boundary conditions / assumptions / failure modes
 
 The simple interpretation of $\widehat\mu_N$ assumes the runs are meaningfully comparable and produced under the same protocol except for the intended randomization. If the training budget, reward scale, evaluation frequency, or environment version changes across runs, then averaging them is not clean evidence.
+Model-selection protocol should be separated from final evaluation: hyperparameter tuning and checkpoint selection should use a declared selection split/procedure, and final reported performance should be computed on a held-out evaluation protocol that is not reused for selection.
 
-A common failure mode is to report the best seed rather than the distribution across seeds. Another is to average training rewards rather than evaluation returns without making that distinction explicit. Yet another is to report a mean with no spread measure, making it impossible to assess stability.
+A common failure mode is to report the best seed or best checkpoint as if it were typical performance. Another is to average training rewards rather than evaluation returns without making that distinction explicit. Yet another is to report a mean with no spread measure, making it impossible to assess stability.
 
 ### Fully worked example
 
@@ -781,13 +788,14 @@ A credible evaluation report should specify at least the following:
 6. the number of seeds,
 7. the summary statistic across seeds,
 8. a measure of spread or uncertainty,
-9. and ablations or controlled comparisons that isolate major components.
+9. the model-selection rule (hyperparameter search and checkpoint selection protocol),
+10. and ablations or controlled comparisons that isolate major components.
 
 ### Interpretation paragraph
 
 Each item on this list answers a different ambiguity.
 
-The environment and task define what problem was solved. The reward specification defines the actual objective. The representation tells us what information the learner had. The training budget determines whether a method is sample efficient or simply overtrained. The evaluation policy clarifies whether one reports greedy behavior, stochastic behavior, or something else. The number of seeds and summary statistics tell us whether the result is typical. The uncertainty measure tells us how stable it is. Ablations tell us which ingredients actually matter.
+The environment and task define what problem was solved. The reward specification defines the actual objective. The representation tells us what information the learner had. The training budget determines whether a method is sample efficient or simply overtrained. The evaluation policy clarifies whether one reports greedy behavior, stochastic behavior, or something else. The number of seeds and summary statistics tell us whether the result is typical. The uncertainty measure tells us how stable it is. The model-selection rule separates tuning from final evaluation. Ablations tell us which ingredients actually matter.
 
 The first thing to notice is that missing any one of these can invalidate comparisons. For example, if two methods are compared under different training budgets or different evaluation policies, the resulting numbers no longer answer the intended question cleanly.
 
@@ -817,7 +825,9 @@ Sixth and seventh, **over how many seeds and with what summary statistic?** A me
 
 Eighth, **what uncertainty was reported?** If the mean is 250 with very high variance, the practical story differs from a tightly concentrated result.
 
-Ninth, **what ablations were run?** If the method includes a new loss, a new architecture, and a new replay scheme, then without ablations one cannot tell which component actually contributed.
+Ninth, **how were hyperparameters and checkpoints selected?** Selecting the best checkpoint on the same evaluation metric used for final reporting without a declared selection protocol can leak selection bias into the headline number.
+
+Tenth, **what ablations were run?** If the method includes a new loss, a new architecture, and a new replay scheme, then without ablations one cannot tell which component actually contributed.
 
 The final interpretation is that “average return 250” is not a self-contained scientific result. It becomes meaningful only when embedded inside a disciplined reporting protocol.
 
@@ -884,6 +894,8 @@ The first thing to notice is that ablation is a causal-isolation idea, not a nam
 In some systems, holding everything else exactly fixed may create mismatches or instability because components interact. When that happens, the researcher must explain the compromise honestly. But the burden remains: the closer the comparison is to single-component isolation, the stronger the inference.
 
 A common failure mode is to remove one component and then retune several hyperparameters, change the network, and alter the optimizer “for fairness.” At that point the comparison is no longer a clean ablation of the original component.
+If retuning is included, report it as a separate result class, not as the primary ablation claim.
+Recommended reporting rule: use two tables. Table 1 contains strict ablations with no retuning beyond baseline protocol. Table 2 contains retuned variants, clearly labeled as variant-performance studies rather than pure ablations.
 
 ### Fully worked example
 
