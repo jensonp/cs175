@@ -76,10 +76,7 @@ Another hidden assumption is that the chapter is describing the interaction from
 
 ### Fully worked example
 
-Consider a thermostat controller that chooses between two actions at each minute:
-$$
-A_t \in \{\text{heat on}, \text{heat off}\}.
-$$
+Consider a thermostat controller that chooses between two actions at each minute: $A_t \in \{\text{heat on}, \text{heat off}\}$.
 At minute $t$, the controller can already read the current measured temperature $O_t$. That reading belongs to the decision point. The controller has it **before** it chooses the action. The next temperature reading $O_{t+1}$ does not yet exist for the controller, because the room has not yet responded to the current action. The reward $R_{t+1}$ also does not yet exist for the controller at the instant of choice, because that reward is meant to summarize the consequences of what is about to be done.
 
 Now follow the order as a causal chain rather than as a checklist.
@@ -679,14 +676,7 @@ Another failure mode is to equate reward with return. Reward is a one-step scala
 
 ### Fully worked example
 
-Suppose an agent at time $t$ has two available choices. One choice gives an immediate reward of $R_{t+1}=5$ but leads to poor future outcomes, so the subsequent rewards are $R_{t+2}=0$ and $R_{t+3}=0$. The other choice gives only $R_{t+1}=1$ immediately, but changes the later trajectory so that $R_{t+2}=4$ and $R_{t+3}=4$. If the task is episodic and ends at time $t+3$, then the first choice produces
-$$
-G_t = 5 + 0 + 0 = 5,
-$$
-while the second produces
-$$
-G_t = 1 + 4 + 4 = 9.
-$$
+Suppose an agent at time $t$ has two available choices. One choice gives an immediate reward of $R_{t+1}=5$ but leads to poor future outcomes, so the subsequent rewards are $R_{t+2}=0$ and $R_{t+3}=0$. The other choice gives only $R_{t+1}=1$ immediately, but changes the later trajectory so that $R_{t+2}=4$ and $R_{t+3}=4$. If the task is episodic and ends at time $t+3$, then the first choice produces $G_t = 5 + 0 + 0 = 5$, while the second produces $G_t = 1 + 4 + 4 = 9$.
 The point is not merely that one sum is larger. The example shows why immediate reward and return answer different questions. Immediate reward tells you what became visible right after the action. Return tells you what that action set in motion across the rest of the episode. A reader who remembers only the local reward will prefer the first action. A reader who tracks the return correctly will see that the second action is better for the objective actually being optimized.
 
 If instead the task were continuing with discount factor <em>γ</em> = 0.5, then:
