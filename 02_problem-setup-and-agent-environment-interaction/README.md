@@ -14,13 +14,12 @@ Before the formal sections begin, one local status distinction should be frozen.
 
 ### Chapter-level notation and scope lock
 
-To keep the rest of this chapter unambiguous, fix five conventions now.
+To keep the rest of this chapter unambiguous, fix four conventions now.
 
 1. Initial-interaction convention: interaction starts with an initial observation $O_0$, the first decision is $A_0$, and the initial history is $H_0=(O_0)$.
 2. Terminal-transition convention: if an episode ends at horizon index $T$, the last in-episode action is $A_{T-1}$ and the last in-episode reward is $R_T$; some environments also emit a terminal observation $O_T$; there is no in-episode action $A_T$.
 3. Bootstrapping convention at terminal transitions: continuation terms after terminal are set to $0$.
 4. Policy-time convention: write $\pi(a\mid x)$ as stationary shorthand unless time dependence is explicit; finite-horizon nonstationary forms are written as $\pi_t(a\mid x)$.
-5. State-language convention: keep three objects distinct throughout this chapter. Observation $O_t$ is what is revealed now. Agent-side summary $S_t=f(H_t)$ is what the learner keeps. A latent world state (if introduced later) is environment-side and is not automatically the same as either $O_t$ or $S_t$.
 
 ---
 
@@ -49,6 +48,8 @@ The operational test is simple. Ask two separate questions. First: **what inform
 Time is discrete:
 
 <p><em>t</em> ∈ {0, 1, 2, ...}.</p>
+
+A left-boundary convention matters too. Before the first action <em>A</em><sub>0</sub>, the environment has already initialized the decision process by providing <em>O</em><sub>0</sub>. There is no within-episode reward before <em>A</em><sub>0</sub>, so the first reward tied to agent choice is <em>R</em><sub>1</sub>.
 
 At each time index <em>t</em>, there is a **decision point**: the moment immediately before the agent chooses action <em>A</em><sub>t</sub>.
 
@@ -755,6 +756,8 @@ If an episode’s final action is chosen at time <em>T</em> - 1, then:
 - the final immediate reward tied to that action is <em>R</em><sub>T</sub>,
 - an optional terminal observation may be revealed as <em>O</em><sub>T</sub>,
 - there is no within-episode action <em>A</em><sub>T</sub>.
+
+If that terminal observation convention is used, <em>O</em><sub>T</sub> is part of the post-action outcome of <em>A</em><sub>T-1</sub>; it does not create a new within-episode decision point.
 
 ### Interpretation
 

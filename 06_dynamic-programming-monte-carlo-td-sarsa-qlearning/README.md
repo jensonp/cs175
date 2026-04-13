@@ -25,6 +25,7 @@ Terminal convention used throughout: when the sampled next state is terminal, bo
 Convergence-scope note for tabular stochastic-approximation updates: exact asymptotic guarantees rely on finite MDP assumptions, sufficient recurring visitation of updated pairs, and Robbins-Monro-type step-size conditions.
 
 Definition guardrail: off-policy means a mismatch between behavior policy and target policy in the update target; replay, data age, or staleness alone do not define off-policy.
+Unless explicitly stated otherwise, sums over states and actions assume finite or countable spaces; continuous-space analogues replace sums by integrals with the corresponding measurability/density conditions.
 
 ---
 
@@ -594,6 +595,8 @@ This distinction is not the conceptual center of the chapter, but understanding 
 
 Retain that first-visit and every-visit Monte Carlo differ only in how repeated state occurrences inside an episode are counted. Do not confuse that with the bootstrap distinction.
 
+Estimator-interpretation note: with per-state (or per-state-action) step size $\alpha_n=1/n$, Monte Carlo updates recover the empirical sample average of observed returns for that object. With constant step size, the estimate is recency-weighted rather than an exact sample mean, which can be useful in nonstationary settings but should be interpreted differently.
+
 ---
 
 ## 7. Temporal-difference learning: learning from one-step samples plus bootstrap
@@ -617,13 +620,14 @@ $$
 A one-step TD target replaces the exact expectation by the realized one-step sample:
 
 $$
-Y_t^{\mathrm{TD}} = R_{t+1} + \gamma V(S_{t+1}).
+Y_t^{\mathrm{TD}} = R_{t+1} + \gamma(1-\zeta_t)V(S_{t+1}),
 $$
+where $\zeta_t \in \{0,1\}$ marks whether the sampled transition is terminal.
 
 The TD error is
 
 $$
-\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t).
+\delta_t = R_{t+1} + \gamma(1-\zeta_t)V(S_{t+1}) - V(S_t).
 $$
 
 The incremental update is
@@ -642,7 +646,7 @@ The trade can be stated more mechanically. Monte Carlo waits until later so that
 
 ### Boundary conditions / assumptions / failure modes
 
-For terminal next states, the continuation term is conventionally treated as zero, so the target becomes just the terminal reward. This boundary condition matters in episodic tasks.
+Equivalent shorthand is to define terminal continuation value as zero and omit the explicit mask. Either convention is fine, but the boundary should be made explicit.
 
 A common failure mode is to describe TD as “using the Bellman equation directly.” That is too loose. The Bellman equation is an exact conditional expectation identity. TD uses one realized sample as a noisy surrogate for that expectation.
 
@@ -657,13 +661,13 @@ $$
 and lands in next state $S_{t+1}=s'$. Let
 
 $$
-V(s)=2.0, \qquad V(s')=4.0, \qquad \gamma=0.5, \qquad \alpha=0.1.
+V(s)=2.0, \qquad V(s')=4.0, \qquad \gamma=0.5, \qquad \alpha=0.1, \qquad \zeta_t=0.
 $$
 
 The TD target is
 
 $$
-Y_t^{\mathrm{TD}} = 3 + 0.5(4.0)=3+2=5.
+Y_t^{\mathrm{TD}} = 3 + 0.5(1-0)(4.0)=3+2=5.
 $$
 
 The TD error is then
@@ -881,6 +885,7 @@ The first thing to notice is that “on-policy versus off-policy” is not a sta
 ### Boundary conditions / assumptions / failure modes
 
 A common failure mode is to think that off-policy means “the method is greedy” or “the method uses random behavior.” Neither is the definition. Another is to think that if the update contains an $\epsilon$-greedy behavior rule, the method must be on-policy. That is only true if the learning target also uses that same $\epsilon$-greedy continuation.
+Coverage is a separate requirement: behavior must place positive probability on the state-action situations needed by the target/control objective, otherwise the target cannot be reliably learned from the collected data.
 
 ### Fully worked example
 
@@ -1025,7 +1030,7 @@ The object is the SARSA update, named from the transition tuple $(S_t,A_t,R_{t+1
 The one-step SARSA target is
 
 $$
-Y_t^{\mathrm{SARSA}} = R_{t+1} + \gamma Q(S_{t+1},A_{t+1}),
+Y_t^{\mathrm{SARSA}} = R_{t+1} + \gamma(1-\zeta_t)Q(S_{t+1},A_{t+1}),
 $$
 
 where $A_{t+1}$ is the actual next action selected by the current behavior policy.
@@ -1033,7 +1038,7 @@ where $A_{t+1}$ is the actual next action selected by the current behavior polic
 The update is
 
 $$
-Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \alpha \Bigl(R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t)\Bigr).
+Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \alpha \Bigl(R_{t+1} + \gamma(1-\zeta_t)Q(S_{t+1},A_{t+1}) - Q(S_t,A_t)\Bigr).
 $$
 
 ### Interpretation paragraph
@@ -1044,7 +1049,7 @@ The first thing to notice is that the next action is sampled, not optimized over
 
 ### Boundary conditions / assumptions / failure modes
 
-If $S_{t+1}$ is terminal, the continuation term is conventionally set to zero.
+If $S_{t+1}$ is terminal, this is handled by $\zeta_t=1$, which removes continuation.
 
 A major failure mode is to describe SARSA as “Q-learning with exploration.” That is inaccurate. SARSA’s defining feature is not merely that the behavior is exploratory. It is that the target uses the action actually sampled from the behavior policy.
 
@@ -1068,14 +1073,15 @@ $$
 \gamma=0.5,
 $$
 $$
-\alpha=0.1.
+\alpha=0.1, \qquad \zeta_t=0.
 $$
 
 Then the SARSA target is
 
 $$
-2 + 0.5(4.0)=2+2=4.
+Y_t^{\mathrm{SARSA}} = 2 + 0.5(1-\zeta_t)(4.0).
 $$
+For the nonterminal case $\zeta_t=0$, this is $4$.
 
 The temporal-difference error is
 
@@ -1122,26 +1128,28 @@ The object is the Q-learning update. It answers the question: how can we update 
 The Q-learning target is
 
 $$
-Y_t^{\mathrm{Q}} = R_{t+1} + \gamma \max_{a'} Q(S_{t+1},a').
+Y_t^{\mathrm{QL}} = R_{t+1} + \gamma(1-\zeta_t)\max_{a'} Q(S_{t+1},a').
 $$
 
 The update is
 
 $$
-Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \alpha \Bigl(R_{t+1} + \gamma \max_{a'}Q(S_{t+1},a') - Q(S_t,A_t)\Bigr).
+Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \alpha \Bigl(R_{t+1} + \gamma(1-\zeta_t)\max_{a'}Q(S_{t+1},a') - Q(S_t,A_t)\Bigr).
 $$
 
 ### Interpretation paragraph
 
 Q-learning is still a one-step TD method. It still uses the observed immediate reward and still bootstraps from current estimates. But the continuation is no longer the value of the action the behavior policy actually selected. Instead, it is the value of the greedy next action under the current action-value table. In other words, the target asks: **if I were to continue optimally according to my current estimates from the next state onward, what target would that imply?**
+This is the Bellman-optimality lineage in one line: the continuation is evaluated as greedy-from-next-state onward, regardless of which exploratory action behavior actually sampled there.
 
 The first thing to notice is that the next action in the target is *inserted by maximization*, not observed in the data. That is the conceptual break from SARSA.
 
 ### Boundary conditions / assumptions / failure modes
 
-If the next state is terminal, the continuation term is taken as zero.
+If the next state is terminal, this is handled by $\zeta_t=1$, which removes continuation.
 
 A common failure mode is to say Q-learning is on-policy because the agent may behave $\epsilon$-greedily with respect to the same $Q$ function. That is not enough. If the target uses $\max_{a'}Q(S_{t+1},a')$ while behavior sometimes chooses exploratory actions, then behavior and target policies differ, which makes the method off-policy in the usual setting.
+Classical convergence guarantees for this update belong to the tabular setting under standard conditions such as sufficient repeated exploration of all state-action pairs and suitably diminishing step sizes; these guarantees do not transfer automatically to nonlinear approximation.
 
 ### Fully worked example
 
@@ -1162,7 +1170,7 @@ $$
 \gamma=0.5,
 $$
 $$
-\alpha=0.1.
+\alpha=0.1, \qquad \zeta_t=0.
 $$
 
 The Q-learning target is not based on the sampled next action $a_2$. It is based on the maximizing next action value:
@@ -1174,7 +1182,7 @@ $$
 So the target is
 
 $$
-2 + 0.5(4.0)=4.
+Y_t^{\mathrm{QL}} = 2 + 0.5(1-0)(4.0)=4.
 $$
 
 The TD error is

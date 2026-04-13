@@ -605,6 +605,7 @@ The first thing to notice is that compactness and sufficiency are different prop
 A tempting project inference is: "the agent trained better after we changed the representation, so the representation is now a good state." That conclusion is too strong. Better optimization can come from many things: easier function approximation, better inductive bias, lower variance, changed reward shaping, or dataset quirks. None of those by themselves prove that the representation has become Markov or that it preserves the one-step law needed for the later theory.
 
 So when evaluating representations, separate two questions. First: **does this representation improve learning or performance under the current setup?** Second: **what theoretical property does it actually support?** Practical improvement is valuable. It is not the same thing as a proof of state sufficiency.
+Improved training curves after a representation change are evidence about learnability under the chosen algorithm, not a proof that the new representation is Markov-sufficient for the underlying process.
 
 ### Boundary conditions / assumptions / failure modes
 
@@ -707,6 +708,7 @@ The first thing to notice is that stochasticity enters at many levels: parameter
 
 The simple interpretation of $\widehat\mu_N$ assumes the runs are meaningfully comparable and produced under the same protocol except for the intended randomization. If the training budget, reward scale, evaluation frequency, or environment version changes across runs, then averaging them is not clean evidence.
 Model-selection protocol should be separated from final evaluation: hyperparameter tuning and checkpoint selection should use a declared selection split/procedure, and final reported performance should be computed on a held-out evaluation protocol that is not reused for selection.
+A second reporting split should be explicit too: final return and sample efficiency are different claims. A method that eventually reaches a higher score after far more interaction is not automatically superior on sample-efficiency grounds.
 
 A common failure mode is to report the best seed or best checkpoint as if it were typical performance. Another is to average training rewards rather than evaluation returns without making that distinction explicit. Yet another is to report a mean with no spread measure, making it impossible to assess stability.
 
@@ -842,6 +844,7 @@ A student may now repeat the sentence "the protocol is part of the proposition" 
 Two experiments can each report 250 and still be making different claims, because the meaning of the number depends on the experimental contract that produced it. This is why empirical RL evaluation is not bookkeeping attached after the result. The protocol determines what the reported quantity is a measurement **of**.
 
 The general lesson is that evaluation numbers are never self-explanatory. They derive meaning from the experimental contract around them.
+Scientific-claim template: under this environment, reward, observation regime, training budget, evaluation policy, seed protocol, and selection rule, this method achieves this performance level with this uncertainty.
 
 ### Misconception or counterexample block
 
@@ -896,6 +899,7 @@ In some systems, holding everything else exactly fixed may create mismatches or 
 A common failure mode is to remove one component and then retune several hyperparameters, change the network, and alter the optimizer “for fairness.” At that point the comparison is no longer a clean ablation of the original component.
 If retuning is included, report it as a separate result class, not as the primary ablation claim.
 Recommended reporting rule: use two tables. Table 1 contains strict ablations with no retuning beyond baseline protocol. Table 2 contains retuned variants, clearly labeled as variant-performance studies rather than pure ablations.
+A fair ablation should also keep tuning and evaluation budget matched across variants; otherwise component-isolation claims are confounded by search effort.
 
 ### Fully worked example
 
@@ -977,7 +981,7 @@ A common failure mode is to reason verbally—“a more negative living reward e
 
 ### Fully worked example
 
-Consider two deterministic routes to a goal with discount factor $\gamma=1$ for simplicity. Route A reaches the goal in two steps and yields terminal reward $8$. Route B reaches the goal in four steps and yields terminal reward $12$. Let the living reward be $c$ per nonterminal step. The comparison is now exact enough to compute a threshold rather than rely on verbal intuition about “encouraging speed.”
+Consider two deterministic routes to a goal with discount factor $\gamma=1$ for simplicity. This is only for a finite-horizon comparison with no risk of infinite cycling; continuing tasks with loops require additional care under $\gamma=1$. Route A reaches the goal in two steps and yields terminal reward $8$. Route B reaches the goal in four steps and yields terminal reward $12$. Let the living reward be $c$ per nonterminal step. The comparison is now exact enough to compute a threshold rather than rely on verbal intuition about “encouraging speed.”
 
 Now write the returns explicitly.
 

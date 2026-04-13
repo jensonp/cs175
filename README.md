@@ -46,8 +46,9 @@ Read the chapters in order. The dependency chain matters.
 - The action chosen at time $t$ is $A_t$.
 - The reward caused by that action is observed after the transition and is written $R_{t+1}$.
 - Terminal convention for a horizon-$T$ episode: the last in-episode action is $A_{T-1}$, the last in-episode reward is $R_T$, optional terminal observation is $O_T$, and there is no in-episode $A_T$.
-- Bootstrapping convention at terminal transitions: continuation value is set to $0$ after terminal.
-- Stationarity shorthand: $\pi(a\mid s)$, $V^\pi(s)$, and $Q^\pi(s,a)$ default to stationary form; finite-horizon nonstationary forms are written explicitly as $\pi_t$, $V_t^\pi$, and $Q_t^\pi$ (or with time-augmented state $(S_t,t)$).
+- Terminal-transition convention for sampled updates: either use an explicit terminal indicator $\zeta_t \in \{0,1\}$ and write continuation terms with $(1-\zeta_t)$, or equivalently define continuation value at terminal as $0$.
+- Stationary-policy convention: unless a chapter explicitly introduces a finite-horizon stage index, policy notation is written in stationary shorthand as $\pi(a\mid s)$ (or $\pi(a\mid x)$). When stage dependence matters, use $\pi_t(a\mid s)$ or $\pi_t(a\mid x)$ explicitly.
+- State-language warning: depending on chapter context, $S_t$ may denote an agent-side Markov state representation or an assumed environment state variable in a model description. These are related but not identical objects.
 - A value function is always an expectation of return under stated conditioning.
 - Sums over states or actions assume finite or countable spaces unless the text explicitly switches to integrals.
 - For continuing discounted tasks, the default assumption is $0 \le \gamma < 1$ and bounded rewards.

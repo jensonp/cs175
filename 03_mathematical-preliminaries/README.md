@@ -46,6 +46,8 @@ The object here is not a single formula but a framework of admissibility. These 
 
 Throughout this chapter, when a formula is written as a sum over states, actions, rewards, or trajectories, assume the relevant space is finite or countable.
 
+Unless explicitly stated otherwise, random variables appearing inside expectations are assumed integrable so the displayed expectations are well-defined.
+
 When continuing tasks are discussed, assume rewards are bounded almost surely by some constant $R_{\max} \ge 0$:
 
 $$
@@ -465,6 +467,12 @@ For a continuing task,
 $$
 G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}.
 $$
+
+For a finite-horizon episodic task ending at decision stage $T-1$, the return from time $t$ is
+$$
+G_t = R_{t+1} + R_{t+2} + \cdots + R_T.
+$$
+In that case the sum is finite by construction, so discounted and undiscounted variants can be discussed without invoking infinite-series convergence.
 
 ### Interpretation
 
@@ -1027,6 +1035,7 @@ The reader should notice the exact source of parameter dependence. Under the pre
 ### Boundary conditions, assumptions, and failure modes
 
 The interchange of derivative and summation is not automatically valid in every setting. This chapter assumes a finite horizon and enough regularity for the move to be legal.
+In more general integral settings, one needs a theorem-level justification (for example a dominated-convergence-style condition for differentiation under the integral sign).
 
 Another failure mode is to forget the assumption that $f(\tau)$ does not explicitly depend on $\theta$. If it does, then the objective derivative splits as
 $$
@@ -1126,6 +1135,7 @@ The first thing to notice is that the log is not introduced for aesthetic reason
 
 The expression $\log p_\theta(\tau)$ and the ratio formula require $p_\theta(\tau)>0$ for the trajectory under discussion. In practice, gradient formulas are interpreted on the support of the policy-induced trajectory distribution.
 Outside that support, $\log p_\theta(\tau)$ is not part of the estimator construction, and differentiability conditions must be checked on the support where probability mass is actually assigned.
+The clean score-function derivation is simplest when that support does not change with $\theta$ on the region being differentiated; support changes require additional boundary care.
 
 A common overstatement is to treat the identity itself as the policy-gradient theorem. It is not. It is a tool used inside the theorem’s derivation.
 

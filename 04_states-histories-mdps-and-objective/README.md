@@ -350,6 +350,8 @@ $$
 P(S_{t+1}, R_{t+1} \mid H_t, A_t) = P(S_{t+1}, R_{t+1} \mid S_t, A_t).
 $$
 
+Because return is built recursively from one-step reward plus continuation, this one-step conditional-law equality is exactly the closure condition needed to move from full-history conditioning to state-indexed Bellman reasoning.
+
 ### What the Markov property is actually claiming
 
 The Markov property is not the vague statement that the current state "contains all relevant information." In these notes it should be read more sharply: once $S_t$ and $A_t$ are fixed, the conditional law of the next relevant one-step outcome does not depend on the fuller past history. That is a statement about **conditional distributions**, not about introspective completeness or human notions of relevance.
@@ -359,6 +361,7 @@ This sharper reading matters because it blocks a common oral-exam failure. A stu
 ### What the Markov property now licenses
 
 Once the Markov condition holds for the chosen representation, a new compression becomes legal. Future one-step laws may be written in terms of the current state and action alone, rather than in terms of the entire history. That means the learner may define state-indexed reward and transition descriptions, state-conditioned value functions, and Bellman-style recursive equations without silently dropping information that still matters. This is the exact reason the Markov property is load-bearing. It does not merely rename the summary as a “state.” It changes what forms of reasoning are now exact.
+In finite-horizon settings, this may require including stage information in the state description (or explicitly using time-indexed kernels) when dynamics, rewards, or objectives are time-dependent.
 
 Just as important is what it does **not** license automatically. It does not guarantee that the representation is minimal. It does not guarantee that learning with function approximation will be easy. It does not guarantee that the policy class can exploit the representation well. The license is exactness of the local probabilistic reduction, not a blanket promise of practical tractability.
 
@@ -659,6 +662,7 @@ $$
 ### Interpretation
 
 The return $G_t$ is the discounted cumulative future reward from time $t$ onward. The objective $J(\pi)$ is the expected value of that return when the system starts from the relevant initial distribution and then evolves under policy $\pi$ and the environment.
+This section's default objective is discounted return; average-reward objectives require a different setup and should not be silently substituted into this notation.
 
 The reader should notice what this objective is *not*. It is not “maximize the immediate next reward,” except in degenerate special cases such as $\gamma=0$. The objective judges policies by the long-run consequences of the trajectories they generate.
 
@@ -811,6 +815,7 @@ $$
 A local distinction is needed here to prevent a later category error. Any return random variable can be decomposed algebraically into an immediate reward term plus a discounted continuation return. That statement is true before any Markov assumption is made, because it is only a decomposition of a sum. What it does **not** yet give you is a Bellman equation indexed only by state. Bellman-style state recursion requires an additional step: the future distribution must depend on the past only through a state variable that is Markov in the relevant sense. So the reader should separate two claims. The first is a generic algebraic identity for returns. The second is an exact state-based expectation identity. The first does not automatically license the second.
 
 That identity is always true whenever return is defined. But many students then slide too quickly into believing that Bellman equations are automatic. This section exists to stop that slide. Bellman equations require not just return recursion, but the right conditioning structure.
+The Bellman move here uses four ingredients together: return recursion, fixed-policy (or fixed-first-action) conditioning, a Markov state representation that justifies the conditioning reduction, and assumptions that keep the relevant expectations well-defined.
 
 ### The object being introduced
 

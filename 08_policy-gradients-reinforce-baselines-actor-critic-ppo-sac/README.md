@@ -21,6 +21,8 @@ A second three-level distinction should be fixed here because the whole chapter 
 Most derivations in this chapter are presented in finite-horizon episodic form for clarity. The same ideas extend more broadly, but boundary terms and regularity checks must be handled explicitly outside that setting.
 
 Unless stated otherwise, this chapter contrasts plain discounted expected-return objectives with maximum-entropy objectives. Average-reward policy-gradient formulations are outside the main scope.
+These derivations assume stochastic policies; deterministic policy-gradient identities are different objects and are not derived here.
+Unless explicitly stated otherwise, sums over states and actions assume finite or countable spaces; continuous-space analogues replace sums by integrals with corresponding measurability/density assumptions.
 
 ---
 
@@ -204,6 +206,7 @@ Several hidden assumptions matter.
 First, the interchange of derivative and summation needs justification. In finite-horizon discrete problems this is usually straightforward, but one should know that it is an actual mathematical move, not magic.
 
 Second, the log-derivative identity requires that the trajectory probability be positive on the support under consideration.
+The cleanest form also assumes fixed action support under parameter changes; support changes require boundary handling beyond the basic derivation.
 
 Third, the expression above is still not operationally convenient until the trajectory score is decomposed into local policy terms. Otherwise the update would require access to the gradient of the whole trajectory probability as a monolithic object.
 
@@ -649,6 +652,7 @@ $$
 What did each step accomplish? Conditioning on state made the baseline fixed. Expanding over actions exposed the policy normalization identity. Differentiating the fact that action probabilities sum to one yielded the zero-mean result.
 
 The conclusion is exact: a state-only baseline can be subtracted without changing the expected policy gradient.
+The exact condition is conditional action-independence: after conditioning on $S_t$, the baseline term must not vary with sampled action. This is why $b(S_t)$ is safe while action-dependent baselines require additional correction terms.
 
 The zero-mean argument should also be readable in words. Once the current state $S_t$ is fixed, the baseline $b(S_t)$ is just a scalar with respect to the action distribution at that time step. The only random object left in the score term is the sampled action. The expected score
 $$
@@ -822,6 +826,7 @@ where $V_w$ is the critic’s parameterized value estimate.
 Actor–critic methods divide labor. The actor is responsible for changing the policy. The critic is responsible for evaluating what happened strongly enough to guide that change with lower variance than raw Monte Carlo returns would provide.
 
 The first thing to notice is that the critic is not a side project. It exists to supply the actor with a better learning signal. But the price of this improvement is that the actor update is now only as trustworthy as the critic’s estimate. This is where the central bias–variance tradeoff enters.
+A learned critic is introduced because exact return-weighted policy updates are often too noisy, not because critic guidance makes the actor step exact. Once critic-estimated advantages replace exact return-based weights, the actor update inherits critic approximation error.
 
 ### Boundary conditions / assumptions / failure modes
 
@@ -998,8 +1003,10 @@ The first thing the reader should notice is that PPO is not saying large policy 
 
 PPO clipping is a stabilizing approximation, not a proof of monotonic policy improvement in general practice. It is designed to keep updates more local, but it does not magically certify safety.
 PPO is typically classified as on-policy at the data-collection level even when it reuses the same batch for multiple optimization epochs; the key point is that the batch comes from the current/old policy pair, not from an arbitrary replay distribution spanning many behavior policies.
+In practical implementations, PPO is usually paired with actor-critic machinery and approximate advantage estimators (often GAE-style), so clipped-surrogate approximation and advantage-estimation approximation are both active.
 
 Another subtle point is that the surrogate objective is evaluated on data collected under the old policy. If the new policy becomes too different, those samples become a less trustworthy basis for estimating improvement. PPO addresses this through conservative updates, not by removing the underlying issue.
+A practical reading is therefore: PPO is a robust surrogate heuristic under minibatch optimization with function approximation, not a general monotonic-improvement theorem.
 
 A common failure mode is to describe PPO as “policy gradient plus clipping because clipping works.” That misses the essential point: clipping is there to control how much the policy ratio can influence the update using old-policy data.
 
@@ -1203,6 +1210,7 @@ where $\alpha$ controls the importance of entropy relative to reward.
 This objective changes the target itself. The policy is no longer trying merely to maximize expected reward. It is trying to maximize reward while remaining stochastic according to the entropy weighting. That means the best policy under the soft objective need not be the same as the best policy under plain expected-return optimization.
 
 Algorithmically, practical SAC is usually an off-policy actor-critic method with soft Q/value targets; modern versions commonly use twin critics to reduce positive bias from maximization.
+In continuous-action implementations, SAC policy updates are typically done with reparameterized stochastic actions rather than plain REINFORCE-style score-function Monte Carlo.
 
 The first thing to notice is that this is a conceptual difference from PPO or from adding a baseline. Baselines do not change what gradient is being estimated in expectation. Clipping constrains how aggressively a surrogate objective can be improved. SAC changes what counts as improvement in the first place.
 
@@ -1217,6 +1225,7 @@ If you say "both are just actor-critic methods with stabilization tricks," you h
 ### Boundary conditions / assumptions / failure modes
 
 The temperature parameter $\alpha$ matters enormously. If it is too small, the method approaches ordinary reward-focused optimization. If it is too large, the policy may prioritize entropy too strongly and underexploit high-reward actions.
+Many implementations adapt $\alpha$ during training to track a target entropy level; this changes tuning behavior, not the core objective distinction.
 
 Another subtle point is that SAC uses actor–critic machinery, but that does not make it “the same algorithm family as PPO with different code.” The critic in SAC is serving a soft objective structure, and the policy update reflects that structure.
 

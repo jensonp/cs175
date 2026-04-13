@@ -41,6 +41,8 @@ By the end of the chapter, the reader should be able to explain not only what th
 Unless time dependence is written explicitly, this chapter uses stationary shorthand $V^\pi(s)$ and $Q^\pi(s,a)$. For finite-horizon nonstationary settings, use $V_t^\pi$, $Q_t^\pi$, and optionally time-augmented state $(S_t,t)$.
 
 Objective scope note: this chapter's exact fixed-point and improvement statements are developed in discounted or finite-horizon settings. Average-reward optimality equations are a different objective class and are out of scope unless explicitly introduced.
+Unless explicitly stated otherwise, sums over states and actions assume finite or countable spaces; continuous-space analogues replace sums by integrals with the corresponding measurability/density conditions.
+From the first Bellman equation onward, the conditioning variable is assumed to be a Markov state representation in the Chapter 4 sense.
 
 ---
 
@@ -892,6 +894,7 @@ The first thing to notice is that the two equation families solve different prob
 
 These equations are again exact under the discounted MDP assumptions. However, the move from expectation to maximization changes both the interpretation and the computational challenge. The optimality operator is nonlinear because of the max, even if the expectation operator for a fixed policy is linear in the candidate function.
 For the displayed $\max$ form, assume finite nonempty action sets in each state (or replace $\max$ by $\sup$ in more general spaces).
+In finite-horizon control, optimal objects are stage-indexed in general: $V_t^*$, $Q_t^*$, and $\pi_t^*$ unless time has already been folded into state.
 
 A frequent failure mode is to think that one can replace the policy average by a max at any time without changing the problem. That would silently turn policy evaluation into control. The distinction must remain sharp.
 
@@ -1002,6 +1005,7 @@ Another important boundary line is that the theorem does not say the greedy poli
 
 A common failure mode is to assume that if one greedy step helps, then greedy behavior with respect to any rough estimate must also help. That is not what the exact theorem says.
 Scope line: Bellman optimality equations and policy-improvement guarantees are exact characterization statements; how approximate solvers or noisy greedy steps behave is a separate algorithmic question.
+Concretely, greedy improvement with respect to an approximate $\widehat Q^\pi$ is no longer covered by the exact theorem automatically and can improve, stall, or degrade depending on approximation error structure.
 
 ### Fully worked example
 
