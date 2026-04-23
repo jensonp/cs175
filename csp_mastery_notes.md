@@ -1682,36 +1682,38 @@ This section exists because students often hear “NP means not polynomial,” w
 
 ## The object being introduced
 
-**NP** is the class of decision problems where every yes-instance has some short extra information that lets a deterministic algorithm check the yes-answer in polynomial time.
+**NP** is the class of decision problems where every yes-instance has a polynomial-length **certificate** (also called a **witness**) that a deterministic algorithm can verify in polynomial time.
+
+Here, a *certificate/witness* is simply a proposed solution description (a short string) that, if correct, convinces the verifier that the answer is "yes."
 
 What is fixed:
 - a decision problem,
-- a polynomial-time checking procedure.
+- a verification procedure that runs in polynomial time.
 
 What varies:
 - the input instance,
-- the proposed extra information (for example, a candidate solution description),
-- whether that extra information really makes the checker accept.
+- the proposed certificate/witness (for example, a candidate solution description),
+- whether that certificate/witness really makes the verifier accept.
 
 What conclusion it allows:
-- whether yes-instances admit short, efficiently checkable supporting information.
+- whether yes-instances admit short, efficiently checkable certificates.
 
 ## Formal definition
 
 A decision problem $L$ is in **NP** if there exists a polynomial-time deterministic verification algorithm $V$ and a polynomial $q(n)$ such that:
 - for every input $x$,
-- $x \in L$ if and only if there exists a string $y$ with $|y| \le q(|x|)$ and
+- $x \in L$ if and only if there exists a certificate $y$ with $|y| \le q(|x|)$ and
   $V(x,y) = yes$.
 
 ## Interpretation
 
-NP is the class of problems for which a claimed yes-solution can be checked efficiently. It does **not** say we know how to find that helpful extra information efficiently. Verification may be easy even when discovery is hard.
+NP is the class of problems for which a claimed yes-solution can be checked efficiently (given the certificate). It does **not** say we know how to find the certificate efficiently. Verification may be easy even when discovery is hard.
 
 ## Boundary conditions and common confusions
 
 Two clarifications matter.
 
-First, NP stands for nondeterministic polynomial time historically, but for learning purposes the polynomial-time checking view is usually clearer.
+First, NP stands for nondeterministic polynomial time historically, but for learning purposes the certificate-verification view is usually clearer.
 
 Second, NP contains P, because if you can solve a problem efficiently, then you can certainly verify a yes-instance efficiently: simply solve it and compare.
 
@@ -1721,9 +1723,9 @@ This example is chosen because SAT is the canonical NP problem.
 
 Problem: given a Boolean formula in conjunctive normal form, is there an assignment of truth values that makes it true?
 
-### Proposed solution description
+### Certificate (witness)
 
-A proposed solution description is simply a truth assignment to the variables.
+A certificate is simply a truth assignment to the variables.
 
 ### Verification
 
@@ -1731,8 +1733,8 @@ Given the formula and the assignment, verify by evaluating each clause in turn.
 
 For each clause:
 1. inspect its literals,
-2. determine whether at least one literal is true under the proposed assignment,
-3. if any clause is false, reject the proposal,
+2. determine whether at least one literal is true under the certificate,
+3. if any clause is false, reject the certificate,
 4. if all clauses are true, accept.
 
 If the formula has $m$ clauses and total representation size $N$, this check is polynomial in $N$.
@@ -2148,7 +2150,7 @@ The point is not rote memorization. The point is to understand *why* each label 
 
 Do not memorize labels without problem form. Always ask:
 1. Is this a decision problem?
-2. Can a proposed solution be checked in polynomial time?
+2. Is there a polynomial-length certificate that can be checked in polynomial time?
 3. What known hard problem reduces to it?
 
 ## Connection to later material
