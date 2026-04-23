@@ -79,14 +79,10 @@ Suppose a map has regions $A, B, C, D$, and suppose adjacent regions must receiv
 ### Setup
 
 Variables:
-$$
-X = \{A, B, C, D\}.
-$$
+$X = \{A, B, C, D\}.$
 
 Domains:
-$$
-D_A = D_B = D_C = D_D = \{red, green, blue\}.
-$$
+$D_A = D_B = D_C = D_D = \{red, green, blue\}.$
 
 Constraints:
 - $A \neq B$,
@@ -99,9 +95,7 @@ Constraints:
 A complete assignment must pick one color for each region. To test whether an assignment is a solution, we inspect each adjacency constraint in turn.
 
 Take the assignment:
-$$
-A = red,\quad B = green,\quad C = blue,\quad D = red.
-$$
+$A = red,\quad B = green,\quad C = blue,\quad D = red.$
 
 Check the constraints in order.
 
@@ -120,9 +114,7 @@ Check the constraints in order.
 Since all constraints are satisfied, this is a solution.
 
 Now compare with:
-$$
-A = red,\quad B = red,\quad C = green,\quad D = blue.
-$$
+$A = red,\quad B = red,\quad C = green,\quad D = blue.$
 
 The first check already fails: $A \neq B$ is false because both are red. That single failed constraint is enough to conclude the assignment is not a solution. We do not need to continue.
 
@@ -180,9 +172,7 @@ What conclusion partial assignments allow:
 ## Formal definition
 
 A **partial assignment** is a mapping
-$$
-\alpha : S \to \bigcup_i D_i
-$$
+$\alpha : S \to \bigcup_i D_i$
 where $S \subseteq \{X_1,\dots,X_n\}$, and for each $X_i \in S$, $\alpha(X_i) \in D_i$.
 
 A partial assignment is **locally consistent** if every constraint whose entire scope lies inside $S$ is satisfied by the assigned values.
@@ -211,9 +201,7 @@ Let the variables be $X, Y, Z$, each with domain $\{1,2\}$, and constraints:
 - $X = Z$.
 
 Consider the partial assignment:
-$$
-X = 1,\quad Y = 2.
-$$
+$X = 1,\quad Y = 2.$
 
 ### What is being checked
 
@@ -230,9 +218,7 @@ Because $X = 1$ and $X = Z$, any extension must set $Z = 1$.
 But because $Y = 2$ and $Y \neq Z$, setting $Z = 1$ is actually fine. So this one is extendable.
 
 Now instead consider:
-$$
-X = 1,\quad Y = 1.
-$$
+$X = 1,\quad Y = 1.$
 
 Immediately $X \neq Y$ fails, so the assignment is not even locally consistent.
 
@@ -243,9 +229,7 @@ More interesting is a second problem with constraints:
 and domains still $\{1,2\}$.
 
 Take the partial assignment:
-$$
-X = 1,\quad Y = 2.
-$$
+$X = 1,\quad Y = 2.$
 
 This is locally consistent because $X \neq Y$ holds. But can it be extended? The only remaining variable is $Z$. It must satisfy:
 - $Z \neq Y = 2$, so $Z$ must be $1$,
@@ -300,13 +284,9 @@ What conclusion it allows:
 ## Formal definition
 
 If a constraint $C$ has scope $(X_{i_1}, \dots, X_{i_k})$, then its relation is a subset
-$$
-R_C \subseteq D_{i_1} \times \cdots \times D_{i_k}.
-$$
+$R_C \subseteq D_{i_1} \times \cdots \times D_{i_k}.$
 A tuple $(a_1,\dots,a_k)$ satisfies $C$ if and only if
-$$
-(a_1,\dots,a_k) \in R_C.
-$$
+$(a_1,\dots,a_k) \in R_C.$
 
 A constraint is:
 - **unary** if $k=1$,
@@ -333,32 +313,24 @@ This example is chosen because it shows why higher-level constraint language mat
 In a standard 9-by-9 Sudoku, each cell is a variable. Let $X_{r,c}$ denote the value in row $r$, column $c$, where $1 \le r \le 9$ and $1 \le c \le 9$. Each domain is initially $\{1,\dots,9\}$, except clues, whose domains may be singleton sets.
 
 One row constraint can be expressed as:
-$$
-all\text{-}different(X_{1,1}, X_{1,2}, \dots, X_{1,9}).
-$$
+$all\text{-}different(X_{1,1}, X_{1,2}, \dots, X_{1,9}).$
 
 ### What is being checked
 
 The object here is not nine separate facts but one structured relation over nine variables. A tuple is allowed exactly when all nine entries are distinct.
 
 Take a candidate row assignment:
-$$
-(2,4,6,1,3,5,7,8,9).
-$$
+$(2,4,6,1,3,5,7,8,9).$
 Each value lies in $\{1,\dots,9\}$, and no value repeats. So this tuple satisfies the row constraint.
 
 Now consider:
-$$
-(2,4,6,1,3,5,7,8,8).
-$$
+$(2,4,6,1,3,5,7,8,8).$
 The last two entries repeat 8, so the tuple is not in the all-different relation. The row constraint is violated.
 
 ### Why the example matters
 
 You could replace the row all-different relation by all pairwise inequalities:
-$$
-X_{1,i} \neq X_{1,j}\quad \text{for all } i<j.
-$$
+$X_{1,i} \neq X_{1,j}\quad \text{for all } i<j.$
 This captures the same satisfying set, but it loses the fact that these inequalities belong to one collective structure. Stronger inference procedures can exploit that global structure more effectively than treating the row as just a bag of separate binary constraints.
 
 ## Misconception block
@@ -402,9 +374,7 @@ A graph-coloring CSP has one variable per region or node, a small color domain, 
 ### Formal model
 
 For graph $G=(V,E)$ and color set $K$, define one variable $X_v$ for each $v \in V$, domain $D_v = K$, and for every edge $(u,v)\in E$, a constraint
-$$
-X_u \neq X_v.
-$$
+$X_u \neq X_v.$
 
 ### Interpretation
 
@@ -413,9 +383,7 @@ This is a pure compatibility problem: adjacent objects cannot share a label.
 ### Worked example
 
 Take triangle graph with vertices $A,B,C$, and color set $\{red,green\}$. The constraints are
-$$
-A \neq B,\quad B \neq C,\quad C \neq A.
-$$
+$A \neq B,\quad B \neq C,\quad C \neq A.$
 
 Assign $A=red$. Then $B$ must be green. Then $C$ must be different from $B$, so $C=red$. But now $C=A$, violating $C \neq A$. The same contradiction arises if $A=green$. So the graph is not 2-colorable.
 
@@ -450,14 +418,10 @@ Each cell is a variable. Each variable has domain $\{1,\dots,9\}$ unless fixed b
 ### Formal model
 
 Variables:
-$$
-X_{r,c},\quad 1 \le r,c \le 9.
-$$
+$X_{r,c},\quad 1 \le r,c \le 9.$
 
 Domains:
-$$
-D_{r,c} \subseteq \{1,\dots,9\},
-$$
+$D_{r,c} \subseteq \{1,\dots,9\},$
 where clues use singleton domains.
 
 Constraints:
@@ -472,9 +436,7 @@ Sudoku is not arithmetic. The digits are labels subject to distinctness requirem
 ### Fully worked example
 
 Suppose in one row the current state is:
-$$
-(2, \_, 4, \_, 6, \_, \_, \_, \_).
-$$
+$(2, \_, 4, \_, 6, \_, \_, \_, \_).$
 The missing values are $\{1,3,5,7,8,9\}$.
 
 Take the empty position in column 2. Suppose the column already contains $\{8,6,5,1\}$, and the 3-by-3 block already contains $\{2,4,8\}$.
@@ -524,9 +486,7 @@ Each revealed numbered cell imposes a sum constraint over neighboring hidden var
 For each relevant hidden frontier cell $v$, introduce a variable $X_v \in \{0,1\}$.
 
 For each revealed numbered cell $c$, let $N(c)$ be the set of hidden neighboring frontier cells and let $L(c)$ be the effective label after subtracting already-marked mines. Then impose:
-$$
-\sum_{v \in N(c)} X_v = L(c).
-$$
+$\sum_{v \in N(c)} X_v = L(c).$
 
 ### Interpretation
 
@@ -535,9 +495,7 @@ This is a beautiful modeling move. A visual puzzle becomes a linear counting CSP
 ### Fully worked example
 
 Suppose a revealed cell has effective label 1 and has exactly two adjacent hidden frontier variables $X$ and $Y$. The constraint is
-$$
-X + Y = 1,\qquad X,Y \in \{0,1\}.
-$$
+$X + Y = 1,\qquad X,Y \in \{0,1\}.$
 
 Check the possible pairs:
 - $(0,0)$: sum is 0, so disallowed.
@@ -584,9 +542,7 @@ Wordle is not a pure static CSP because the constraints are revealed gradually t
 Suppose the hidden word has 5 positions $X_1,\dots,X_5$. Start with domains equal to the alphabet. After guessing a word, feedback imposes constraints.
 
 If position 2 gets green on letter $A$, then:
-$$
-X_2 = A.
-$$
+$X_2 = A.$
 The domain of $X_2$ collapses to $\{A\}$.
 
 If position 4 gets yellow on letter $R$, then:
@@ -911,9 +867,7 @@ Variables:
 - $Y \in \{2,3\}$.
 
 Constraint:
-$$
-X < Y.
-$$
+$X < Y.$
 
 Check each value of $X$ for support in $Y$.
 
@@ -922,9 +876,7 @@ Check each value of $X$ for support in $Y$.
 - $X=3$: unsupported, because there is no value in $\{2,3\}$ such that $3<Y$.
 
 So remove 3 from $D_X$, leaving:
-$$
-D_X = \{1,2\}.
-$$
+$D_X = \{1,2\}.$
 
 Now check the reverse arc $Y \to X$.
 
@@ -1219,14 +1171,10 @@ Variables:
 - $X_2$ for $E_2$.
 
 Domains:
-$$
-D_1 = D_2 = \{morning, afternoon\}.
-$$
+$D_1 = D_2 = \{morning, afternoon\}.$
 
 Hard constraint:
-$$
-X_1 \neq X_2.
-$$
+$X_1 \neq X_2.$
 
 Objective:
 $$
@@ -1308,9 +1256,7 @@ For a minimization problem:
 - let $L(n)$ be a lower bound on the cost of any complete solution extending search node $n$.
 
 If
-$$
-L(n) \ge U,
-$$
+$L(n) \ge U,$
 then node $n$ can be pruned, because no completion below it can improve the incumbent.
 
 ## Interpretation
@@ -1328,40 +1274,26 @@ Also, good performance depends heavily on finding a decent incumbent early and h
 This example is chosen because the bound logic is easier to see in a small problem than in full TSP.
 
 Suppose we must choose an order for visiting cities $A,B,C$ starting at $S$ and returning to $S$. Imagine a partial route has already fixed $S \to A$, with current accumulated cost
-$$
-g = 7.
-$$
+$g = 7.$
 
 Suppose a lower-bound estimate for completing the rest of the tour from this partial route is
-$$
-h = 5.
-$$
+$h = 5.$
 
 Then the branch lower bound is:
-$$
-L = g + h = 12.
-$$
+$L = g + h = 12.$
 
 Assume we already found a complete tour of cost
-$$
-U = 11.
-$$
+$U = 11.$
 
 Now compare:
-$$
-L = 12 \ge 11 = U.
-$$
+$L = 12 \ge 11 = U.$
 
 Since every completion of this partial route must cost at least 12, and we already have a solution of cost 11, this branch cannot improve the incumbent. It is safe to prune.
 
 Now suppose instead another branch has
-$$
-g = 6,\qquad h = 3,
-$$
+$g = 6,\qquad h = 3,$
 so
-$$
-L = 9.
-$$
+$L = 9.$
 
 Because $9 < 11$, this branch might still lead to a better tour, so it must be explored.
 
@@ -1445,9 +1377,7 @@ $$
 A complete state assigns each variable either true or false.
 
 Suppose the current assignment is:
-$$
-x_1=0,\ x_2=1,\ x_3=1,\ x_4=1,\ x_5=0,\ x_6=0,\ x_7=0.
-$$
+$x_1=0,\ x_2=1,\ x_3=1,\ x_4=1,\ x_5=0,\ x_6=0,\ x_7=0.$
 
 Now evaluate each clause.
 
@@ -1469,9 +1399,7 @@ Now evaluate each clause.
 So exactly one clause is violated. The conflict cost is 1.
 
 Now ask: which single-variable flip improves the situation? If we flip $x_6$ from 0 to 1, clause 3 becomes satisfied because $x_6$ becomes true. But check clause 5 after the flip:
-$$
-(\neg x_4 \vee x_5 \vee \neg x_6) = (0 \vee 0 \vee 0),
-$$
+$(\neg x_4 \vee x_5 \vee \neg x_6) = (0 \vee 0 \vee 0),$
 so clause 5 becomes violated. The total number of violated clauses stays 1.
 
 If instead we flip $x_1$ from 0 to 1, clause 3 becomes satisfied because $x_1$ becomes true, and clause 4 remains satisfied because although $\neg x_1$ becomes false, $\neg x_5$ remains true. Then all five clauses are satisfied, so the conflict cost drops to 0.
@@ -1526,9 +1454,7 @@ WalkSAT is not complete in the strict worst-case sense if run with a fixed flip 
 ## Fully worked example
 
 Take two false clauses under the current assignment. Suppose the algorithm selects one false clause:
-$$
-(a \vee b \vee \neg c).
-$$
+$(a \vee b \vee \neg c).$
 Because the clause is currently false, all three literals are false under the present assignment. That means:
 - $a = false$,
 - $b = false$,
@@ -1941,13 +1867,9 @@ What conclusion it allows:
 ## Formal definition
 
 A problem $A$ polynomial-time reduces to problem $B$, written
-$$
-A \le_p B,
-$$
+$A \le_p B,$
 if there exists a polynomial-time computable function $f$ such that for every instance $x$,
-$$
-x \in A \iff f(x) \in B.
-$$
+$x \in A \iff f(x) \in B.$
 
 ## Interpretation
 
@@ -1958,9 +1880,7 @@ A reduction is not just a similarity or analogy. It is a precise translation. It
 The direction matters enormously.
 
 If
-$$
-A \le_p B,
-$$
+$A \le_p B,$
 then $B$ is at least as hard as $A$. Students often reverse this mentally. The reduction goes from the known hard problem to the candidate target problem.
 
 Also, the equivalence must preserve yes/no answers. A sloppy transformation that only “sort of resembles” the original problem proves nothing.
