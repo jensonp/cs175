@@ -29,6 +29,7 @@ from pathlib import Path
 
 
 SAME_LINE_BLOCK = re.compile(r"\$\$([^\n]*?)\$\$")
+LIST_OR_QUOTE_RE = re.compile(r"^\s{0,3}(?:[-+*]|\d+\.)\s+|^\s*>")
 
 
 def _has_text_outside_blocks(line: str) -> bool:
@@ -36,7 +37,14 @@ def _has_text_outside_blocks(line: str) -> bool:
     return bool(outside.strip())
 
 
-def _fix_line(line: str) -> tuple[str, int]:
+def _is_list_or_quote_context(line: str) -> bool:
+    return bool(LIST_OR_QUOTE_RE.match(line))
+
+
+def _fix_line(
+    line: str,
+    prev_nonempty: str | None = None,
+) -> tuple[str, int]:
     """
     Returns (new_line, replacement_count_for_line).
     """
@@ -68,6 +76,12 @@ def _fix_line(line: str) -> tuple[str, int]:
         inner = full.group(1).strip()
         indent = line[: len(line) - len(line.lstrip(" \t"))]
         replacements += 1
+
+        # In list-like or indented contexts, inline math is more robust on GitHub.
+        if indent or (prev_nonempty is not None and _is_list_or_quote_context(prev_nonempty)):
+            return f"{indent}${inner}$", replacements
+
+        # Otherwise keep display math, but force block form on separate lines.
         return f"{indent}$$\n{indent}{inner}\n{indent}$$", replacements
 
     # Otherwise leave unchanged.
@@ -80,10 +94,13 @@ def fix_text(text: str) -> tuple[str, int]:
     out_lines: list[str] = []
     total = 0
 
+    prev_nonempty: str | None = None
     for line in lines:
-        fixed, count = _fix_line(line)
+        fixed, count = _fix_line(line, prev_nonempty=prev_nonempty)
         out_lines.append(fixed)
         total += count
+        if line.strip():
+            prev_nonempty = line
 
     out_text = "\n".join(out_lines)
     if had_trailing_newline:
