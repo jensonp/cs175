@@ -1508,8 +1508,8 @@ What varies:
 
 What conclusion it allows:
 - yes/no,
-- a witness assignment,
-- or an optimal witness.
+- a concrete satisfying assignment,
+- or an optimal solution.
 
 ## Formal distinctions
 
@@ -1554,8 +1554,8 @@ This distinction is indispensable when we define P, NP, NP-hard, and NP-complete
 
 Retain:
 - decision asks yes/no,
-- search asks for a witness,
-- optimization asks for the best witness.
+- search asks for a solution,
+- optimization asks for the best solution.
 
 Do not confuse:
 - the informal problem name with the precise complexity-class statement.
@@ -1604,7 +1604,7 @@ Polynomial time does not mean “fast in practice,” and exponential time does 
 
 ## Connection to later material
 
-P will collect decision problems solvable in polynomial time. NP will collect decision problems whose yes-instances can be verified in polynomial time given a certificate. NP-hard and NP-complete are then defined relative to polynomial-time reductions.
+P will collect decision problems solvable in polynomial time. NP will collect decision problems whose yes-instances can be checked in polynomial time given suitable extra information. NP-hard and NP-complete are then defined relative to polynomial-time reductions.
 
 ## Retain / Do not confuse
 
@@ -1683,35 +1683,36 @@ This section exists because students often hear “NP means not polynomial,” w
 
 ## The object being introduced
 
-**NP** is the class of decision problems for which a yes-answer has a certificate that can be verified in polynomial time by a deterministic algorithm.
+**NP** is the class of decision problems where every yes-instance has some short extra information that lets a deterministic algorithm check the yes-answer in polynomial time.
 
 What is fixed:
 - a decision problem,
-- a proposed certificate or witness.
+- a polynomial-time checking procedure.
 
 What varies:
 - the input instance,
-- whether the certificate indeed proves a yes-answer.
+- the proposed extra information (for example, a candidate solution description),
+- whether that extra information really makes the checker accept.
 
 What conclusion it allows:
-- whether yes-instances admit efficiently checkable witnesses.
+- whether yes-instances admit short, efficiently checkable supporting information.
 
 ## Formal definition
 
 A decision problem $L$ is in **NP** if there exists a polynomial-time deterministic verification algorithm $V$ and a polynomial $q(n)$ such that:
 - for every input $x$,
-- $x \in L$ if and only if there exists a certificate $y$ with $|y| \le q(|x|)$ and
+- $x \in L$ if and only if there exists a string $y$ with $|y| \le q(|x|)$ and
   $V(x,y) = yes$.
 
 ## Interpretation
 
-NP is the class of problems for which a claimed yes-solution can be checked efficiently. It does **not** say we know how to find that witness efficiently. Verification may be easy even when discovery is hard.
+NP is the class of problems for which a claimed yes-solution can be checked efficiently. It does **not** say we know how to find that helpful extra information efficiently. Verification may be easy even when discovery is hard.
 
 ## Boundary conditions and common confusions
 
 Two clarifications matter.
 
-First, NP stands for nondeterministic polynomial time historically, but for learning purposes the certificate-verification view is usually clearer.
+First, NP stands for nondeterministic polynomial time historically, but for learning purposes the polynomial-time checking view is usually clearer.
 
 Second, NP contains P, because if you can solve a problem efficiently, then you can certainly verify a yes-instance efficiently: simply solve it and compare.
 
@@ -1721,9 +1722,9 @@ This example is chosen because SAT is the canonical NP problem.
 
 Problem: given a Boolean formula in conjunctive normal form, is there an assignment of truth values that makes it true?
 
-### Certificate
+### Proposed solution description
 
-A certificate is simply a truth assignment to the variables.
+A proposed solution description is simply a truth assignment to the variables.
 
 ### Verification
 
@@ -1731,8 +1732,8 @@ Given the formula and the assignment, verify by evaluating each clause in turn.
 
 For each clause:
 1. inspect its literals,
-2. determine whether at least one literal is true under the certificate,
-3. if any clause is false, reject the certificate,
+2. determine whether at least one literal is true under the proposed assignment,
+3. if any clause is false, reject the proposal,
 4. if all clauses are true, accept.
 
 If the formula has $m$ clauses and total representation size $N$, this check is polynomial in $N$.
@@ -1811,7 +1812,7 @@ Now form the decision version:
 
 If this decision version is in NP and NP-hard, then it is NP-complete.
 
-Why is it in NP? Because a certificate is a proposed tour. We can verify in polynomial time that:
+Why is it in NP? Because a proposed tour description is enough to check in polynomial time that:
 1. each city appears exactly once,
 2. the tour returns to the start,
 3. the total cost is at most $B$.
@@ -2017,7 +2018,7 @@ So in the general case, we do not expect a polynomial-time exact algorithm unles
 
 ## Why it is in NP
 
-A certificate is a complete assignment. Verification checks, for each variable, that the chosen value lies in its domain, and for each constraint, that the projected tuple lies in the allowed relation. Provided the representation of constraints supports polynomial-time checking, verification is polynomial.
+The extra information can simply be a complete assignment. Verification checks, for each variable, that the chosen value lies in its domain, and for each constraint, that the projected tuple lies in the allowed relation. Provided the representation of constraints supports polynomial-time checking, verification is polynomial.
 
 ## Why it is NP-hard
 
