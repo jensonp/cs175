@@ -1,7 +1,7 @@
 # CS175 Lesson Rewrite Pack — Mastery-Focused Edition
 
 This repository is organized so GitHub renders each chapter folder automatically.
-The mastery-focused rewrite currently covers Chapters 2 through 9.
+The mastery-focused rewrite currently covers Chapters 2 through 10.
 
 ## Chapter Map
 
@@ -13,6 +13,7 @@ The mastery-focused rewrite currently covers Chapters 2 through 9.
 - [07_function-approximation-deadly-triad-and-dqn/](07_function-approximation-deadly-triad-and-dqn/)
 - [08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/](08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/)
 - [09_reward-design-representation-evaluation-and-roadmap/](09_reward-design-representation-evaluation-and-roadmap/)
+- [10_constraint-satisfaction-problems-search-optimization-and-complexity/](10_constraint-satisfaction-problems-search-optimization-and-complexity/)
 
 ## What Changed
 
@@ -38,6 +39,7 @@ Read the chapters in order. The dependency chain matters.
 6. [07_function-approximation-deadly-triad-and-dqn/](07_function-approximation-deadly-triad-and-dqn/)
 7. [08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/](08_policy-gradients-reinforce-baselines-actor-critic-ppo-sac/)
 8. [09_reward-design-representation-evaluation-and-roadmap/](09_reward-design-representation-evaluation-and-roadmap/)
+9. [10_constraint-satisfaction-problems-search-optimization-and-complexity/](10_constraint-satisfaction-problems-search-optimization-and-complexity/)
 
 ## Conventions Used Throughout
 
