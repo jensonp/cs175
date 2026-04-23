@@ -161,23 +161,11 @@ $$
 
 Now imagine three candidate state representations.
 
-1. **Full-history representation:**
-   $$
-   S_t^{(1)} = H_t.
-   $$
-   This keeps everything.
+1. **Full-history representation:** $S_t^{(1)} = H_t$. This keeps everything.
 
-2. **Current-observation representation:**
-   $$
-   S_t^{(2)} = O_t.
-   $$
-   This keeps only the current observation and discards the rest.
+2. **Current-observation representation:** $S_t^{(2)} = O_t$. This keeps only the current observation and discards the rest.
 
-3. **Feature summary representation:**
-   $$
-   S_t^{(3)} = (O_t, \text{running reward total up to time } t).
-   $$
-   This keeps the current observation plus one aggregate quantity from the past.
+3. **Feature summary representation:** $S_t^{(3)} = (O_t, \text{running reward total up to time } t)$. This keeps the current observation plus one aggregate quantity from the past.
 
 What do these examples show? First, each is a valid state representation because each is a function of history. Second, they differ in how much information they retain. Third, at this point none has earned the title “Markov” merely by being named.
 

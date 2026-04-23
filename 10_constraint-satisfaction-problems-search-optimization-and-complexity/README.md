@@ -1,11 +1,40 @@
 
 # Constraint Satisfaction Problems, Search, Optimization, and Complexity
 
-## Source and scope
+## Introduction and roadmap
 
-These notes are a mastery-oriented teaching chapter built from the uploaded lecture on Constraint Satisfaction Problems together with the writing brief that requested deep, self-contained course notes rather than a summary. The lecture introduces the core CSP model, examples such as map coloring, Sudoku, Wordle, Minesweeper, Traveling Salesman, backtracking, local search, and objective functions, and it briefly touches Boolean satisfiability and WalkSAT. These notes preserve that scope but expand it substantially, especially on the foundational complexity ideas that were requested explicitly: **P, NP, NP-hard, NP-complete, reductions, decision versus search versus optimization, and how CSPs relate to SAT and TSP**.
+These notes introduce constraint satisfaction as a unified language for discrete reasoning. The chapter begins with the basic CSP model, then develops the logic of partial assignments, backtracking, propagation, heuristics, optimization, local search, and the complexity ideas needed to understand why these methods are necessary.
+
+The organizing theme is that modeling, algorithms, and complexity are three views of the same object. A good model exposes structure, algorithms exploit that structure, and complexity theory explains why some cases remain difficult even when the model is clear.
+
+By the end of the chapter, the reader should be able to:
+- define a CSP formally,
+- distinguish complete assignments from partial assignments,
+- explain how backtracking, forward checking, and arc consistency differ,
+- separate feasibility, search, and optimization formulations,
+- explain why SAT and general CSP are closely related,
+- use the language of P, NP, NP-hard, NP-complete, and reductions correctly.
+
+The chapter is organized in four layers: model, algorithms, optimization/local search, and complexity. Read them in that order. The examples are not decorative; each one is chosen to expose a different structural pattern.
+
+## Table of contents
+
+- What a CSP is
+- Partial assignments and extendability
+- Constraint representations and structure
+- Canonical examples
+- Backtracking and propagation
+- Heuristics
+- Optimization and local search
+- SAT and WalkSAT
+- Complexity foundations
+- General CSP hardness and tractable structure
+- Problem-analysis checklist
+- Final synthesis
 
 ---
+
+> **Notation conventions.** Variables are written $X_1, X_2, \dots, X_n$. Domains are written $D_i$. Constraints are written $C_j$. A complete assignment gives one value to every variable. A partial assignment gives values to only some variables. Unless stated otherwise, the chapter assumes finite variables and finite domains.
 
 # 1. Why constraint satisfaction problems exist
 
@@ -17,22 +46,11 @@ This section exists because before we can talk about search algorithms, local in
 
 ## The object being introduced
 
-A **constraint satisfaction problem** is a mathematical model for a situation in which we have unknown quantities, each quantity can take values from some allowed set, and not every combination of values is acceptable. The model answers the question:
+A constraint satisfaction problem asks whether values can be assigned to a set of variables so that every hard constraint is satisfied.
 
-> Can we choose one value for each variable so that every rule is satisfied?
+A constraint satisfaction problem is built from three pieces: variables, domains, and hard constraints. The variables are the unknowns to be determined. The domains describe which values each variable may take before considering interactions. The constraints describe which combinations of values are allowed together.
 
-What is fixed:
-- the set of variables,
-- the domain of each variable,
-- the set of constraints.
-
-What varies:
-- the assignment of values to variables.
-
-What conclusion the model allows:
-- whether a satisfying assignment exists,
-- what one such assignment is,
-- in extended settings, which satisfying assignment is best according to some objective.
+The central decision question is whether there exists a complete assignment that satisfies every hard constraint. That question is the core of the basic CSP model. Search and optimization variants come later, but they should be understood as extensions of this same object rather than part of the initial definition.
 
 ## Formal definition
 
@@ -45,8 +63,7 @@ A **constraint satisfaction problem (CSP)** consists of:
 3. A finite set of constraints: $C = \{C_1, C_2, \dots, C_m\}$.
 
 Each constraint $C_j$ has:
-- a **scope**, which is an ordered tuple or set of variables that participate in the constraint;
-- a **relation** or **content**, which specifies which combinations of values for those variables are allowed.
+- a scope, usually written as an ordered tuple of variables, together with a relation specifying which tuples of values on that scope are allowed.
 
 An **assignment** is a mapping that gives values to some or all variables. A **complete assignment** assigns a value to every variable. A **solution** is a complete assignment that satisfies all constraints.
 
@@ -57,6 +74,8 @@ This definition is simple, but it is doing a great deal of conceptual work.
 The variables are the things we are trying to determine. The domains describe the legal possibilities for each variable before considering interactions. Constraints encode interactions. A domain says, “What could this variable be on its own?” A constraint says, “What combinations are allowed together?” That difference is foundational. If you lose it, CSPs become confusing very quickly.
 
 The word “scope” matters because a constraint rarely talks about the whole problem. It usually talks about only a few variables at a time. That local structure is what makes inference possible. If every constraint involved every variable, we would lose much of the leverage that CSP algorithms depend on.
+
+A useful mental model is this: a domain describes what a variable may be by itself, while a constraint describes what several variables may be together. Most beginner confusion comes from collapsing those two roles into one.
 
 ## Boundary conditions, assumptions, and failure modes
 
@@ -185,6 +204,8 @@ The key distinction is between being **locally consistent now** and being **exte
 
 That gap is exactly why CSP solving is hard. If local consistency always implied extendability, search would be easy. But in general it does not.
 
+This distinction is exactly why propagation methods matter: they attempt to detect non-extendability before full assignment makes the contradiction explicit.
+
 ## Boundary conditions, assumptions, and failure modes
 
 The phrase “constraints whose entire scope lies inside $S$” matters. If a binary constraint involves one assigned variable and one unassigned variable, it is not yet fully testable in the strict sense of satisfaction. However, it may still allow pruning by inference, which is different from declaring success or failure outright.
@@ -195,34 +216,9 @@ A common failure mode in reasoning is this: students check only currently instan
 
 This example is chosen because it isolates the difference between local consistency and actual solvability.
 
-Let the variables be $X, Y, Z$, each with domain $\{1,2\}$, and constraints:
-- $X \neq Y$,
-- $Y \neq Z$,
-- $X = Z$.
+To isolate the real difficulty, use an example where local consistency is genuinely misleading. We want a partial assignment that passes every currently checkable constraint and still cannot be completed to a full solution.
 
-Consider the partial assignment:
-$X = 1,\quad Y = 2.$
-
-### What is being checked
-
-The assigned set is $S = \{X,Y\}$. The constraint $X \neq Y$ is fully inside $S$, so we must check it. Since $1 \neq 2$, it is satisfied.
-
-The constraint $Y \neq Z$ is not fully inside $S$ because $Z$ is not assigned yet. The constraint $X = Z$ is also not fully inside $S$. So by the definition above, the partial assignment is locally consistent.
-
-Now ask the stronger question: can it be extended?
-
-### Extension check
-
-Because $X = 1$ and $X = Z$, any extension must set $Z = 1$.
-
-But because $Y = 2$ and $Y \neq Z$, setting $Z = 1$ is actually fine. So this one is extendable.
-
-Now instead consider:
-$X = 1,\quad Y = 1.$
-
-Immediately $X \neq Y$ fails, so the assignment is not even locally consistent.
-
-More interesting is a second problem with constraints:
+Consider this CSP with constraints:
 - $X \neq Y$,
 - $Y \neq Z$,
 - $Z \neq X$,
@@ -236,6 +232,8 @@ This is locally consistent because $X \neq Y$ holds. But can it be extended? The
 - $Z \neq X = 1$, so $Z$ must be $2$.
 
 These requirements are incompatible. Therefore the partial assignment is locally consistent but not extendable.
+
+By contrast, the partial assignment $X = 1,\quad Y = 1$ is immediately not even locally consistent, because it violates $X \neq Y$.
 
 ### Final interpretation
 
@@ -300,6 +298,8 @@ This definition says that a constraint is best thought of as a filter on tuples.
 
 Unary constraints shrink domains. Binary constraints create pairwise compatibility conditions. Higher-arity constraints encode interactions that cannot always be decomposed cleanly into binary pieces without changing problem structure or computational cost.
 
+In practice, unary constraints are often handled immediately by pruning domains before any search begins. This is the simplest form of consistency enforcement and is one reason it is helpful to separate domain facts from relational constraints carefully.
+
 ## Boundary conditions, assumptions, and failure modes
 
 A frequent temptation is to convert every problem to binary constraints. Sometimes this is useful, but it can also introduce extra variables and obscure structure. For example, a global all-different constraint in Sudoku is more informative than a naïve set of pairwise inequalities if one wants strong propagation. Representation is not cosmetic. It affects what algorithms can infer efficiently.
@@ -357,6 +357,32 @@ Do not confuse:
 
 ---
 
+# 3.5 Constraint graphs, hypergraphs, and local structure
+
+## Why this section exists
+
+Many CSP algorithms reason only about variables that are directly linked by constraints. For binary CSPs, this local structure can be represented by a graph whose nodes are variables and whose edges indicate pairwise constraints. This viewpoint matters because propagation, variable ordering, and structural tractability all depend on how information travels through that interaction graph. For higher-arity constraints, the simple graph picture is incomplete, so one must instead think in terms of scopes, hypergraphs, or explicit global constraints.
+
+## Binary CSP graph
+
+In a binary CSP, define an undirected graph with one node per variable, and an edge $(X,Y)$ whenever there is a binary constraint involving $X$ and $Y$. This graph is the interaction structure that most local propagation procedures operate over.
+
+## Neighbors
+
+Two variables are neighbors if they share a constraint edge in the binary constraint graph. When forward checking “looks at neighbors,” this is the neighbor relation it uses.
+
+## Directed arcs
+
+Arc consistency is checked on directed arcs $X \to Y$ because support is directional: a value $x \in D_X$ is supported on the arc $X \to Y$ if there exists some $y \in D_Y$ such that the constraint between $X$ and $Y$ is satisfied by $(x,y)$.
+
+## Why structure matters
+
+Sparse, tree-like, or decomposable interaction graphs often allow stronger pruning and more efficient exact solving than dense graphs. Cycles create feedback, which is one reason dense constraint graphs can cause propagation to “stall” while still leaving a huge search space.
+
+## Higher-arity caveat
+
+For non-binary CSPs, a simple pairwise graph can hide important structure. One can use hypergraphs (constraints as hyperedges over scopes) or reason directly in terms of scopes and global constraints when designing propagation and complexity arguments.
+
 # 4. Canonical examples and what each one teaches
 
 This section exists because abstract definitions are not enough for mastery. A serious student needs to see what structural pattern each classic example illustrates. Examples are not decoration. They are part of the theory because they reveal which modeling choices matter.
@@ -379,6 +405,8 @@ $X_u \neq X_v.$
 ### Interpretation
 
 This is a pure compatibility problem: adjacent objects cannot share a label.
+
+This example also introduces the variable-interaction graph that later supports propagation and ordering heuristics.
 
 ### Worked example
 
@@ -433,6 +461,8 @@ Constraints:
 
 Sudoku is not arithmetic. The digits are labels subject to distinctness requirements. Their numerical meaning matters far less than the fact that they are nine distinct symbols.
 
+When implementing propagation, keeping all-different as a structured global constraint is often stronger than decomposing it into many pairwise inequalities.
+
 ### Fully worked example
 
 Suppose in one row the current state is:
@@ -481,6 +511,8 @@ Frontier cells become binary variables:
 
 Each revealed numbered cell imposes a sum constraint over neighboring hidden variables.
 
+In practice, one usually models only the frontier variables that still participate in unsatisfied clue equations, because the solved parts of the board no longer contribute uncertainty.
+
 ### Formal model
 
 For each relevant hidden frontier cell $v$, introduce a variable $X_v \in \{0,1\}$.
@@ -523,7 +555,7 @@ Retain:
 Do not confuse:
 - exact clue equations with probabilistic guesses.
 
-## 4.4 Wordle
+## 4.4 Wordle as a CSP-adjacent sequential inference problem
 
 ### Why this subsection exists
 
@@ -534,6 +566,8 @@ Wordle is useful because it demonstrates that a CSP model can coexist with infor
 One can model the unknown word as a tuple of character variables and convert feedback patterns into constraints on positions and letter counts.
 
 ### Interpretation
+
+Unlike map coloring, Sudoku, or Minesweeper, Wordle is not a fixed static CSP from the outset; the player chooses guesses that both test candidates and generate new constraints.
 
 Wordle is not a pure static CSP because the constraints are revealed gradually through guesses. Each guess acts like an experiment. That makes the game a bridge between CSP reasoning and decision-making under information gain.
 
@@ -572,9 +606,9 @@ Do not confuse:
 
 ---
 
-# 5. Systematic search: why backtracking is the baseline
+# 5. Backtracking search and delayed failure
 
-This section exists because once the CSP model is defined, the most direct solution method is to construct assignments step by step and undo decisions when they lead to contradiction. This is the baseline general-purpose method for finite CSPs. Everything more sophisticated should be understood first as an attempt to make backtracking fail earlier, branch less, or infer more.
+Backtracking is the baseline exact method because it builds assignments incrementally and abandons branches as soon as inconsistency becomes visible. But visibility is the problem. A branch may look clean with respect to all currently checkable constraints and still be impossible to complete. This phenomenon of delayed failure is the main reason raw backtracking can be much slower than the size of local checks initially suggests.
 
 ## The object being introduced
 
@@ -674,31 +708,7 @@ Retain:
 Do not confuse:
 - a depth-first systematic search with local search over complete states.
 
----
-
-# 6. Why backtracking can still be hard: future constraints and delayed failure
-
-This section exists because students often understand backtracking mechanically but not intellectually. They know the procedure, yet they do not see why it can still waste enormous time. The core reason is delayed failure: a partial assignment can look harmless locally while being globally doomed.
-
-## The object being introduced
-
-The key object here is the distinction between:
-- constraints involving only already assigned variables,
-- constraints involving one or more future variables.
-
-The problem is that future constraints can hide contradictions until deep in the search tree.
-
-## Interpretation
-
-When backtracking extends a partial assignment, it knows only part of the future. A bad early choice may not trigger any immediate violation, even though it leaves no possible values for some variable far downstream. The later that impossibility becomes visible, the more search effort is wasted.
-
-## Boundary conditions, assumptions, and failure modes
-
-This issue becomes severe when constraints are sparse but highly interacting, or when domains are large enough that locally harmless choices still cause long-range trouble.
-
-A common overgeneralization is to think that “small local checks” are all that matter. In fact, CSP solving is often about turning future contradictions into present contradictions.
-
-## Fully worked example: why order matters
+## Delayed failure: why order matters
 
 Take variables $X,Y,Z,W$, all with domain $\{1,2,3\}$, and constraints:
 - $X = Y$,
@@ -727,22 +737,7 @@ If instead one had stronger inference, then as soon as $X=1$, the chain of equal
 
 The entire purpose of look-ahead and propagation is to make this kind of impossibility visible sooner.
 
-## Misconception block
-
-A problem can be hard for backtracking not because each local check is expensive, but because contradictions may surface only after many locally legal steps.
-
-## Connection to later material
-
-Forward checking and arc consistency will now make conceptual sense: they are tools for anticipating failure instead of waiting passively for it.
-
-## Retain / Do not confuse
-
-Retain:
-- Backtracking suffers when failure is delayed.
-- Future constraints are the source of hidden dead ends.
-
-Do not confuse:
-- “cheap local checks” with “easy problem.”
+The point is not that local checks are expensive. The point is that contradictions may surface only after many locally legal steps. Propagation methods exist to turn future impossibility into present pruning.
 
 ---
 
@@ -981,6 +976,8 @@ The familiar idea is often called **minimum remaining values (MRV)**: choose the
 
 A small domain signals fragility. Such a variable is closer to contradiction than one with many options. Assigning it first tends to expose impossible branches earlier.
 
+MRV tries to expose failure early by choosing a fragile variable. The degree heuristic breaks ties by preferring the variable most entangled with the remaining problem.
+
 ### Worked example
 
 Suppose after propagation:
@@ -1007,7 +1004,11 @@ Retain:
 Do not confuse:
 - original domain size with current remaining options.
 
-## 8.2 Least constraining value intuition
+## 8.2 Degree heuristic as a tie-breaker
+
+If several unassigned variables tie under MRV, prefer the variable that constrains the largest number of still-unassigned neighbors. The intuition is that when a fragile variable tie exists, it is usually better to branch on the one whose choice will have the largest downstream effect.
+
+## 8.3 Least constraining value intuition
 
 ### Why this subsection exists
 
@@ -1561,7 +1562,11 @@ Do not confuse:
 
 ---
 
-# 15. Polynomial time, exponential time, and why worst-case complexity matters
+# 15. Complexity foundations
+
+Complexity theory becomes confusing unless the problem form is stated precisely. The same underlying task may have a decision version, a search version, and an optimization version, and those forms are not classified in the same way. The complexity unit therefore begins by fixing exact problem statements and then asks which statements are solvable, verifiable, or provably hard.
+
+## Polynomial versus exponential growth
 
 This section exists because the requested material includes NP, NP-hard, and NP-complete, and those notions only make sense against the backdrop of tractability. We need to explain why polynomial time is the dividing line used in complexity theory, while also being honest about what it does and does not mean.
 
@@ -1609,9 +1614,7 @@ Retain:
 Do not confuse:
 - theoretical tractability with immediate practical speed.
 
----
-
-# 16. The class P
+## The class P
 
 This section exists because P is the baseline against which NP and NP-completeness are defined. Without P, the rest of the hierarchy floats without anchor.
 
@@ -1674,9 +1677,7 @@ Retain:
 Do not confuse:
 - “I can solve small instances quickly” with “the problem is in P.”
 
----
-
-# 17. The class NP
+## The class NP
 
 This section exists because students often hear “NP means not polynomial,” which is false. The class NP is about verifiability of yes-instances, not about being hard.
 
@@ -1761,9 +1762,7 @@ Do not confuse:
 - easy to verify with easy to solve,
 - NP with “probably intractable” as a definition.
 
----
-
-# 18. NP-hard and NP-complete
+## NP-hard and NP-complete
 
 This section exists because these are the labels the user explicitly requested, and they are central to the theory of CSPs, SAT, Sudoku, graph coloring, and TSP. The definitions must be stated carefully because small imprecision creates major confusion.
 
@@ -1843,9 +1842,7 @@ Retain:
 Do not confuse:
 - hardness class labels with empirical runtime on one instance.
 
----
-
-# 19. Polynomial-time reductions: the language of hardness
+## Polynomial-time reductions: the language of hardness
 
 This section exists because NP-hardness and NP-completeness are meaningless without reductions. A reduction is the bridge that transfers hardness from one problem to another.
 
@@ -1917,6 +1914,15 @@ Retain:
 
 Do not confuse:
 - source and target direction in a hardness proof.
+
+## Summary table
+
+| Concept | What is being classified | What the statement means |
+|---|---|---|
+| P | decision problems | solvable in polynomial time |
+| NP | decision problems | yes-certificates verifiable in polynomial time |
+| NP-hard | any problem form | at least as hard as every NP problem under polynomial reductions |
+| NP-complete | decision problems | both in NP and NP-hard |
 
 ---
 
@@ -2103,64 +2109,15 @@ Do not confuse:
 
 # 23. Classical problems and their complexity labels
 
-This section exists because students often remember names like SAT, 3SAT, Sudoku, graph coloring, Hamiltonian cycle, and TSP, but forget which version belongs to which complexity label.
-
-## The object being introduced
-
-We now assemble a conceptual map rather than a new definition.
-
-## Interpretation
-
-The point is not rote memorization. The point is to understand *why* each label applies.
-
-## Common examples
-
-### SAT
-- Decision problem.
-- In NP because assignments verify quickly.
-- NP-complete.
-
-### 3SAT
-- Decision problem.
-- In NP because assignments verify quickly.
-- NP-complete.
-- Especially important as a source problem for reductions.
-
-### Graph coloring
-- Decision version: can this graph be colored with at most $k$ colors?
-- In NP because a coloring is easy to verify.
-- NP-complete for appropriate formulations.
-
-### Sudoku
-- Generalized decision versions are NP-complete.
-- Verification of a filled grid is polynomial.
-- Hardness comes from the ability to encode general constraint structure.
-
-### TSP
-- Decision version with budget $B$: NP-complete.
-- Optimization version: NP-hard.
-
-### General CSP
-- Decision version: NP-complete, under standard finite explicit representations.
-
-## Misconception block
-
-Do not memorize labels without problem form. Always ask:
-1. Is this a decision problem?
-2. Is a certificate polynomially checkable?
-3. What known hard problem reduces to it?
-
-## Connection to later material
-
-This disciplined habit prevents the most common complexity mistakes in algorithms, AI, optimization, and theory courses.
-
-## Retain / Do not confuse
-
-Retain:
-- always pair a complexity label with the precise problem statement.
-
-Do not confuse:
-- an informal problem name with its exact classified version.
+| Problem | Exact version | Class |
+|---|---|---|
+| SAT | decision | NP-complete |
+| 3SAT | decision | NP-complete |
+| graph coloring | $k$-colorability decision | NP-complete in standard settings |
+| Sudoku | generalized decision form | NP-complete |
+| TSP | decision with budget | NP-complete |
+| TSP | optimization | NP-hard |
+| general CSP | unrestricted finite-domain decision form | NP-complete |
 
 ---
 
@@ -2222,44 +2179,6 @@ Retain:
 
 Do not confuse:
 - a hardness theorem with an instruction to give up on solving real instances.
-
----
-
-# 25. Common misconceptions collected in one place
-
-This section exists because many errors in this area are conceptual rather than algebraic. Seeing them together helps stabilize the big picture.
-
-## Misconception 1: NP means not polynomial
-
-False. NP means yes-instances have polynomially verifiable certificates.
-
-## Misconception 2: NP-complete means impossible to solve
-
-False. It means no polynomial-time algorithm is known for all instances, and one is unlikely unless $P=NP$. Small or structured instances may still be easy.
-
-## Misconception 3: Backtracking is just brute force
-
-Incomplete truth. It is exponential in the worst case, but it prunes partial assignments and can be dramatically better than enumerating all full assignments.
-
-## Misconception 4: Arc consistency solves the problem
-
-False. Arc consistency is local. A CSP can be arc consistent and still unsatisfiable.
-
-## Misconception 5: Local search and backtracking explore the same state space
-
-False. Backtracking explores partial assignments. Local search explores complete assignments, often inconsistent ones.
-
-## Misconception 6: A soft constraint is just a weaker hard constraint
-
-False. A soft constraint contributes to preference or cost. A hard constraint defines feasibility.
-
-## Misconception 7: TSP is NP-complete
-
-Imprecise. The decision version is NP-complete. The optimization version is NP-hard.
-
-## Misconception 8: SAT is different in kind from CSP
-
-False. SAT is a special Boolean CSP with clause constraints.
 
 ---
 
@@ -2332,7 +2251,7 @@ Do not confuse:
 
 ---
 
-# 27. Final synthesis
+# 27. Final synthesis and takeaways
 
 Constraint satisfaction is one of the cleanest general languages for discrete reasoning. It begins from a simple question: assign values to variables so that all rules are obeyed. But from that simple question grows an entire conceptual ecosystem.
 
@@ -2352,37 +2271,16 @@ The deepest lesson is this: the field is unified. Modeling, algorithms, and comp
 
 A student who understands that triangle is no longer just memorizing CSP vocabulary. They are learning how to think about discrete reasoning problems in a way that transfers across AI, algorithms, optimization, logic, and beyond.
 
----
+Takeaways to retain:
+- A CSP is variables, domains, and hard constraints; a solution is a complete assignment satisfying every hard constraint.
+- Partial assignments can be locally consistent while still not extendable to any full solution.
+- Backtracking explores partial assignments; local search explores complete assignments (often temporarily inconsistent ones).
+- Forward checking prunes immediate neighbor domains; arc consistency removes unsupported values along arcs.
+- Hard constraints define feasibility; soft constraints define preference or cost and belong in an optimization extension.
+- Branch-and-bound prunes optimization branches using bounds and the best incumbent found so far.
+- SAT is a Boolean CSP; reductions explain why many CSP variants inherit hardness from SAT/3SAT.
+- Complexity labels apply to precise problem forms (decision vs search vs optimization), not informal problem names.
 
-# 28. High-value takeaways for long-term retention
-
-## Retain
-
-- A CSP is a finite set of variables, domains, and constraints.
-- A solution is a complete assignment satisfying every hard constraint.
-- Partial assignments can be locally consistent without being extendable.
-- Backtracking explores partial assignments; local search explores complete assignments.
-- Forward checking prunes immediate future values; arc consistency removes unsupported values.
-- Hard constraints define feasibility; soft constraints define preference or cost.
-- Branch-and-bound prunes optimization branches using lower and upper bounds.
-- SAT is a Boolean CSP; 3SAT is a restricted NP-complete version.
-- P means polynomial-time solvable decision problems.
-- NP means yes-certificates are polynomial-time verifiable.
-- NP-hard means at least as hard as every NP problem.
-- NP-complete means both in NP and NP-hard.
-- Decision, search, and optimization versions of a problem must be distinguished precisely.
-
-## Do not confuse
-
-- domain restrictions with relational constraints,
-- local consistency with guaranteed solvability,
-- inference with branching,
-- backtracking with local search,
-- feasibility with optimality,
-- NP with “not polynomial,”
-- NP-complete with “impossible,”
-- optimization TSP with decision TSP,
-- a reduction with a solver,
-- worst-case hardness with typical practical behavior.
+The deepest habit to retain is not a particular algorithm, but a way of seeing: identify variables, domains, and constraints first, then let structure determine the algorithm and the complexity expectations.
 
 ---
