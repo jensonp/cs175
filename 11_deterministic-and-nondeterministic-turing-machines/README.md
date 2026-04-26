@@ -931,7 +931,7 @@ This example is chosen because it is the canonical bridge from nondeterminism to
 
 Let $L_{\mathrm{SAT}}$ be the language of satisfiable Boolean formulas. A formula $\varphi$ belongs to $L_{\mathrm{SAT}}$ if there exists a truth assignment that makes $\varphi$ true.
 
-The certificate is a truth assignment to the variables of $\varphi$. If $\varphi$ has variables $x_1,\ldots,x_n$, the certificate can be a lenght-$ n $ string of truth values.
+The certificate is a truth assignment to the variables of $\varphi$. If $\varphi$ has variables $x_1,\ldots,x_n$, the certificate can be a length-$n$ string of truth values.
 
 The verifier receives $(\varphi,c)$. It checks:
 
